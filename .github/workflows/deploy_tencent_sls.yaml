@@ -3,7 +3,7 @@ name: deploy_tencent_sls
 on:
   push:
     branches:
-      - main
+      - dev-jury
 
 env:
   TENCENT_SECRET_ID: ${{secrets.TENCENT_SECRET_ID}}
