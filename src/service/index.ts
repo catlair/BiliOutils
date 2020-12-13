@@ -5,6 +5,7 @@ import shareAndWatch from './shareAndWatch';
 import addCoins from './addCoins';
 import mangaSign from './mangaTask';
 import silver2Coin from './silver2Coin';
+import judgement from './judgement';
 
 export { loginTask, taskReward };
 
@@ -14,4 +15,5 @@ export default {
   silver2Coin,
   addCoins,
   mangaSign,
+  judgement,
 };

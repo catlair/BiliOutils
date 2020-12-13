@@ -51,3 +51,14 @@ export abstract class TaskModule {
   /**今日时候已经观看视频 */
   static watch: boolean = false;
 }
+
+//风纪委员情况
+export abstract class JuryTask {
+  static isJury: boolean = false;
+  /** 总仲裁数量 */
+  static caseTotal: number = 0;
+  /** 仲裁胜率 */
+  static rightRadio: number = 0;
+  /** 是否继续进行 */
+  static isRun: boolean = true;
+}
