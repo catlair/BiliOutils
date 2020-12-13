@@ -6,7 +6,7 @@ export interface JuryVoteOption {
    * 3 弃权
    * 4 删除
    */
-  vote?: 0 | 1 | 2 | 3 | 4;
+  vote?: number;
   /** 理由/内容 */
   content?: string;
   /** 赞成观点 */
