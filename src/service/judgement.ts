@@ -155,7 +155,7 @@ async function doOneJuryVote() {
       myVote = 4;
     }
     /** 投票配置 */
-    const options: JuryVoteOption = { attr: 1, vote: 1 };
+    const options: JuryVoteOption = { attr: 1, vote:myVote };
 
     await apiDelay();
     /** 投票 */
