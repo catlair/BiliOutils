@@ -6,9 +6,11 @@ export abstract class TaskConfig {
   static readonly config = config;
   /** 直接复制全部吧 */
   static COOKIE: string = config.cookie;
-  /**bilibili账号的jct */
+  /** bilibili账号的jct */
   static readonly BILIJCT: string = getBiliJct();
-  /**操作用户的bilibili uid */
+  /** bilibili 用户昵称 */
+  static NICKNAME: string = '';
+  /**操作用户的bilibili mid */
   static readonly USERID: number = getUserId();
   /**【可选】用户代理(浏览器) */
   static readonly USER_AGENT: string = config.userAgent;
