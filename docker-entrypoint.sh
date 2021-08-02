@@ -30,15 +30,9 @@ fi
 
 
 # 下面兼容老配置 随时删除
-if [ "$3" == "--scf" ]
-then
-  scfHandle
-  runScfAll
-fi
-
-if [ "$3" == "deploy:muilt" ]
+if [ "$3" == "--scf" ] || [ "$3" == "deploy:muilt" ]
 then
   scfHandle
   node tools/bootstrap.js --scf
-  runScfAll
+  runScfAll 
 fi
