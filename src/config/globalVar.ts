@@ -78,3 +78,10 @@ export abstract class JuryTask {
   /** 审核完成后再次调用的次数 */
   static dailyCompleteCount: number = 0;
 }
+
+export abstract class Constant {
+  static readonly DAILY_TRIGGER_NAME = 'daily_bili_timer';
+  static readonly JURY_TRIGGER_NAME = 'jury_bili_timer';
+  static readonly DAILY_RUN_TIME = '17:30:00-23:40:00';
+  static readonly JURY_RUN_TIME = '8-12/20-40';
+}
