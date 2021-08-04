@@ -1,6 +1,9 @@
 import { getUserId, getBiliJct } from '../utils/cookie';
 import config from './setConfig';
 
+// 避免 message 为 null 或者 undefined
+config.message ||= {};
+
 /** 默认的任务配置 */
 export abstract class TaskConfig {
   static readonly config = config;
@@ -39,7 +42,7 @@ export abstract class TaskConfig {
   static readonly CHARGE_PRESET_TIME = config.chargePresetTime || 31;
   /** pushplus token */
   static readonly PUSHPLUS_TOKEN =
-    process.env.PUSHPLUS_TOKEN || config.message.pushplusToken;
+    process.env.PUSHPLUS_TOKEN || config.message?.pushplusToken;
 }
 
 /** 任务完成情况统计 */
