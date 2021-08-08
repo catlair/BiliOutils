@@ -9,7 +9,7 @@ scfHandle(){
   then
   npm install serverless -g
   fi
-  mv node_modules dist
+  cp -rf node_modules dist
 }
 
 runScfAll(){
