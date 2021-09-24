@@ -27,7 +27,7 @@
     "@types/qs": "^6.9.7"
   },
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "lodash": "^4.17.21",
     "nodemailer": "^6.6.3",
     "pako": "1.0.11",
