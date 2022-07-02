@@ -40,14 +40,8 @@ function getAppSign(
   appkey = '1d8b6e7d45233436',
   appsec = '560c52ccd288fed045859ed18bffd973',
 ) {
-  // if (!TaskConfig.accessKey) {
-  //   return getSign(params, appsec, true);
-  // }
-  params = {
+   params = {
     ...params,
-    // access_key: TaskConfig.accessKey,
-    actionKey: 'appkey',
-    appkey,
     platform: 'android',
     mobi_app: 'android',
     disable_rcmd: 0,
@@ -55,6 +49,15 @@ function getAppSign(
     c_locale: 'zh_CN',
     s_locale: 'zh_CN',
     ts: getUnixTime(),
+   }
+   if (!TaskConfig.accessKey) {
+     return getSign(params, appsec, true);
+   }
+  params = {
+    ...params,
+    access_key: TaskConfig.accessKey,
+    actionKey: 'appkey',
+    appkey,
   };
   return getSign(params, appsec);
 }
