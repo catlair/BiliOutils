@@ -68,7 +68,7 @@ async function dailyBattery() {
     }
     default: {
       // lol 的直播间发一条弹幕
-      logger.debug(`发送弹幕`);
+      logger.debug(`发送弹幕 ${status - 10}`);
       for (let index = 0; index < 15 - status; index++) {
         await sendOneMessage(7734200, 'bili官方');
         await apiDelay(10000, 15000);
@@ -79,7 +79,7 @@ async function dailyBattery() {
 }
 
 export async function dailyBatteryService() {
-  for (let index = 0; index < 2; index++) {
+  for (let index = 0; index < 3; index++) {
     const result = await dailyBattery();
     if (result) return;
     await apiDelay();

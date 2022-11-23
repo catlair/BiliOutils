@@ -4,7 +4,7 @@ import * as mangaApi from '@/net/manga.request';
 import { exchangeMangaShop, getMangaPoint, shareComic } from '@/net/manga.request';
 import { apiDelay, getPRCDate, isBoolean, logger } from '@/utils';
 import { request } from '@/utils/request';
-import { create_read_dataflow } from '@catlair/bilicomic-dataflow';
+import { Bilicomic } from '@catlair/bilicomic-dataflow';
 
 let expireCouponNum: number;
 
@@ -438,16 +438,18 @@ async function getTaskInfo() {
   return false;
 }
 
-async function readManga(buffer: Buffer, needTime: number) {
+async function readManga(comicId: number, epId: number, needTime: number) {
   let time = needTime;
+  const bilicomic = new Bilicomic(TaskConfig.USERID, comicId, epId);
   for (let index = 0; index < 3; index++) {
     logger.debug(`开始阅读漫画第${index + 1}轮`);
-    const add = Math.ceil(time / 10);
-    for (let count = 0; count < time * 2 + add; count++) {
-      await mangaApi.sendRealtime(buffer);
+    try {
+      await bilicomic.read(time * 2 + 2);
       await apiDelay(1000);
+    } catch (error) {
+      logger.debug(`阅读漫画第${index + 1}轮异常：${error.message}`);
     }
-    await apiDelay(5000);
+    await apiDelay(7000);
     const taskInfo = await getTaskInfo();
     if (isBoolean(taskInfo)) {
       return taskInfo;
@@ -477,13 +479,7 @@ export async function readMangaService(isNoLogin?: boolean) {
     if (!ep_list) {
       return;
     }
-    const buffer = create_read_dataflow(
-      comicId + '',
-      ep_list[0].id + '',
-      TaskConfig.USERID + '',
-      BigInt(new Date().getTime()),
-    );
-    const result = await readManga(Buffer.from(buffer), time);
+    const result = await readManga(comicId, ep_list[0].id, time);
     if (isNoLogin) {
       logger.info('非登录状态，不判断阅读结果');
       return;

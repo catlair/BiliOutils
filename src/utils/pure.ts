@@ -78,6 +78,14 @@ export function getPageNum(n: number, m: number) {
 }
 
 /**
+ * 安全的随机数
+ * @description 我不需要安全，但是它总是给 Math.random 一个警告
+ */
+export function safeRandom() {
+  return crypto.randomBytes(4).readUInt32LE() / 0xffffffff;
+}
+
+/**
  * 设置 cron 表达式
  * @param time 时间戳
  * @param slsType
@@ -92,9 +100,9 @@ export function setCron(time = 60_000, slsType?: SLSType) {
   return formatCron({ hours, minutes, seconds }, slsType);
 }
 
-export function random(floating?: boolean);
-export function random(lower: number, floating?: boolean);
-export function random(lower: number, upper: number, floating?: boolean);
+export function random(floating?: boolean): number;
+export function random(lower: number, floating?: boolean): number;
+export function random(lower: number, upper: number, floating?: boolean): number;
 /**
  * 生成随机数
  * @description 生成一个随机数，范围在 min 和 max 之间（包括 min 和 max）
@@ -127,13 +135,13 @@ export function random(lower?: number | boolean, upper?: number | boolean, float
     upper = temp;
   }
   if (floating || lower % 1 || upper % 1) {
-    const rand = Math.random();
+    const rand = safeRandom();
     return Math.min(
       lower + rand * (upper - lower + parseFloat('1e-' + ((rand + '').length - 1))),
       upper,
     );
   }
-  return lower + Math.floor(Math.random() * (upper - lower + 1));
+  return lower + Math.floor(safeRandom() * (upper - lower + 1));
 }
 
 /**
@@ -439,7 +447,9 @@ export function getUnixTime() {
  * @param prefix 前缀
  */
 export function createBuvid(prefix = 'XY') {
-  return `${prefix}${crypto.randomBytes(16).toString('hex').toUpperCase()}`;
+  const rs = crypto.randomBytes(16).toString('hex').toUpperCase();
+  // 其实随机生成就行了，但是万一哪天他要校验呢
+  return `${prefix}${rs[2]}${rs[12]}${rs[22]}${rs}`;
 }
 
 /**

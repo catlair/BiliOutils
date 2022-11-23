@@ -13,7 +13,7 @@ import type {
   TakeSeasonGiftDto,
   WalletDto,
 } from '../dto/manga.dto';
-import { biliHttp, mangaApi } from './api';
+import { mangaApi } from './api';
 
 /**
  * 漫画签到
@@ -172,19 +172,5 @@ export function shareComic() {
   return mangaApi.post<ShareComicDto>(`twirp/activity.v1.Activity/ShareComic`, {
     platform: 'android',
     ts: new Date().getTime(),
-  });
-}
-
-/**
- * 发送阅读数据
- */
-export function sendRealtime(buffer: Buffer) {
-  return biliHttp.post('https://dataflow.biliapi.com/log/pbmobile/realtime?android', buffer, {
-    headers: {
-      'Content-Type': 'application/octet-stream',
-    },
-    requestOptions: {
-      withBiliCookie: false,
-    },
   });
 }
