@@ -1,7 +1,7 @@
 import type { LevelType, LogOptions, MessageType, SimpleLoggerOptions } from '@/types/log';
 import * as fs from 'fs';
 import { isServerless, isQingLongPanel } from '@/utils/env';
-import { isBoolean } from '../is';
+import { isBoolean, isObject } from '../is';
 import { resolvePath } from '../path';
 import { getPRCDate } from '../pure';
 import { writeError, writeOut } from './std';
@@ -127,6 +127,10 @@ export class SimpleLogger {
     }
     if (!error) {
       this.log({ level: 'error' }, message);
+      return;
+    }
+    if (!isObject(error)) {
+      this.log({ level: 'error' }, `${message} ${error}`);
       return;
     }
     if (Reflect.has(error, 'message')) {
