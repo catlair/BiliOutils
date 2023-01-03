@@ -1,15 +1,55 @@
+import packageJSON from '../package.json' assert { type: 'json' };
+
+function getCoreJsVersion() {
+  const coreJsVersion = packageJSON.dependencies['core-js'];
+  if (!coreJsVersion) {
+    throw new Error('core-js version not found');
+  }
+  return coreJsVersion.match(/\d+\.\d+/)?.[0] || '3';
+}
+
+/**
+ * 根据版本号确定是否需要转换
+ * @param {string} version
+ */
+function shouldTransform(version) {
+  const [major, minor = 0] = version.split('.').map(Number);
+  // node 16 以上不需要转换, 14.18 也不需要转换
+  return major < 16 && !(major === 14 && minor >= 18);
+}
+
+/**
+ * @type {import('@babel/core').PluginItem[]}
+ */
+const plugins = [
+  [
+    'module-resolver',
+    {
+      alias: {
+        '@': './src',
+        '#': './src/types',
+      },
+    },
+  ],
+];
+
 /**
  * @param {{ node?: string; }} [options]
  */
 export function baseConfig(options = {}) {
   const { node = '14' } = options;
+
+  if (shouldTransform(node)) {
+    plugins.push('./build/babel/transform-node-core-modules.mjs');
+  }
+
   return {
     presets: [
       [
         '@babel/env',
         {
           useBuiltIns: 'usage',
-          corejs: 3.26,
+          corejs: getCoreJsVersion(),
           targets: {
             node,
           },
@@ -18,17 +58,7 @@ export function baseConfig(options = {}) {
       '@babel/preset-typescript',
     ],
     comments: false,
-    plugins: [
-      [
-        'module-resolver',
-        {
-          alias: {
-            '@': './src',
-            '#': './src/types',
-          },
-        },
-      ],
-    ],
+    plugins,
     ignore: ['**/__test__', '**/*.test.ts', '**/*.spec.ts', '**/types', '**/dto'],
   };
 }
