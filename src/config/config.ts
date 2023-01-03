@@ -26,6 +26,7 @@ export const defaultConfig = {
   // accessRefreshToken: '',
   createCookieDay: undefined,
   message: {
+    // markdown 格式需要 \n\n
     br: '\n',
     // 仅错误时发送
     onlyError: false,
@@ -56,14 +57,10 @@ export const defaultConfig = {
     liveSignTask: true,
     // 投币
     addCoins: true,
-    // 漫画签到
-    mangaSign: false,
     // 分享和观看
     shareAndWatch: true,
     // 应援团签到
     supGroupSign: false,
-    // 直播发送弹幕
-    liveSendMessage: false,
     // 使用 b 币券
     useCouponBp: false,
     // 充电（废弃）
@@ -86,7 +83,6 @@ export const defaultConfig = {
     mangaTask: false,
     // 大会员积分
     bigPoint: false,
-    liveFamine: false,
     // 风纪委员
     judgement: false,
     // 转盘抽奖
@@ -236,6 +232,11 @@ export const defaultConfig = {
     skipNum: 10,
     // 完成直播心跳后是否再检查一次，可能因为数据延迟而重复操作，不建议云函数开启
     isRetryHeart: false,
+    // 专属弹幕
+    dm: {
+      // id 为 up 主 mid，非直播间 id。用于某些直播间可能有机器人玩法
+      // 11111: '打卡',
+    } as Record<number, string | string[]>,
   },
   jury: {
     once: true,

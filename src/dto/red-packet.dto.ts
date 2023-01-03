@@ -1,4 +1,4 @@
-export interface AugRedPacket2022Controller {
+export interface RedPacketController {
   code: number;
   message: string;
   data: {

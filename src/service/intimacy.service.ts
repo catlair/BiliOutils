@@ -11,6 +11,8 @@ import {
   createUUID,
   isServerless,
   getOnceFunc,
+  isString,
+  getRandomItem,
 } from '@/utils';
 import { likeLiveRoom, liveMobileHeartBeat } from '@/net/intimacy.request';
 import type { MobileHeartBeatParams } from '@/net/intimacy.request';
@@ -40,9 +42,7 @@ export async function getFansMealList() {
         return list;
       }
 
-      if (!data) {
-        return list;
-      }
+      if (!data) return list;
 
       totalNumber = data.page_info.total_page;
       pageNumber = data.page_info.current_page;
@@ -51,7 +51,7 @@ export async function getFansMealList() {
 
     return list;
   } catch (error) {
-    logger.error(`获取勋章异常 ${error.message}`);
+    logger.error(`获取勋章异常：`, error);
     return list;
   }
 }
@@ -74,17 +74,13 @@ function fansMedalFilter({ room_info, medal }: FansMedalDto) {
   // 今天达到了 TODAY_MAX_FEED（默认获取最大）
   if (medal.today_feed >= TODAY_MAX_FEED) return false;
   // 不存在白名单
-  // TODO：白名单兼容 uid 和 room_id
   const { whiteList, blackList } = TaskConfig.intimacy;
-  if (!whiteList || !whiteList.length) {
+  if (!whiteList.length) {
     // 判断是否存在黑名单中
-    return !(
-      blackList &&
-      (blackList.includes(room_info.room_id) || blackList.includes(medal.target_id))
-    );
+    return !blackList.includes(medal.target_id);
   }
   // 如果存在白名单，则只发送白名单里的
-  return whiteList.includes(room_info.room_id) || whiteList.includes(medal.target_id);
+  return whiteList.includes(medal.target_id);
 }
 
 async function likeLive(roomId: number) {
@@ -114,7 +110,7 @@ async function liveMobileHeart(
       return;
     }
     countRef.value++;
-    liveLogger.debug(`直播心跳成功 ${heartbeatParams.uname}（${countRef.value}/${needTime}）`);
+    liveLogger.debug(`心跳 ${heartbeatParams.uname}（${countRef.value}/${needTime}）`);
   } catch (error) {
     if (error.message.includes('Timeout awaiting')) {
       liveLogger.debug(error.message);
@@ -126,6 +122,9 @@ async function liveMobileHeart(
 }
 
 async function likeAndShare(fansMealList: FansMedalDto[], doneNumber = 0) {
+  const { liveLike, liveSendMessage } = TaskConfig.intimacy;
+  if (![liveLike, liveSendMessage].every(Boolean)) return;
+
   const fansLength = fansMealList.length,
     skipNum = TaskConfig.intimacy.skipNum;
   if (skipNum >= 0 && fansLength === doneNumber && doneNumber > skipNum) {
@@ -289,15 +288,13 @@ export async function liveInteract(fansMedal: FansMedalDto) {
   const { liveLike, liveSendMessage } = TaskConfig.intimacy,
     nickName = anchor_info.nick_name,
     roomid = room_info.room_id;
-  if (!liveLike && !liveSendMessage) return;
+
   // 发送直播弹幕
-  let sendMessageResult: number;
   if (liveSendMessage) {
-    liveLogger.verbose(`为[${nickName}]发送直播弹幕`);
-    sendMessageResult = await sendDmMessage(roomid, nickName);
-  }
-  if (sendMessageResult! !== SeedMessageResult.Success) {
-    sendMessageFailList.set(roomid, fansMedal);
+    const sendMessageResult = await sendLiveDm(roomid, nickName, fansMedal.medal.target_id);
+    if (sendMessageResult !== SeedMessageResult.Success) {
+      sendMessageFailList.set(roomid, fansMedal);
+    }
   }
 
   // 点赞直播
@@ -308,6 +305,21 @@ export async function liveInteract(fansMedal: FansMedalDto) {
   }
 
   await apiDelay(11000, 16000);
+}
+
+/**
+ * 发送直播弹幕
+ */
+async function sendLiveDm(roomid: number, nickName: string, uid: number) {
+  liveLogger.verbose(`为[${nickName}]发送直播弹幕`);
+  const dmConf = Reflect.get(TaskConfig.intimacy.dm, uid);
+  let dm: string | undefined = undefined;
+  if (isString(dmConf)) {
+    dm = dmConf;
+  } else if (Array.isArray(dmConf)) {
+    dm = getRandomItem(dmConf);
+  }
+  return await sendDmMessage(roomid, nickName, dm);
 }
 
 /**

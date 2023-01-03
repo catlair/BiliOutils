@@ -2,16 +2,7 @@ import { biliTasks } from '@/task';
 import { TaskConfig } from './globalVar';
 
 function funHandle() {
-  const functionConfig = TaskConfig.function;
-  // TODO: 兼容处理 liveSendMessage
-  if (functionConfig.liveIntimacy && TaskConfig.intimacy.liveSendMessage) {
-    functionConfig.liveSendMessage = false;
-  }
-  // TODO: 兼容处理 mangaSign
-  if (functionConfig.mangaTask && TaskConfig.manga.sign) {
-    functionConfig.mangaSign = false;
-  }
-  return functionConfig;
+  return TaskConfig.function;
 }
 
 /**

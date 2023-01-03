@@ -79,7 +79,9 @@ export type Bp2GoldDto = ApiBaseProp<{
 
 export interface FansMedalDto {
   medal: {
+    /** 自己的 id */
     uid: number;
+    /** 粉丝拥有者的 id */
     target_id: number;
     target_name: '';
     medal_id: number;
