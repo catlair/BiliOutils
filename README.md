@@ -18,7 +18,7 @@
 
 停更了（即使这样他也是 Github 上最全的之一），暂时不会删库，让它留个纪念吧，偶尔修复反馈的 bug。
 
-反馈 bug 或提意见时，请务必清晰的描述你的问题或想法，写 100 行代码很容易，但是弄清楚一个逻辑很难，何况功能是给所有用户用的。如果你觉得这一切理所应当，那么希望你不要打扰我。
+反馈 bug 或提意见时，请务必清晰的描述你的问题或想法，否则可能会被忽略。
 
 ## 开发
 
@@ -117,6 +117,7 @@ yarn build
 - [lzghzr/TampermonkeyJS](https://github.com/lzghzr/TampermonkeyJS)
 - [whyour/qinglong](https://github.com/whyour/qinglong)
 - [RayWangQvQ/BiliBiliToolPro](https://github.com/RayWangQvQ/BiliBiliToolPro)
+- [dd178/BILI_judgement](https://github.com/dd178/BILI_judgement)
 
 ## 相关链接
 
@@ -127,6 +128,6 @@ yarn build
 
 感谢 `JetBrains` 提供优秀的 IDE。
 
-<a href="https://www.jetbrains.com/?from=BiliHelper-personal" target="_blank">
+<a href="https://www.jetbrains.com/" target="_blank">
 <img src="https://tva1.sinaimg.cn/large/008eGmZEly1gov9g3tzrnj30u00wj0tn.jpg" width="150"/>
 </a>
