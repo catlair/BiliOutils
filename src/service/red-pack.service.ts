@@ -18,6 +18,8 @@ import { handleFollowUps } from './tags.service';
 import { getRedPacketController } from '@/net/red-packet.request';
 import { noWinRef, realRisk } from '@/store/red-packet';
 import { ReturnStatus } from '@/enums/packet.enum';
+import type { TagsFollowingsDto } from '@/dto/user-info.dto';
+import { eventSwitch } from '@/utils/node';
 
 const liveLogger = new Logger(
   { console: 'debug', file: 'warn', push: 'warn', payload: TaskModule.nickname },
@@ -287,11 +289,16 @@ async function waitForStatus(status: number | undefined) {
 /**
  * 进行天选
  */
-export async function liveRedPackService() {
+export async function liveRedPackService(lastFollow?: TagsFollowingsDto['data'][number]) {
+  const moveUps = () => handleFollowUps(newFollowUp, lastFollow, TaskConfig.redPack.moveTag);
   init();
+  // 监听 Ctrl+C 退出，确保开发时能够正常退出
+  const moveUpSwitch = eventSwitch('SIGINT', () => moveUps().then(() => process.exit(0)));
+  moveUpSwitch.on();
   await run();
   await waitForWebSocket(1);
-  return newFollowUp;
+  await moveUps();
+  moveUpSwitch.off();
 }
 
 async function run() {

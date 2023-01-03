@@ -1,17 +1,14 @@
 import { logger } from '@/utils';
 import { liveRedPackService } from '@/service/red-pack.service';
-import { getLastFollow, handleFollowUps } from '@/service/tags.service';
-import { TaskConfig } from '@/config/globalVar';
+import { getLastFollow } from '@/service/tags.service';
 
 export default async function liveRedPack() {
   logger.info('----【天选红包】----');
   try {
-    const { moveTag } = TaskConfig.redPack;
     // 获取最后一个关注的UP
     const lastFollow = await getLastFollow();
     lastFollow && logger.verbose(`最后一个关注的UP: ${lastFollow.uname}`);
-    const newFollowUps = await liveRedPackService();
-    await handleFollowUps(newFollowUps, lastFollow, moveTag);
+    await liveRedPackService(lastFollow);
   } catch (error) {
     logger.warn(`天选时刻异常: ${error.message}`);
     logger.debug(error);
