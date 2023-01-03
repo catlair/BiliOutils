@@ -1,5 +1,5 @@
 export interface AnyProp<T = any> {
-  code?: number;
+  code?: number | string;
   message?: string;
   data?: T;
   ttl?: number;
@@ -19,7 +19,7 @@ export interface ApiBaseProp<T = object | number | null> {
 }
 
 export interface OnlyMsg<T = any> {
-  code: number;
+  code: number | string;
   msg: string;
   data: T;
 }

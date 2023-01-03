@@ -61,6 +61,7 @@ async function getMangaEpList(comic_id: number) {
     if (!data || !data.ep_list) {
       return;
     }
+
     const { disable_coupon_amount, ep_list, title } = data;
     // 去掉没有漫读券的章节
     return {
@@ -81,39 +82,44 @@ async function getBuyCoupon(ep_id: number) {
     const { code, msg, data } = await mangaApi.getBuyInfo(ep_id);
     if (code !== 0) {
       logger.error(`获取购买信息失败：${code} ${msg}`);
-      return;
+      return -1;
     }
     if (!data) {
-      return;
+      return -1;
     }
-    if (!data.is_locked) return;
+    if (!data.is_locked) return -2;
     if (!data.allow_coupon) {
-      logger.info(`漫画 ${ep_id} 不支持漫读券`);
-      return;
+      logger.debug(`漫画 ${ep_id} 不支持漫读券`);
+      return -3;
     }
     if (data.recommend_coupon_id === 0 || data.remain_coupon === 0) {
       expireCouponNum = 0;
       logger.info('没有足够的漫读券了');
-      return;
+      return -4;
     }
     if (!data.remain_lock_ep_num) {
       logger.info(`漫画${data.comic_id}已经全部购买了`);
-      return;
+      return -5;
     }
     return data.recommend_coupon_id;
   } catch (error) {
     logger.error(`获取购买信息异常: ${error}`);
   }
+  return -99;
 }
 
 /**
  * 购买漫画的一个章节
  * @return true 则不再购买
  */
-async function buyOneEpManga(ep_id: number) {
+async function buyOneEpManga(ep_id: number, countRef: Ref<number>) {
   try {
     const couponId = await getBuyCoupon(ep_id);
-    if (!couponId) return true;
+    if (couponId < 1) {
+      if (couponId === -4) return true;
+      if (couponId === -3) countRef.value++;
+      return false;
+    }
     const { code, msg } = await mangaApi.buyManga(ep_id, couponId);
     if (code !== 0) {
       logger.error(`购买漫画 ${ep_id} 失败：${code} ${msg}`);
@@ -155,9 +161,12 @@ async function buyManga(comic_id: number) {
     return false;
   }
   logger.info(`购买漫画${comic_id}《${title}》`);
+  const countRef = { value: 0 };
   for (let index = 0; index < epList.length; index++) {
     await apiDelay(100, 150);
-    if (await buyOneEpManga(epList[index].id)) return true;
+    if (await buyOneEpManga(epList[index].id, countRef)) return true;
+    // 超过 5 个不支持漫读券的章节，则不再购买
+    if (countRef.value > 5) return false;
   }
 
   function filterLocked(epList: Eplist[] = []) {
@@ -263,11 +272,14 @@ export async function mangaSign() {
     return;
   }
   try {
-    const { code } = await mangaApi.clockIn();
-    if (code == 0) {
-      logger.info('漫画签到成功');
-    } else {
-      logger.warn('漫画签到失败');
+    const { code, msg } = await mangaApi.clockIn();
+    switch (code) {
+      case 0:
+        return logger.info('漫画签到成功');
+      case 'invalid_argument':
+        return logger.info('已经签过到了');
+      default:
+        return logger.warn(`漫画签到失败：${code}-${msg}`);
     }
   } catch (error) {
     /**
