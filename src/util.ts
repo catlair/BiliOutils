@@ -60,6 +60,7 @@ export function runForkSync(
         __BT_TASKS_STRING__: tasks,
         __BT_CONFIG_ITEM__: index.toString(),
       },
+      detached: true,
     });
     child.once('exit', code => {
       if (code === 0) {
@@ -100,7 +101,7 @@ export async function runTask(configs?: ConfigArray, forkPath = './bin/fork', ta
     try {
       await runForkSync(config, index, forkPath, tasks);
     } catch (error) {
-      process.stdout.write(`${error.message}`);
+      process.stdout.write(`${error.message || error}\n`);
     }
     process.stdout.write('执行完毕\n\n');
   }

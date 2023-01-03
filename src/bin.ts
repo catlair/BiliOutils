@@ -83,6 +83,8 @@ async function isTodayRun(jobsPath: string) {
   if (!isArg('once')) {
     return;
   }
+  // 判断文件是否存在
+  if (!existsSync(jobsPath)) return;
   // 读取配置文件同路径 bt_jobs.json
   const jobsObj = JSON.parse(readFileSync(jobsPath, 'utf-8'));
   if (jobsObj.lastRun) {
