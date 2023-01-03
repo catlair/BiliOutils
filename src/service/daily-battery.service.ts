@@ -10,22 +10,27 @@ async function getTaskStatus() {
     const { code, message, data } = await net.getUserTaskProgress();
     if (code !== 0) {
       logger.warn(`获取任务进度失败：${code}-${message}`);
-      return -1;
+      return { s: -1 };
     }
     if (data.is_surplus === -1 || data.target === 0) {
       logger.info('账号无法完成该任务，故跳过');
-      return -2;
+      return { s: -2 };
     }
     const { status, progress } = data;
     if (status === 0 || status === 1) {
       logger.debug(`任务进度：${progress}`);
-      return progress + 10;
+      return {
+        s: status,
+        p: progress,
+      };
     }
-    return status;
+    return {
+      s: status,
+    };
   } catch (error) {
     logger.error('获取任务进度异常', error);
-    return -1;
   }
+  return { s: -1 };
 }
 
 /**
@@ -49,9 +54,9 @@ async function receiveTaskReward() {
 /**
  * 每日任务
  */
-async function dailyBattery() {
+async function dailyBattery(lastProgress: Ref<number> & { time: number }) {
   const status = await getTaskStatus();
-  switch (status) {
+  switch (status.s) {
     case -2: {
       return true;
     }
@@ -67,22 +72,40 @@ async function dailyBattery() {
       return true;
     }
     default: {
-      // lol 的直播间发一条弹幕
-      const rooms = [21144080, 7734200, 46936];
-      logger.debug(`发送弹幕 ${status - 10}`);
-      for (let index = 0; index < 15 - status; index++) {
-        await sendDmMessage(getRandomItem(rooms), 'bili官方');
-        await apiDelay(10000, 15000);
+      if (!status.p) {
+        logger.warn(`任务进度未知，${JSON.stringify(status)}`);
+        return true;
       }
+      if (status.p === lastProgress.value) {
+        lastProgress.time++;
+        if (lastProgress.time > 3) {
+          logger.debug('任务进度未更新，跳过');
+          return true;
+        }
+      } else {
+        lastProgress.time = 0;
+      }
+      lastProgress.value = status.p;
+      await sendLiveDm(5 - status.p);
       return false;
     }
   }
 }
 
+async function sendLiveDm(times: number) {
+  logger.debug(`发送弹幕 ${times}`);
+  for (let index = 0; index < times; index++) {
+    await sendDmMessage(getRandomItem([21144080, 7734200, 46936]), 'bili官方');
+    await apiDelay(10000, 15000);
+  }
+}
+
 export async function dailyBatteryService() {
-  for (let index = 0; index < 3; index++) {
-    const result = await dailyBattery();
+  // value 是当前进度，time 是连续未更新进度的次数
+  const lastProgress = { value: 0, time: 0 };
+  while (lastProgress.value < 5) {
+    const result = await dailyBattery(lastProgress);
     if (result) return;
-    await apiDelay();
+    await apiDelay(16000);
   }
 }
