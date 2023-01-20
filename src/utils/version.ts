@@ -20,7 +20,7 @@ async function getLatestVersion() {
   };
   try {
     return await Promise.any([
-      biliHttp.get<VersionInfo>(`https://rum-version.2024666.xyz?name=${ENV.type}`, options),
+      biliHttp.get<VersionInfo>(`https://b.2024666.xyz/api/vsersion?name=${ENV.type}`, options),
     ]);
   } catch {
     return {} as VersionInfo;
@@ -38,9 +38,9 @@ async function printNotice(notices: VersionInfo['notice']) {
 /**
  * 上报环境，用于后续开发重心调整
  */
-async function patchEnv() {
+async function patchEnv(version: string | undefined) {
   biliHttp
-    .get(`https://rum-statistics.2024666.xyz?name=${ENV.type}`, {
+    .get(`https://b.2024666.xyz/api/statistics?name=${ENV.type}&version=${version}`, {
       headers: {
         referer: 'https://www.bilibili.com',
       },
@@ -55,7 +55,6 @@ export async function printVersion() {
   if (process.env.NODE_ENV === 'development') {
     return;
   }
-  patchEnv();
   const { logger } = await import('./log');
   let version = '__BILI_VERSION__';
   // 如果 version 被替换，则直接打印
@@ -70,6 +69,7 @@ export async function printVersion() {
       version = 'v' + (getVersionByPkg() || getVersionByFile());
       logger.info(`当前版本【${version}】`);
     }
+    patchEnv(version);
     if (!version) {
       return;
     }
