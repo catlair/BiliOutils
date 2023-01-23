@@ -8,8 +8,9 @@ import { config, runTask, waitForArgs } from './util';
 import * as schedule from 'node-schedule';
 import { isBiliCookie } from './utils/cookie';
 import { scanLogin } from './utils/login';
+import { resolvePath } from './utils/path';
 
-const pkg = require('../package.json');
+const pkg = require(resolvePath('./package.json'));
 
 process.env.IS_LOCAL = 'true';
 

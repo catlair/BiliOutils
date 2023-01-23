@@ -17,7 +17,7 @@
     "dev": "npm run tsnode dotenv/config ./src/index.ts",
     "dev:bin": "npm run tsnode dotenv/config ./src/bin.ts",
     "start": "node -r dotenv/config ./dist/index.js",
-    "autoclear": "npm run autoclean -F && node tools/pkgclean.js",
+    "autoclear": "yarn autoclean -F && node tools/pkgclean.js",
     "lint:eslint": "eslint --max-warnings 0  \"**/*.{js,ts}\" --fix",
     "lint:prettier": "prettier --write  \"**/*.{js,json,ts,md}\"",
     "gitee": "ts-node -r dotenv/config tools/download.ts && ts-node -r dotenv/config tools/giteeRelease.ts",

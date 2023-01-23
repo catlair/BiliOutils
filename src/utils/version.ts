@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { biliHttp } from './http';
 import { ENV } from './env';
+import { resolvePath } from './path';
 
 type VersionInfo = {
   tag_name: string;
@@ -83,7 +84,7 @@ export async function printVersion() {
 
 function getVersionByPkg() {
   try {
-    return require('../../package.json').version;
+    return require(resolvePath('./package.json')).version;
   } catch {}
 }
 
