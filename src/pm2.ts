@@ -1,30 +1,31 @@
-import { connect, start, stop, disconnect } from 'pm2';
+import path from 'node:path';
+import pm2 from 'pm2';
 
-const NAME = 'bt';
+const NAME = 'bt_daily';
 
 /**
  * @type {import('pm2').StartOptions}
  */
 const options = {
-  script: './index',
+  script: path.resolve(__dirname, './index' + path.extname(__filename)),
   name: NAME,
-  cron: '*/3 * * * *',
+  cron: process.env.BILITOOLS_CRON || '6 */12 * * *',
   autorestart: false,
 };
 
-connect(true, err => {
+pm2.connect(true, err => {
   if (err) {
     console.log(err);
     process.exit(2);
   }
 
-  start(options, err => {
+  pm2.start(options, err => {
     if (err) {
       console.log(err);
-      return disconnect();
+      return pm2.disconnect();
     }
 
     // 启动后立即停止，确保只在 cron 时间执行
-    stop(NAME, () => disconnect());
+    pm2.stop(NAME, () => pm2.disconnect());
   });
 });

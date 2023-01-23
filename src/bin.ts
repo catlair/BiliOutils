@@ -5,7 +5,7 @@ import { getArg, isArg } from './utils/args';
 import { resolve, dirname } from 'path';
 import { existsSync, readFileSync } from 'fs';
 import { config, runTask, waitForArgs } from './util';
-import * as cron from 'node-cron';
+import * as schedule from 'node-schedule';
 import { isBiliCookie } from './utils/cookie';
 import { scanLogin } from './utils/login';
 
@@ -31,12 +31,12 @@ Options:
     eg: --task=loginTask,judgement
   --item, -i <item>         多用户配置执行指定的配置，下标 1 开始（倒数 -1 开始），使用英文逗号（,）分隔
     eg: --item=2
-  --cron <cronString>       cron 表达式，see：https://github.com/node-cron/node-cron#allowed-fields
+  --cron <cronString>       cron 表达式
     eg: --cron="0 0 0 * * *"
   --delay <time[-time]>     不带单位是延迟 time 分钟后执行，单位可以为 ms（毫秒）、s（秒）、m（分）、h（小时）
-    eg: --delay=10 延迟 0-10 分钟后执行
+    eg: --delay=10  延迟 0-10 分钟后执行
         --delay=10m-2h 延迟 10分钟-2小时 后执行
-  --login, -l         扫码登录，可以配和 --config 使用
+  --login, -l               扫码登录，可以配和 --config 使用
 `;
 
 (async () => {
@@ -112,17 +112,19 @@ async function run() {
   }
   const cronStr = getArg('cron', false);
 
-  if (cronStr && cron.validate(cronStr)) {
+  if (cronStr) {
     process.stdout.write(`等待运行：cron ${cronStr}\n`);
-    const cronTask = cron.schedule(
-      cronStr,
+    schedule.scheduleJob(
+      'tasks',
+      {
+        rule: cronStr,
+        tz: 'Asia/Shanghai',
+      },
       async () => {
         await waitForArgs();
         await argTaskHandle(jobsPath, configs);
       },
-      { timezone: 'Asia/Shanghai' },
     );
-    cronTask.start();
     return;
   }
 

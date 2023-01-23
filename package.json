@@ -2,30 +2,33 @@
   "name": "@catlair/bilitools",
   "version": "9.9.9",
   "description": "this is BiliTools",
-  "main": "dist/main.js",
-  "types": "dist/main.d.ts",
-  "bin": "./dist/bin.js",
+  "main": "main.js",
+  "types": "main.d.ts",
+  "bin": {
+    "bilitools": "bin.js"
+  },
   "scripts": {
     "prebuild": "rm -rf dist/",
-    "build": "babel ./src --out-dir ./dist --extensions \".ts\"",
-    "postbuild": "cp src/main.d.ts dist/main.d.ts && rm -rf dist/dto/ dist/types/ dist/__test__ && find dist -name \"*.dto.js\" -delete && find dist -name \"*.d.js\" -delete",
-    "build:baidu": "babel --config-file ./build/.baidu.babelrc.mjs ./src --out-dir ./dist --extensions \".ts\"",
+    "build": "npm run prebuild && babel ./src --out-dir ./dist --extensions \".ts\" && npm run postbuild",
+    "postbuild": "cp src/main.d.ts dist/main.d.ts && rm -rf dist/dto/ dist/types/ dist/__test__ && find dist -name \"*.dto.js\" -delete && find dist -name \"*.d.js\" -delete && cp LICENSE README.md package.json ./dist",
+    "build:baidu": "babel --config-file ./build/.baidu.babelrc.mjs ./src --out-dir ./dist --extensions \".ts\" && npm run postbuild:baidu",
     "postbuild:baidu": "npm run postbuild && sed -i '6a global.BILITOOLS_CONFIG = null;' dist/index.cfc.js && sed -i '1a global.IS_CFC = true;' dist/index.cfc.js",
     "build:rollup": "patch-package && rollup --bundleConfigAsCjs -c rollup.config.ts --configPlugin typescript && patch-package --reverse",
-    "dev": "ts-node -r tsconfig-paths/register -r dotenv/config ./src/index.ts",
-    "dev:bin": "ts-node -r tsconfig-paths/register -r dotenv/config ./src/bin.ts",
+    "dev": "npm run tsnode dotenv/config ./src/index.ts",
+    "dev:bin": "npm run tsnode dotenv/config ./src/bin.ts",
     "start": "node -r dotenv/config ./dist/index.js",
-    "autoclear": "yarn autoclean -F && node tools/pkgclean.js",
+    "autoclear": "npm run autoclean -F && node tools/pkgclean.js",
     "lint:eslint": "eslint --max-warnings 0  \"**/*.{js,ts}\" --fix",
     "lint:prettier": "prettier --write  \"**/*.{js,json,ts,md}\"",
     "gitee": "ts-node -r dotenv/config tools/download.ts && ts-node -r dotenv/config tools/giteeRelease.ts",
-    "build:all": "yarn build && yarn build:baidu && yarn build:rollup",
+    "build:all": "npm run build && npm run build:baidu && npm run build:rollup",
     "pkg": "pkg -C Gzip .",
     "test": "jest",
-    "pm2start": "yarn dev:bin -c ./config/config.json5",
-    "pm2link": "ts-node -r tsconfig-paths/register -r dotenv/config ./src/task/blink/blink.service.ts",
-    "pm2s": "ts-node -r tsconfig-paths/register -r dotenv/config ./src/task/lotteryScan",
-    "pm2r": "ts-node -r tsconfig-paths/register -r dotenv/config ./src/task/liveReservation/reservation.service"
+    "tsnode": "ts-node -r tsconfig-paths/register -r dotenv/config",
+    "pm2start": "npm run dev:bin -c ./config/config.json5",
+    "pm2link": "npm run tsnode ./src/task/blink/blink.service.ts",
+    "pm2s": "npm run tsnode ./src/task/lotteryScan",
+    "pm2r": "npm run tsnode ./src/task/liveReservation/reservation.service"
   },
   "repository": "catlair/BiliOutils",
   "keywords": [
@@ -57,7 +60,6 @@
     "@rollup/plugin-wasm": "^6.1.1",
     "@types/jest": "^29.2.5",
     "@types/node": "^18.11.18",
-    "@types/node-cron": "^3.0.7",
     "@types/nodemailer": "^6.4.7",
     "@types/tunnel": "^0.0.3",
     "@types/ws": "^8.5.4",
@@ -81,12 +83,12 @@
   "dependencies": {
     "@catlair/bilicomic-dataflow": "^0.0.4",
     "@catlair/node-got": "^0.0.9",
+    "@types/node-schedule": "^2.1.0",
     "core-js": "^3.27.1",
     "json5": "^2.2.3",
-    "node-cron": "^3.0.2",
+    "node-schedule": "^2.1.1",
     "nodemailer": "^6.9.0",
     "tunnel": "^0.0.6",
-    "uuid": "^9.0.0",
     "ws": "^8.12.0"
   },
   "optionalDependencies": {
@@ -99,8 +101,7 @@
   },
   "files": [
     "dist",
-    "package*.json",
-    "yarn.lock"
+    "package*.json"
   ],
   "publishConfig": {
     "access": "public",
@@ -117,6 +118,5 @@
       "./dist/**/*.js"
     ],
     "outputPath": "bin"
-  },
-  "packageManager": "yarn@2.4.3"
+  }
 }

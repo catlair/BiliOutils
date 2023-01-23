@@ -4,6 +4,7 @@ declare global {
       PUSHPLUS_TOKEN?: string;
       IS_LOCAL?: string;
       BILITOOLS_CONFIG?: string;
+      BILITOOLS_CRON?: string;
       LIVE_HEART_FORCE?: string;
       TENCENT_SECRET_ID?: string;
       TENCENT_SECRET_KEY?: string;

@@ -23,16 +23,16 @@ jobs:
           echo BILI_VERSION=${{ github.ref  }} | sed -e "s/refs\/tags\/v//g" >> $GITHUB_ENV
       - name: Install dependencies
         run: |
-          rm yarn.lock
           cat package.json | jq "del( .optionalDependencies ) | .version = \"${{ env.BILI_VERSION }}\"" > temp.json
           mv temp.json package.json
           yarn install
-          rm yarn.lock
       - name: Build and Handle
         run: |
           yarn build
           rm -rf yarn.lock node_modules
-      - run: npm publish ${{ env.IS_RC == 'true' && '--tag beta' || '' }}
+      - run: |
+          cd dist
+          npm publish ${{ env.IS_RC == 'true' && '--tag beta' || '' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
   build-docker:
