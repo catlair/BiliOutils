@@ -34,7 +34,6 @@ jobs:
           node-version: 'lts/*'
       - name: Install dependencies
         run: |
-          rm yarn.lock
           jq '( .optionalDependencies )' package.json > optionalDependencies.json
           cat package.json | jq "del( .optionalDependencies ) | .version = \"${{ env.BILI_VERSION }}\"" > temp.json
           mv temp.json package.json
