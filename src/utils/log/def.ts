@@ -2,7 +2,7 @@ import type { LevelType, LogOptions, MessageType, SimpleLoggerOptions } from '@/
 import * as fs from 'fs';
 import { isServerless, isQingLongPanel } from '@/utils/env';
 import { isBoolean, isObject } from '../is';
-import { resolvePath } from '../path';
+import { resolvePwd } from '../path';
 import { getPRCDate } from '../pure';
 import { writeError, writeOut } from './std';
 
@@ -81,7 +81,7 @@ export class SimpleLogger {
   protected fileLeval: string[];
   protected pushLeval: string[];
   protected noFile = false;
-  protected logFile = resolvePath(`./logs/bt_combined-def.log`);
+  protected logFile = resolvePwd(`./logs/bt_combined-def.log`);
   protected errorFile = this.logFile;
   constructor(options: SimpleLoggerOptions = {}, public name = 'default') {
     this.mergeOptions(options);
@@ -178,7 +178,7 @@ export class SimpleLogger {
 
   protected createLogFile() {
     // 如果不存在logs文件夹，则创建
-    const logsPath = resolvePath('./logs');
+    const logsPath = resolvePwd('./logs');
     if (!fs.existsSync(logsPath)) {
       fs.mkdirSync(logsPath);
     }

@@ -1,4 +1,4 @@
-import { resolvePath } from '../path';
+import { resolvePwd } from '../path';
 import * as fs from 'fs';
 import { isServerless } from '@/utils/env';
 import { MS2DATE } from '@/constant';
@@ -16,7 +16,7 @@ export function clearLogs() {
  */
 export function deleteLogFile(day = 15) {
   try {
-    const filePath = resolvePath(`./logs`);
+    const filePath = resolvePwd(`./logs`);
     const allLogFiles = fs
       .readdirSync(filePath)
       .map(file => file.match(/^bt_(?:combined|error)-\d{4}-\d{1,2}(?:-\d{1,2})?\.log$/)?.[0] || '')
@@ -48,7 +48,7 @@ export function deleteLogFile(day = 15) {
  */
 export function deleteLogLineByDay(day = 15) {
   try {
-    const filePath = resolvePath(`./logs/bt_combined-def.log`);
+    const filePath = resolvePwd(`./logs/bt_combined-def.log`);
     const file = fs.readFileSync(filePath, 'utf-8');
     const br = getBrChar(filePath);
     const lines = file.split(br);

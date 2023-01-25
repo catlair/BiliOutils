@@ -8,9 +8,6 @@ import { config, runTask, waitForArgs } from './util';
 import * as schedule from 'node-schedule';
 import { isBiliCookie } from './utils/cookie';
 import { scanLogin } from './utils/login';
-import { resolvePath } from './utils/path';
-
-const pkg = require(resolvePath('./package.json'));
 
 process.env.IS_LOCAL = 'true';
 
@@ -42,7 +39,7 @@ Options:
 
 (async () => {
   if (isArg('version')) {
-    process.stdout.write('BiliTools v' + pkg.version + '\n');
+    process.stdout.write('BiliTools v' + getPkg().version + '\n');
     process.stdout.write(`node ${process.version}\n`);
     process.stdout.write(`platform ${process.platform} ${process.arch}\n`);
     return;
@@ -175,5 +172,17 @@ async function createCookie() {
     } else {
       process.stdout.write('获取 cookie 失败\n');
     }
+  }
+}
+
+function getPkg() {
+  try {
+    try {
+      return require(resolve(__dirname, '../package.json'));
+    } catch {
+      return require(resolve(__dirname, './package.json'));
+    }
+  } catch {
+    return {};
   }
 }

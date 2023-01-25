@@ -1,9 +1,9 @@
 import path from 'path';
 
-export function resolvePath(str: string) {
+export function resolvePwd(str: string) {
   return path.resolve(process.cwd(), str);
 }
 
-export function resolvePathArray(arr: string[]) {
-  return arr.map(resolvePath);
+export function resolvePwdArray(arr: string[]) {
+  return arr.map(resolvePwd);
 }

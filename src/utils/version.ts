@@ -2,7 +2,6 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { biliHttp } from './http';
 import { ENV } from './env';
-import { resolvePath } from './path';
 
 type VersionInfo = {
   tag_name: string;
@@ -21,7 +20,7 @@ async function getLatestVersion() {
   };
   try {
     return await Promise.any([
-      biliHttp.get<VersionInfo>(`https://b.2024666.xyz/api/vsersion?name=${ENV.type}`, options),
+      biliHttp.get<VersionInfo>(`https://b.2024666.xyz/api/version?name=${ENV.type}`, options),
     ]);
   } catch {
     return {} as VersionInfo;
@@ -84,7 +83,7 @@ export async function printVersion() {
 
 function getVersionByPkg() {
   try {
-    return require(resolvePath('./package.json')).version;
+    return getPkg().version;
   } catch {}
 }
 
@@ -125,4 +124,16 @@ export function checkVersion(version: string, latestTag: string) {
     }
   }
   return false;
+}
+
+function getPkg() {
+  try {
+    try {
+      return require(path.resolve(__dirname, '../package.json'));
+    } catch {
+      return require(path.resolve(__dirname, '../../package.json'));
+    }
+  } catch {
+    return {};
+  }
 }

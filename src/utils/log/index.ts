@@ -2,7 +2,7 @@ import type { LoggerInitOptions, LoggerOptions, MessageType } from '@/types/log'
 import { TaskConfig, TaskModule } from '@/config';
 import { defLogger, EmptyLogger, SimpleLogger } from './def';
 import { clearLogs } from '@/utils/log/file';
-import { resolvePath } from '../path';
+import { resolvePwd } from '../path';
 import { getPRCDate } from '../pure';
 
 export { defLogger, clearLogs };
@@ -23,8 +23,8 @@ export class Logger extends SimpleLogger {
   }
 
   protected setFilename(file: string) {
-    this.errorFile = resolvePath(`./logs/bt_error-${file}.log`);
-    this.logFile = resolvePath(`./logs/bt_combined-${file}.log`);
+    this.errorFile = resolvePwd(`./logs/bt_error-${file}.log`);
+    this.logFile = resolvePwd(`./logs/bt_combined-${file}.log`);
   }
 
   public error(message: MessageType | Error, error?: Error) {
