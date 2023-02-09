@@ -19,7 +19,7 @@ const ENV_BASE = {
   docker: isDocker(),
 };
 
-const envType = ['docker', 'scf', 'fc', 'agc', 'cfc', 'fg', 'qinglong'] as const;
+const envType = ['scf', 'fc', 'agc', 'cfc', 'fg', 'qinglong', 'docker'] as const;
 
 export const ENV: ENVType = {
   ...ENV_BASE,

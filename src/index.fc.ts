@@ -8,6 +8,15 @@ export async function dailyMain() {
 
 export async function handler(event: Buffer, context: FCContext, callback: FCCallback) {
   try {
+    await main(event, context, callback);
+  } catch (error) {
+    const { sendMessage } = await import('@/utils/sendNotify');
+    await sendMessage('bilioutils 未知错误', error.message);
+  }
+}
+
+async function main(event: Buffer, context: FCContext, callback: FCCallback) {
+  try {
     const eventJson: FCEvent = JSON5.parse(event.toString());
     const { dailyHandler } = await import('./utils/serverless');
     dailyHandler.init({
