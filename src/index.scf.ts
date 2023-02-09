@@ -1,11 +1,6 @@
 import type { SCFContext, SCFEvent } from './types/scf';
 import { JSON5 } from './utils/json5';
 
-export async function dailyMain() {
-  const { dailyHandler } = await import('./utils/serverless');
-  return await dailyHandler.run();
-}
-
 export async function main_handler(event: SCFEvent, context: SCFContext) {
   try {
     return await main(event, context);
@@ -27,7 +22,7 @@ async function main(event: SCFEvent, context: SCFContext) {
     isReturn = await runTasks(event.Message);
   }
   if (isReturn) return 'success';
-  return dailyMain();
+  return await dailyHandler.run();
 }
 
 export async function runTasks(payload: string) {

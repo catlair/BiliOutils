@@ -46,19 +46,32 @@ class DailyHandler {
   context: SCFContext | FCContext;
   slsType: SLSType;
   payload?: string;
+  initialized = false;
 
   init({ event, context, slsType }: Params) {
+    if (!this.needInit()) return;
+
     this.context = context;
     this.event = event;
     this.slsType = slsType;
     this.payload = getPayload(slsType, event);
 
     initClient(slsType, context);
+    this.initialized = true;
 
     return this;
   }
 
+  needInit() {
+    const ENV_KEYS = ['ALI_SECRET_ID', 'ALI_SECRET_KEY', 'TENCENT_SECRET_ID', 'TENCENT_SECRET_KEY'];
+    return ENV_KEYS.some(key => process.env[key]);
+  }
+
   async run() {
+    if (!this.initialized) {
+      return await dailyTasks();
+    }
+
     let message: { lastTime: string };
     try {
       if (this.payload) {

@@ -1,11 +1,6 @@
 import type { FCCallback, FCContext, FCEvent } from './types/fc';
 import { JSON5 } from './utils/json5';
 
-export async function dailyMain() {
-  const { dailyHandler } = await import('./utils/serverless');
-  return await dailyHandler.run();
-}
-
 export async function handler(event: Buffer, context: FCContext, callback: FCCallback) {
   try {
     await main(event, context, callback);
@@ -32,7 +27,7 @@ async function main(event: Buffer, context: FCContext, callback: FCCallback) {
       callback(null, 'success');
       return;
     }
-    const message = await dailyMain();
+    const message = await dailyHandler.run();
     callback(null, message);
   } catch (error) {
     callback(error);
