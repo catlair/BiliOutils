@@ -1,0 +1,109 @@
+name: gh-release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: Build
+    env:
+      IS_TAG: ${{ startsWith(github.ref, 'refs/tags/v') }}
+      IS_RC: ${{ contains(github.ref, '-rc') }}
+      IS_PROD: ${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-rc') }}
+      COMMIT_GH: ${{ secrets.COMMIT_GH }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: set version for prod
+        if: ${{ env.IS_TAG == 'true' }}
+        run: |
+          echo BILI_VERSION=${{ github.ref  }} | sed -e "s/refs\/tags\/v//g" >> $GITHUB_ENV
+      - name: set version for dev
+        if: ${{ env.IS_TAG == 'false' }}
+        run: |
+          echo BILI_VERSION=$(date)-dev >> $GITHUB_ENV
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 'lts/*'
+      - name: Install dependencies
+        run: |
+          jq '( .optionalDependencies )' package.json > optionalDependencies.json
+          cat package.json | jq "del( .optionalDependencies ) | .version = \"${{ env.BILI_VERSION }}\"" > temp.json
+          mv temp.json package.json
+          yarn install
+      - name: Build and ZIP CFC
+        run: |
+          yarn build:baidu
+          echo ${{ env.BILI_VERSION }} >> dist/version.txt
+          cp -rf ./tools/ ./package*.json yarn.lock ./build/.yarnclean ./node_modules/ ./dist/
+          cd dist
+          npm prune --omit=dev
+          yarn autoclear
+          mv index.cfc.js cfc
+          rm -rf bin.js index*.js main.js tools package*.json yarn.lock .yarnclean
+          mv cfc index.js
+          zip -r -q ../baidu_cfc.zip .
+      - name: Build Babel
+        run: |
+          yarn build
+          echo ${{ env.BILI_VERSION }} >> dist/version.txt
+          cp config/config.single.json5 dist/config/config.json5
+          cd dist
+          mv index.*.js ../
+          rm main.js
+      - name: ZIP SCF
+        run: |
+          cp -rf ./tools/ ./package*.json yarn.lock ./build/.yarnclean ./node_modules/ ./dist/
+          mv ./index.scf.js ./dist/index.js
+          cd dist
+          yarn add tencentcloud-sdk-nodejs
+          npm prune --production
+          yarn autoclear
+          rm -rf tools package*.json yarn.lock .yarnclean
+          zip -r -q ../tencent_scf.zip *
+          rm -rf node_modules
+      - name: ZIP FC
+        run: |
+          cp -rf ./tools/ ./package*.json yarn.lock ./build/.yarnclean ./node_modules/ ./dist/
+          mv ./index.fc.js ./dist/index.js
+          cd dist
+          # yarn add @alicloud/fc2 # 自带 fc2
+          npm prune --production
+          yarn autoclear
+          rm -rf tools package*.json yarn.lock .yarnclean
+          zip -r -q ../aliyun_fc.zip *
+      - name: Build Rollup
+        run: |
+          cat package.json | jq .optionalDependencies="$(cat optionalDependencies.json)" > demo.json
+          mv demo.json package.json
+          yarn
+          yarn build:rollup
+      - name: ZIP huawei AGC
+        run: |
+          mkdir temp
+          cp dist/rollup/index.agc.js temp/index.js
+          cd temp
+          zip -r -q ../huawei_agc.zip index.js
+      - name: Pre Commit
+        run: |
+          rm dist/rollup/index.agc.js
+          cp dist/rollup gh-release -r
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            tencent_scf.zip
+            aliyun_fc.zip
+            baidu_cfc.zip
+            huawei_agc.zip
+          draft: ${{ env.IS_TAG == 'false' }}
+          prerelease: ${{ env.IS_TAG == 'true' && env.IS_RC == 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

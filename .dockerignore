@@ -1,0 +1,16 @@
+node_modules/
+.github/
+README.md
+.prettierrc
+.git
+.gitignore
+.dockerignore
+Dockerfile
+.env
+LICENSE
+test/
+dist/
+temp/
+config/config.demo.jsonc
+config/config.json
+config/config.txt

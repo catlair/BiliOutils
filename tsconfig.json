@@ -1,0 +1,26 @@
+{
+  "ts-node": {
+    "files": true,
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  },
+  "compilerOptions": {
+    "module": "esnext",
+    "removeComments": true,
+    "target": "esnext",
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["./src/*"],
+      "#/*": ["./src/types/*"],
+      "~/*": ["./src/task/*"]
+    },
+    "lib": ["esnext"],
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strictNullChecks": true
+  },
+  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
+}
