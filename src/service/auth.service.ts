@@ -2,7 +2,7 @@ import { defHttp } from '@/utils/http/def';
 import { defLogger } from '@/utils/log/def';
 import { appSignString } from '@/utils/bili';
 import { CookieJar } from '@/utils/cookie';
-import { RequestError } from 'got';
+import { RequestError } from '@catlair/node-got';
 
 interface AcgTvLoginResponse {
   code: number;

@@ -41,7 +41,7 @@ async function receiveTaskReward() {
     const { code, message } = await net.receiveTaskReward();
     if (code !== 0) {
       logger.warn(`领取任务奖励失败：${code}-${message}`);
-      return false;
+      return true;
     }
     logger.info('领取任务奖励成功');
     return true;

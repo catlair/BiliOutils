@@ -9,7 +9,7 @@
  * @param params 某些推送通知方式点击弹窗可跳转, 例：{ url: 'https://abc.com' }
  * @param author 作者仓库等信息  例：`本通知 By：https://github.com/whyour/qinglong`
  */
-import type { Method } from 'got/dist/source/as-promise/types';
+import type { Method } from '@catlair/node-got';
 import { TaskConfig, TaskModule } from '@/config';
 import { conciseNickname } from './bili';
 import { defHttp } from './http';

@@ -1,4 +1,4 @@
-import type { OptionsOfUnknownResponseBody } from 'got';
+import type { OptionsOfUnknownResponseBody } from '@catlair/node-got';
 import type { RequestOptions } from './request';
 
 export interface VGotOptions extends OptionsOfUnknownResponseBody {
