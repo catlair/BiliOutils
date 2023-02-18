@@ -14,6 +14,7 @@ export const biliTaskArray = [
   ['matchGame', () => import('./matchGame')],
   ['giveGift', () => import('./giveGift')],
   ['liveIntimacy', () => import('./liveIntimacy')],
+  ['watchLink', () => import('./watchLink')],
   ['batchUnfollow', () => import('./batchUnfollow')],
   ['liveLottery', () => import('./liveLottery')],
   ['liveRedPack', () => import('./liveRedPack')],
@@ -23,7 +24,7 @@ export const biliTaskArray = [
   ['judgement', () => import('./judgement')],
 ] as const;
 
-export type BiliTaskName = typeof biliTaskArray[number][0];
+export type BiliTaskName = (typeof biliTaskArray)[number][0];
 export type TaskFunc = () => Promise<{ default: () => Promise<any> }>;
 
 export const biliTasks = new Map<string, TaskFunc>(biliTaskArray);

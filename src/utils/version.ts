@@ -52,10 +52,11 @@ async function patchEnv(version: string | undefined) {
  * 打印版本
  */
 export async function printVersion() {
+  const { logger } = await import('./log');
   if (process.env.NODE_ENV === 'development') {
+    logger.info(`开发版`);
     return;
   }
-  const { logger } = await import('./log');
   let version = '__BILI_VERSION__';
   // 如果 version 被替换，则直接打印
   if (version.includes('.')) {

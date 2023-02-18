@@ -106,7 +106,7 @@ async function likeLive(roomId: number) {
   }
 }
 
-async function liveMobileHeart(
+export async function liveMobileHeart(
   heartbeatParams: MobileHeartBeatParams & { uname: string },
   countRef: Ref<number>,
   needTime = 75,

@@ -306,6 +306,10 @@ export const defaultConfig = {
     // 自定义活动列表链接
     customUrl: '',
   },
+  watchLink: {
+    uid: [] as number[],
+    time: 65,
+  },
   BILIJCT: '',
   USERID: 0,
 };
