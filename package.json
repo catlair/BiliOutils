@@ -5,7 +5,7 @@
   "main": "main.js",
   "types": "main.d.ts",
   "bin": {
-    "bilitools": "bin.js"
+    "bilioutils": "bin.js"
   },
   "scripts": {
     "prebuild": "rm -rf dist/",
