@@ -308,7 +308,10 @@ export const defaultConfig = {
   },
   watchLink: {
     uid: [] as number[],
+    heart: true,
     time: 65,
+    wss: true,
+    tcp: false,
   },
   BILIJCT: '',
   USERID: 0,

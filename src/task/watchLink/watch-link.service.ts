@@ -1,5 +1,6 @@
 import { TaskConfig } from '@/config';
 import { getUser } from '@/net/user-info.request';
+import { biliDmWs } from '@/service/ws.service';
 import { logger } from '@/utils';
 import { apiDelaySync } from '@/utils/effect';
 import { request } from '@/utils/request';
@@ -22,11 +23,20 @@ export async function watchLinkService() {
 }
 
 async function liveHeartPromise(resolve: (value: unknown) => void) {
-  const { uid: uids, time } = TaskConfig.watchLink;
+  const { uid: uids } = TaskConfig.watchLink;
   if (uids.length === 0) return;
   for (const uid of uids) {
     const user = await getUserInfo(uid);
     if (!user) return;
+    bindWatchEvent(user);
+  }
+  resolve('直播间心跳');
+}
+
+function bindWatchEvent(user: LiveHeartRunOptions['user']) {
+  const { time, wss, heart } = TaskConfig.watchLink;
+
+  if (heart) {
     const timerRef: Ref<NodeJS.Timer> = { value: undefined as unknown as NodeJS.Timer };
     const runOptions = {
       user,
@@ -39,7 +49,12 @@ async function liveHeartPromise(resolve: (value: unknown) => void) {
     timerRef.value = setInterval(run, 60030, runOptions);
     apiDelaySync(50, 150);
   }
-  resolve('直播间心跳');
+
+  if (wss) {
+    createWatchDmWs({ room_id: user.roomid }, time * 60);
+    apiDelaySync(50, 150);
+  }
+
   async function run({
     user: { name, roomid, mid },
     options,
@@ -76,4 +91,14 @@ async function getUserInfo(uid: number | string) {
     name: user.name,
     mid: user.mid,
   };
+}
+
+/**
+ * @param wsTime 分
+ */
+async function createWatchDmWs({ room_id }, wsTime: number) {
+  const ws = await biliDmWs(room_id, (wsTime + 20) * 1000 * 60);
+  if (!ws) return;
+  // bindMessageForRedPacket(ws, room_id);
+  return ws;
 }
