@@ -95,7 +95,7 @@ export async function biliDmWs(roomid: number, time = 0) {
     // 认证
     ws.send(getCertification(JSON.stringify(json)));
     timerMap.set(roomid, sendInterval());
-    wsLogger.debug(`wss 发起认证消息`);
+    logger.debug(`wss 发起认证消息`);
   });
 
   ws.addEventListener('close', () => {

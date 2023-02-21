@@ -1,6 +1,6 @@
 import { TaskConfig } from '@/config';
 import { getUser } from '@/net/user-info.request';
-import { biliDmWs } from '@/service/ws.service';
+import { biliDmWs, bindMessageForRedPacket } from '@/service/ws.service';
 import { logger } from '@/utils';
 import { apiDelaySync } from '@/utils/effect';
 import { request } from '@/utils/request';
@@ -51,7 +51,7 @@ function bindWatchEvent(user: LiveHeartRunOptions['user']) {
   }
 
   if (wss) {
-    createWatchDmWs({ room_id: user.roomid }, time * 60);
+    createWatchDmWs({ room_id: user.roomid }, time);
     apiDelaySync(50, 150);
   }
 
@@ -99,6 +99,10 @@ async function getUserInfo(uid: number | string) {
 async function createWatchDmWs({ room_id }, wsTime: number) {
   const ws = await biliDmWs(room_id, (wsTime + 20) * 1000 * 60);
   if (!ws) return;
-  // bindMessageForRedPacket(ws, room_id);
+  bindMessageForRedPacket(ws, room_id, async body => {
+    if (body.cmd !== 'STOP_LIVE_ROOM_LIST') {
+      console.log(room_id, JSON.stringify(body));
+    }
+  });
   return ws;
 }
