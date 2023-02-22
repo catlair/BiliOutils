@@ -2,8 +2,13 @@ import WebSocket from 'ws';
 import { TaskConfig } from '@/config';
 import { getDanmuInfo } from '@/net/live.request';
 import { OpEnum } from '@/enums/ws.enum';
-import { logger } from '@/utils/log';
+import { logger, Logger } from '@/utils/log';
 import { decode, formatDataView, getCertification } from '@/utils/ws';
+
+const wsLogger = new Logger({
+  file: false,
+  name: 'live-ws',
+});
 
 interface TimerOptions {
   timer?: NodeJS.Timeout;
@@ -73,12 +78,12 @@ async function getWsLink(room_id: number) {
   }
 }
 
-export async function biliDmWs(room_id: number, time = 0) {
-  const wsLink = await getWsLink(room_id);
+export async function biliDmWs(roomid: number, time = 0) {
+  const wsLink = await getWsLink(roomid);
   if (!wsLink) return;
   const json = {
     uid: TaskConfig.USERID,
-    roomid: room_id,
+    roomid,
     protover: 1,
     platform: 'web',
     clientver: '1.6.3',
@@ -89,16 +94,18 @@ export async function biliDmWs(room_id: number, time = 0) {
   ws.addEventListener('open', () => {
     // 认证
     ws.send(getCertification(JSON.stringify(json)));
-    timerMap.set(room_id, sendInterval());
+    timerMap.set(roomid, sendInterval());
+    logger.debug(`wss 发起认证消息`);
   });
 
   ws.addEventListener('close', () => {
-    closeWs(room_id);
+    closeWs(roomid);
+    wsLogger.debug(`wss 关闭连接`);
   });
 
   ws.addEventListener('error', () => {
-    logger.error(`直播间${room_id}，ws连接出错`);
-    closeWs(room_id);
+    logger.error(`直播间${roomid}，ws连接出错`);
+    closeWs(roomid);
   });
 
   function sendInterval() {
@@ -111,7 +118,7 @@ export async function biliDmWs(room_id: number, time = 0) {
     }, 30000);
     if (time > 0) {
       timeout = setTimeout(() => {
-        closeWs(room_id);
+        closeWs(roomid);
       }, time);
     }
     return { timer, timeout };

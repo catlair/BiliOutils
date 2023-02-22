@@ -5,7 +5,7 @@
   "main": "main.js",
   "types": "main.d.ts",
   "bin": {
-    "bilitools": "bin.js"
+    "bilioutils": "bin.js"
   },
   "scripts": {
     "prebuild": "rm -rf dist/",
@@ -85,6 +85,7 @@
   "dependencies": {
     "@catlair/bilicomic-dataflow": "^0.0.4",
     "@catlair/node-got": "^0.0.10",
+    "commander": "^10.0.0",
     "core-js": "^3.28.0",
     "json5": "^2.2.3",
     "node-schedule": "^2.1.1",

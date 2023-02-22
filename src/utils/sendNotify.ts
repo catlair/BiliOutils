@@ -775,4 +775,5 @@ export async function sendMessage(title: string, text: string) {
     title = `【Err】${title}`;
   }
   await sendNotify(title, text, undefined, '');
+  logger.info(`消息推送完毕`);
 }

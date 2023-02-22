@@ -28,6 +28,7 @@ specifiers:
   '@typescript-eslint/parser': ^5.52.0
   babel-jest: ^29.4.3
   babel-plugin-module-resolver: ^5.0.0
+  commander: ^10.0.0
   core-js: ^3.28.0
   dotenv: ^16.0.3
   eslint: ^8.34.0
@@ -54,6 +55,7 @@ specifiers:
 dependencies:
   '@catlair/bilicomic-dataflow': 0.0.4
   '@catlair/node-got': 0.0.10
+  commander: 10.0.0
   core-js: 3.28.0
   json5: 2.2.3
   node-schedule: 2.1.1
@@ -2962,6 +2964,11 @@ packages:
       delayed-stream: 1.0.0
     dev: false
     optional: true
+
+  /commander/10.0.0:
+    resolution: {integrity: sha512-zS5PnTI22FIRM6ylNW8G4Ap0IEOyk62fhLSD0+uHRT9McRCLGpkVNvao4bjimpK/GShynyQkFFxHhwMcETmduA==}
+    engines: {node: '>=14'}
+    dev: false
 
   /commander/2.15.1:
     resolution: {integrity: sha512-VlfT9F3V0v+jr4yxPc5gg9s62/fIVWsd2Bk2iD435um1NlGMYdVCq+MjcXnhYq2icNOizHr1kK+5TI6H0Hy0ag==}

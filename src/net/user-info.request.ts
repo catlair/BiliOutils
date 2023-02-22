@@ -138,7 +138,7 @@ export function getVideosByUpId(upId: number, pageSize = 50): Promise<VideoByUpD
  * @param mid 用户 id
  */
 export function getUser(mid: IdType): Promise<OtherUserDto> {
-  return biliApi.get(`x/space/acc/info?mid=${mid}&jsonp=jsonp`);
+  return biliApi.get(`x/space/wbi/acc/info?mid=${mid}&jsonp=jsonp`);
 }
 
 /**

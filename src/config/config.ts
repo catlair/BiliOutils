@@ -306,6 +306,21 @@ export const defaultConfig = {
     // 自定义活动列表链接
     customUrl: '',
   },
+  watchLink: {
+    // 用户 uid，非直播间 id
+    uid: [] as number[],
+    // 直播心跳
+    heart: true,
+    time: 30,
+    // 直播 wss 心跳
+    wss: false,
+    // 直播 tcp 心跳，与 wss 是一致的
+    tcp: false,
+    // 直播间 parentId
+    parentId: 3,
+    // 直播间 areaId
+    areaId: 321,
+  },
   BILIJCT: '',
   USERID: 0,
 };
