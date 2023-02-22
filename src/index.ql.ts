@@ -14,6 +14,5 @@ process.env.IS_QING_LONG = 'true';
   if (taskArg) {
     return await runTask(configs, './bin/inputTask', taskArg);
   }
-  if (!configs) return;
   return await runTask(configs);
 })();

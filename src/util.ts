@@ -93,6 +93,7 @@ export async function runTask(configs?: ConfigArray, forkPath = './bin/fork', ta
     const { getConfig } = await import('./config/utils');
     configs = getConfig(true);
   }
+  if (!configs) return;
   const length = configs.length;
   if (process.env.BILITOOLS_IS_ASYNC) {
     return await runTaskAsync(
