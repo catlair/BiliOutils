@@ -60,6 +60,8 @@ abstract class TaskModuleTemplate {
   static pushTitle: string[] = [];
   /** 存在错误 */
   static hasError = false;
+  /** 直播间 */
+  static roomid: number;
 }
 
 export let TaskModule: typeof TaskModuleTemplate;
@@ -81,6 +83,7 @@ export function initialize(config?: UserConfig) {
   };
   TaskModule = class extends TaskModuleTemplate {};
   TaskModule.coinsTask = _taskConfig.coin.targetCoins;
+  TaskModule.roomid = _taskConfig.blink.roomid;
 }
 
 function getCookieBuvid(cookie: string) {

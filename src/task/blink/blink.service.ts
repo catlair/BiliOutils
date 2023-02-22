@@ -1,16 +1,19 @@
 import {
   fetchWebUpStreamAddr,
-  getAnchorTaskCenter,
-  getReceiveReward,
+  getLiveInfo,
+  getNewRoomSwitch,
   operationOnBroadcastCode,
   startLive,
   stopLive,
+  updateRoomInfo,
 } from './blink.request';
 import { logger, random } from '@/utils';
 import { eventSwitch, hasCmd } from '@/utils/node';
 import { dirname, resolve } from 'node:path';
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { VIDEO_EXT } from './constant';
+import { TaskConfig, TaskModule } from '@/config';
+import { request } from '@/utils/request';
 
 /**
  * 获取链接
@@ -30,7 +33,7 @@ async function getLink() {
 
 async function clickStartLive() {
   try {
-    const { code, message } = await startLive(13142548);
+    const { code, message } = await startLive(TaskModule.roomid);
     if (code !== 0) {
       // 4 没有权限
       logger.warn(`开播失败：${code} ${message}`);
@@ -45,7 +48,7 @@ async function clickStartLive() {
 
 async function clickStopLive() {
   try {
-    const { code, message } = await stopLive(13142548);
+    const { code, message } = await stopLive(TaskModule.roomid);
     if (code !== 0) {
       logger.warn(`下播失败：${code} ${message}`);
     }
@@ -73,57 +76,27 @@ async function getConfigVideoPaths() {
 }
 
 /**
- * 获取任务是否完成
- */
-async function getTaskStatus() {
-  try {
-    const { code, data, message } = await getAnchorTaskCenter();
-    if (code !== 0) {
-      logger.fatal('获取任务进度', code, message);
-      return;
-    }
-    const weekTaskInfo = data.taskGroups?.find(t => t.taskGroupId === 2081)?.weekTaskInfo;
-    if (!weekTaskInfo) {
-      logger.error('获取任务进度失败，未找到任务');
-      return;
-    }
-    logger.debug('获取任务进度');
-    return weekTaskInfo.weekDailyTask.isFinished;
-  } catch (error) {
-    logger.exception('获取任务进度', error);
-  }
-}
-
-/**
  * 初始化
  */
-function init() {
-  const stopRef = { value: false };
-  // 总超时
-  const timeout = setTimeout(() => (stopRef.value = true), 70 * 60 * 1000);
-  // 任务超时
-  const timer = setInterval(async () => {
-    if (await getTaskStatus()) {
-      stopRef.value = true;
-      clearTimeout(timeout);
-      clearInterval(timer);
-      logger.info('任务已完成');
-    }
-  }, 3 * 70 * 1000);
-  const sigintSwitch = eventSwitch('SIGINT', () =>
+function init(timeout: NodeJS.Timeout) {
+  return eventSwitch('SIGINT', () =>
     clickStopLive().finally(() => {
       clearTimeout(timeout);
       process.exit(0);
     }),
   );
-  return {
-    stopRef,
-    sigintSwitch,
-  };
 }
 
-export async function linkService() {
-  const { stopRef, sigintSwitch } = init();
+export async function linkService(
+  callback?: (stopRef: Ref<boolean>, timeout: NodeJS.Timeout) => any,
+) {
+  await getRoomid();
+  if (!TaskModule.roomid) return;
+  const stopRef = { value: false };
+  const timeout = setTimeout(() => (stopRef.value = true), 70 * 60 * 1000);
+  const sigintSwitch = init(timeout);
+
+  callback?.(stopRef, timeout);
 
   try {
     if (!(await hasCmd('ffmpeg'))) {
@@ -136,6 +109,7 @@ export async function linkService() {
     } = (await getLink()) || { addr: {} };
 
     if (!addr || !code) return;
+    await liveConfig();
     if (!(await clickStartLive())) return;
 
     sigintSwitch.on();
@@ -148,22 +122,38 @@ export async function linkService() {
   sigintSwitch.off();
 }
 
-// TODO: 开发中ing
-(async () => {
-  logger.info('开始直播推流');
-  if (await getTaskStatus()) {
-    logger.info('任务已完成');
+async function liveConfig() {
+  const { areaId, title, parentId } = TaskConfig.blink;
+  if (title) {
+    await request(updateRoomInfo, { name: '更新直播间标题' }, 1, title);
+  }
+  if (areaId && parentId) {
+    await request(getNewRoomSwitch, { name: '设置直播分区' }, parentId, areaId);
+  }
+}
+
+/**
+ * 获取直播间 id
+ */
+async function requestRoomid() {
+  try {
+    const { code, message, data } = await getLiveInfo();
+    if (code !== 0) {
+      logger.fatal(`获取直播间 id`, code, message);
+      return;
+    }
+    return data.room_id;
+  } catch (error) {
+    logger.exception('获取直播间 id', error);
+  }
+}
+
+async function getRoomid() {
+  const roomid = await requestRoomid();
+  if (!roomid) {
+    logger.error(`没有配置 blink.roomid 且获取直播间 id 失败`);
     return;
   }
-  await linkService();
-  // 领取
-  await getReceiveReward()
-    .then(({ code, message }) => {
-      if (code !== 0) {
-        logger.fatal(`领取每日直播奖励`, code, message);
-        return;
-      }
-      logger.info(`领取每日直播奖励成功`);
-    })
-    .catch(logger.error);
-})();
+  TaskModule.roomid = roomid;
+  return roomid;
+}

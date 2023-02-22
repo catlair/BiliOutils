@@ -316,10 +316,16 @@ export const defaultConfig = {
     wss: false,
     // 直播 tcp 心跳，与 wss 是一致的
     tcp: false,
-    // 直播间 parentId
     parentId: 3,
-    // 直播间 areaId
     areaId: 321,
+  },
+  blink: {
+    // 直播间标题
+    title: '',
+    parentId: 0,
+    areaId: 0,
+    // 自己的直播间 id，如果没有配置则会尝试主动请求获取
+    roomid: 0,
   },
   BILIJCT: '',
   USERID: 0,

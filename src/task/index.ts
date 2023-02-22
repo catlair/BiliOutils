@@ -22,6 +22,8 @@ export const biliTaskArray = [
   ['activityLottery', () => import('./activityLottery')],
   ['LiveReservation', () => import('./liveReservation')],
   ['judgement', () => import('./judgement')],
+  ['liveWeekTask', () => import('./liveWeekTask')],
+  ['blink', () => import('./blink')],
 ] as const;
 
 export type BiliTaskName = (typeof biliTaskArray)[number][0];

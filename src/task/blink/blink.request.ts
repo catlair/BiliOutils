@@ -1,13 +1,7 @@
 import type { ApiBaseProp } from '@/dto/bili-base-prop';
-import type {
-  AnchorTaskCenter,
-  ReceiveReward,
-  ReceiveRewardRecord,
-  WebUpStreamAddr,
-} from './blink.dto';
+import type { WebUpStreamAddr } from './blink.dto';
 import { TaskConfig } from '@/config';
 import { liveApi } from '@/net/api';
-import { appSignString } from '@/utils/bili';
 
 const liveGet = <T = any>(url: string) => {
   return liveApi.get<T>(url, {
@@ -95,33 +89,8 @@ export function getRecordInfo(live_key: number) {
 }
 
 /**
- * 领取奖励记录
- * @param dateType 1: 7天内 2: 15天内
+ * 用户信息
  */
-export function getReceiveRewardRecord(dateType: 1 | 2 = 1) {
-  return liveApi.get<ReceiveRewardRecord>(
-    `xlive/anchor-task-interface/api/v1/GetAnchorTaskCenterReceiveRewardRecord?${appSignString({
-      dateType,
-      page: 1,
-      pageSize: 20,
-    })}`,
-  );
-}
-
-/**
- * 领取奖励
- */
-export function getReceiveReward() {
-  return liveApi.get<ReceiveReward>(
-    `xlive/anchor-task-interface/api/v1/GetAnchorTaskCenterReceiveReward?${appSignString()}`,
-  );
-}
-
-/**
- * 任务中心
- */
-export function getAnchorTaskCenter() {
-  return liveApi.get<AnchorTaskCenter>(
-    `xlive/anchor-task-interface/api/v1/GetAnchorTaskCenterInfo?${appSignString()}`,
-  );
+export function getLiveInfo() {
+  return liveApi.get<ApiBaseProp<{ room_id: number }>>(`xlive/web-ucenter/user/live_info`);
 }
