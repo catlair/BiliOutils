@@ -1,8 +1,8 @@
 import { TaskConfig } from '@/config';
 import { getUser } from '@/net/user-info.request';
 import { biliDmWs } from '@/service/ws.service';
-import { logger } from '@/utils';
-import { apiDelaySync } from '@/utils/effect';
+import { isServerless, logger } from '@/utils';
+import { apiDelay, apiDelaySync } from '@/utils/effect';
 import { request } from '@/utils/request';
 import { getRandomOptions, liveMobileHeart } from '../liveIntimacy/intimacy.service';
 
@@ -19,7 +19,40 @@ type LiveHeartRunOptions = {
 };
 
 export async function watchLinkService() {
+  if (isServerless()) return await liveHeartPromiseSync();
   return new Promise(resolve => liveHeartPromise(resolve));
+}
+
+async function liveHeartPromiseSync() {
+  const { uid: uids } = TaskConfig.watchLink;
+  await Promise.all(uids.map(uid => allLiveHeart(uid, { value: 0 })));
+  logger.info('直播间心跳结束');
+}
+
+/**
+ * 完成一个直播间所有轮次的心跳
+ * @param options
+ * @param countRef
+ */
+async function allLiveHeart(uid: number, countRef: Ref<number>) {
+  const { time, parentId, areaId } = TaskConfig.watchLink;
+  for (let i = 0; i < time; i++) {
+    const user = await getUserInfo(uid);
+    if (!user) continue;
+    await liveMobileHeart(
+      {
+        up_id: user.mid,
+        room_id: user.roomid,
+        uname: user.name,
+        ...getRandomOptions(),
+        parent_id: parentId,
+        area_id: areaId,
+      },
+      countRef,
+      time,
+    );
+    await apiDelay(60000);
+  }
 }
 
 async function liveHeartPromise(resolve: (value: unknown) => void) {
