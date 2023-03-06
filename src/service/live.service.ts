@@ -1,6 +1,7 @@
+import { TaskModule } from '@/config';
 import type { LiveRoomList } from '@/dto/live.dto';
 import { PendentID } from '@/enums/live.enum';
-import { getArea, getLiveRoom } from '@/net/live.request';
+import { getArea, getLiveInfo, getLiveRoom } from '@/net/live.request';
 import { sleep, logger } from '@/utils';
 
 interface LiveAreaType {
@@ -70,5 +71,33 @@ export async function getLotteryRoomList(
   } catch (error) {
     logger.error(`获取直播间列表异常：`, error);
     throw error;
+  }
+}
+
+export async function getRoomid() {
+  if (TaskModule.roomid) return TaskModule.roomid;
+  const roomid = await requestRoomid();
+
+  if (!roomid) {
+    logger.error(`没有配置 blink.roomid 且获取直播间 id 失败`);
+    return;
+  }
+  TaskModule.roomid = roomid;
+  return roomid;
+}
+
+/**
+ * 获取直播间 id
+ */
+export async function requestRoomid() {
+  try {
+    const { code, message, data } = await getLiveInfo();
+    if (code !== 0) {
+      logger.fatal(`获取直播间 id`, code, message);
+      return;
+    }
+    return data.room_id;
+  } catch (error) {
+    logger.exception('获取直播间 id', error);
   }
 }

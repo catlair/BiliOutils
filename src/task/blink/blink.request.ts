@@ -27,16 +27,16 @@ const livePost = <T = any>(url: string, data: any) => {
   );
 };
 
-export function getNewRoomSwitch(area_parent_id = 2, area_id = 669) {
+export function getNewRoomSwitch(area_parent_id: number, area_id: number) {
   return liveGet<ApiBaseProp<{ display_switch: boolean }>>(
     `xlive/app-blink/v1/index/getNewRoomSwitch?platform=pc&area_parent_id=${area_parent_id}&area_id=${area_id}`,
   );
 }
 
-export function updateRoomInfo(room_id: number, title: string) {
+export function updateRoomInfo(room_id: number, options: { title?: string; area_id?: number }) {
   return livePost(`room/v1/Room/update`, {
     room_id,
-    title,
+    ...options,
   });
 }
 
@@ -58,7 +58,7 @@ export function operationOnBroadcastCode() {
   );
 }
 
-export function startLive(room_id: number, area_v2 = 669) {
+export function startLive(room_id: number, area_v2: number) {
   return livePost(`room/v1/Room/startLive`, {
     platform: 'pc',
     room_id,
@@ -86,11 +86,4 @@ export function reportData(type_status = 2) {
 
 export function getRecordInfo(live_key: number) {
   return liveGet(`xlive/app-blink/v1/record/getRecordInfo?live_key=${live_key}`);
-}
-
-/**
- * 用户信息
- */
-export function getLiveInfo() {
-  return liveApi.get<ApiBaseProp<{ room_id: number }>>(`xlive/web-ucenter/user/live_info`);
 }

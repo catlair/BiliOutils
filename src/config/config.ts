@@ -84,6 +84,12 @@ export const defaultConfig = {
     activityLottery: false,
     // 每日电池
     dailyBattery: false,
+    // 每日直播任务
+    liveWeekTask: false,
+    // 直播
+    blink: false,
+    // 直播间心跳
+    watchLink: false,
   },
   log: {
     pushLevel: 'verbose' as LevelType | boolean,

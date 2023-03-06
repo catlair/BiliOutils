@@ -14,7 +14,7 @@ import type {
   LiveRoomInfoDto,
   OnlineGoldRankDto,
 } from '../dto/live.dto';
-import type { PureDataProp } from '../dto/bili-base-prop';
+import type { ApiBaseProp, PureDataProp } from '../dto/bili-base-prop';
 import { liveApi } from './api';
 import { TaskConfig } from '../config';
 import { createVisitId, getUnixTime, random } from '../utils';
@@ -213,4 +213,11 @@ export function getOnlineGoldRank(ruid: number, room_id: number) {
   return liveApi.get<OnlineGoldRankDto>(
     `xlive/general-interface/v1/rank/getOnlineGoldRank?ruid=${ruid}&roomId=${room_id}&page=1&pageSize=1`,
   );
+}
+
+/**
+ * 用户信息
+ */
+export function getLiveInfo() {
+  return liveApi.get<ApiBaseProp<{ room_id: number }>>(`xlive/web-ucenter/user/live_info`);
 }

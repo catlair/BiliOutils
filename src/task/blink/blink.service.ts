@@ -1,19 +1,18 @@
 import {
   fetchWebUpStreamAddr,
-  getLiveInfo,
-  getNewRoomSwitch,
   operationOnBroadcastCode,
   startLive,
   stopLive,
   updateRoomInfo,
 } from './blink.request';
-import { logger, random } from '@/utils';
+import { apiDelay, logger, random } from '@/utils';
 import { eventSwitch, hasCmd } from '@/utils/node';
 import { dirname, resolve } from 'node:path';
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { VIDEO_EXT } from './constant';
 import { TaskConfig, TaskModule } from '@/config';
 import { request } from '@/utils/request';
+import { getRoomid } from '@/service/live.service';
 
 /**
  * 获取链接
@@ -33,7 +32,7 @@ async function getLink() {
 
 async function clickStartLive() {
   try {
-    const { code, message } = await startLive(TaskModule.roomid);
+    const { code, message } = await startLive(TaskModule.roomid, TaskConfig.blink.areaId);
     if (code !== 0) {
       // 4 没有权限
       logger.warn(`开播失败：${code} ${message}`);
@@ -109,7 +108,7 @@ export async function linkService(
     } = (await getLink()) || { addr: {} };
 
     if (!addr || !code) return;
-    await liveConfig();
+    await liveConfig(TaskModule.roomid);
     if (!(await clickStartLive())) return;
 
     sigintSwitch.on();
@@ -122,38 +121,16 @@ export async function linkService(
   sigintSwitch.off();
 }
 
-async function liveConfig() {
+async function liveConfig(roomid: number) {
   const { areaId, title, parentId } = TaskConfig.blink;
   if (title) {
-    await request(updateRoomInfo, { name: '更新直播间标题' }, 1, title);
+    logger.debug(`更新直播间标题：${title}`);
+    await request(updateRoomInfo, { name: '更新直播间标题' }, roomid, { title });
+    await apiDelay(1000);
   }
   if (areaId && parentId) {
-    await request(getNewRoomSwitch, { name: '设置直播分区' }, parentId, areaId);
+    logger.debug(`设置直播分区：${parentId} ${areaId}`);
+    // await request(getNewRoomSwitch, { name: '设置直播分区' }, parentId, areaId);
+    await request(updateRoomInfo, { name: '设置直播分区' }, roomid, { area_id: areaId });
   }
-}
-
-/**
- * 获取直播间 id
- */
-async function requestRoomid() {
-  try {
-    const { code, message, data } = await getLiveInfo();
-    if (code !== 0) {
-      logger.fatal(`获取直播间 id`, code, message);
-      return;
-    }
-    return data.room_id;
-  } catch (error) {
-    logger.exception('获取直播间 id', error);
-  }
-}
-
-async function getRoomid() {
-  const roomid = await requestRoomid();
-  if (!roomid) {
-    logger.error(`没有配置 blink.roomid 且获取直播间 id 失败`);
-    return;
-  }
-  TaskModule.roomid = roomid;
-  return roomid;
 }
