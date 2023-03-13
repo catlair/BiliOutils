@@ -332,6 +332,8 @@ export const defaultConfig = {
     areaId: 0,
     // 自己的直播间 id，如果没有配置则会尝试主动请求获取
     roomid: 0,
+    // 直播时间
+    time: 33,
   },
   BILIJCT: '',
   USERID: 0,

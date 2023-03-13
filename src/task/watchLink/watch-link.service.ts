@@ -116,6 +116,9 @@ function bindWatchEvent(user: LiveHeartRunOptions['user']) {
 async function getUserInfo(uid: number | string) {
   const user = await request(getUser, { name: '获取用户直播间' }, uid);
   if (!user) return;
+  if (!user.live_room) {
+    logger.warn(`目标[${uid}]没有直播间`);
+  }
   const { roomStatus, roomid } = user.live_room;
   if (roomStatus !== 1) {
     logger.warn(`目标[${uid}]的roomStatus为${roomStatus}`);

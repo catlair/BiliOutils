@@ -92,7 +92,7 @@ export async function linkService(
   await getRoomid();
   if (!TaskModule.roomid) return;
   const stopRef = { value: false };
-  const timeout = setTimeout(() => (stopRef.value = true), 70 * 60 * 1000);
+  const timeout = setTimeout(() => (stopRef.value = true), TaskConfig.blink.time * 60 * 1000);
   const sigintSwitch = init(timeout);
 
   callback?.(stopRef, timeout);
@@ -126,9 +126,10 @@ async function liveConfig(roomid: number) {
   if (title) {
     logger.debug(`更新直播间标题：${title}`);
     await request(updateRoomInfo, { name: '更新直播间标题' }, roomid, { title });
-    await apiDelay(1000);
+    await apiDelay(2000);
   }
   if (areaId && parentId) {
+    await apiDelay(2000);
     logger.debug(`设置直播分区：${parentId} ${areaId}`);
     // await request(getNewRoomSwitch, { name: '设置直播分区' }, parentId, areaId);
     await request(updateRoomInfo, { name: '设置直播分区' }, roomid, { area_id: areaId });
