@@ -12,7 +12,7 @@ async function getTaskStatus() {
       logger.fatal('获取任务进度', code, message);
       return;
     }
-    const weekTaskInfo = data.taskGroups?.find(t => t.taskGroupId === 2081)?.weekTaskInfo;
+    const weekTaskInfo = data.taskGroups?.find(t => t.title.includes('天天开播'))?.weekTaskInfo;
     if (!weekTaskInfo) {
       logger.error('获取任务进度失败，未找到任务');
       return;
