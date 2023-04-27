@@ -24,8 +24,13 @@ export async function watchLinkService() {
 }
 
 async function liveHeartPromiseSync() {
-  const { uid: uids } = TaskConfig.watchLink;
-  await Promise.all(uids.map(uid => allLiveHeart(uid, { value: 0 })));
+  const { uid: uids, area, heart } = TaskConfig.watchLink;
+  if (!heart) return;
+  if (uids.length === 0 || area.length === 0) return;
+  // area 异步，所以用 foreach
+  area.forEach(async areaItem => {
+    await Promise.all(uids.map(uid => allLiveHeart(uid, areaItem, { value: 0 })));
+  });
   logger.info('直播间心跳结束');
 }
 
@@ -34,8 +39,8 @@ async function liveHeartPromiseSync() {
  * @param options
  * @param countRef
  */
-async function allLiveHeart(uid: number, countRef: Ref<number>) {
-  const { time, parentId, areaId } = TaskConfig.watchLink;
+async function allLiveHeart(uid: number, [parentId, areaId]: number[], countRef: Ref<number>) {
+  const { time } = TaskConfig.watchLink;
   for (let i = 0; i < time; i++) {
     const user = await getUserInfo(uid);
     if (!user) continue;
@@ -56,18 +61,20 @@ async function allLiveHeart(uid: number, countRef: Ref<number>) {
 }
 
 async function liveHeartPromise(resolve: (value: unknown) => void) {
-  const { uid: uids } = TaskConfig.watchLink;
-  if (uids.length === 0) return;
-  for (const uid of uids) {
-    const user = await getUserInfo(uid);
-    if (!user) return;
-    bindWatchEvent(user);
-  }
+  const { uid: uids, area } = TaskConfig.watchLink;
+  if (uids.length === 0 || area.length === 0) return;
+  area.forEach(async areaItem => {
+    for (const uid of uids) {
+      const user = await getUserInfo(uid);
+      if (!user) return;
+      bindWatchEvent(user, areaItem);
+    }
+  });
   resolve('直播间心跳');
 }
 
-function bindWatchEvent(user: LiveHeartRunOptions['user']) {
-  const { time, wss, heart, parentId, areaId } = TaskConfig.watchLink;
+function bindWatchEvent(user: LiveHeartRunOptions['user'], [parentId, areaId]: number[]) {
+  const { time, wss, heart } = TaskConfig.watchLink;
 
   if (heart) {
     const timerRef: Ref<NodeJS.Timer> = { value: undefined as unknown as NodeJS.Timer };

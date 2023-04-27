@@ -324,6 +324,11 @@ export const defaultConfig = {
     tcp: false,
     parentId: 3,
     areaId: 321,
+    // 分区
+    area: [
+      [3, 321],
+      [3, 549],
+    ],
   },
   blink: {
     // 直播间标题
@@ -443,6 +448,14 @@ function beforeMergeConfig(config: UserConfig) {
   if (jury) {
     if (isNumber(jury.insiders) && isUnDef(jury.insiderWeight)) {
       jury.insiderWeight = jury.insiders;
+    }
+  }
+
+  // 处理 watchLink
+  const { watchLink } = config;
+  if (watchLink) {
+    if (isNumber(watchLink.areaId) && isNumber(watchLink.parentId) && !watchLink.area) {
+      watchLink.area = [[watchLink.parentId, watchLink.areaId]];
     }
   }
 
