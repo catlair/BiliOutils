@@ -5,6 +5,7 @@ import { isServerless, logger } from '@/utils';
 import { apiDelay, apiDelaySync } from '@/utils/effect';
 import { request } from '@/utils/request';
 import { getRandomOptions, liveMobileHeart } from '../liveIntimacy/intimacy.service';
+import { biliApi, liveApi } from '@/net/api';
 
 type LiveHeartRunOptions = {
   user: {
@@ -137,10 +138,12 @@ async function getUserInfo(uid: number) {
 
   if (rid && rid.length > 0 && rid.includes(uid)) {
     logger.debug(`目标[${uid}]为指定直播间`);
+    const user = await liveApi.get(`xlive/web-room/v2/index/getRoomPlayInfo?room_id=${uid}`);
+    console.log(user);
     return {
-      roomid: uid as number,
+      roomid: user.room_id,
       name: '指定直播间',
-      mid: 0,
+      mid: user.uid,
     };
   }
 
