@@ -315,6 +315,8 @@ export const defaultConfig = {
   watchLink: {
     // 用户 uid，非直播间 id
     uid: [] as number[],
+    // 直播间 id
+    roomid: [] as number[],
     // 直播心跳
     heart: true,
     time: 30,
@@ -322,8 +324,8 @@ export const defaultConfig = {
     wss: false,
     // 直播 tcp 心跳，与 wss 是一致的
     tcp: false,
-    parentId: 3,
-    areaId: 321,
+    parentId: undefined,
+    areaId: undefined,
     // 分区
     area: [
       [3, 321],

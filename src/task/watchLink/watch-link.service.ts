@@ -24,12 +24,18 @@ export async function watchLinkService() {
 }
 
 async function liveHeartPromiseSync() {
-  const { uid: uids, area, heart } = TaskConfig.watchLink;
+  const { uid: uids, roomid, area, heart } = TaskConfig.watchLink;
+  const ids = [] as number[];
+  if (roomid && roomid.length > 0) {
+    ids.push(...roomid);
+  } else {
+    ids.push(...uids);
+  }
   if (!heart) return;
-  if (uids.length === 0 || area.length === 0) return;
+  if (ids.length === 0 || area.length === 0) return;
   // area 异步，所以用 foreach
   area.forEach(async areaItem => {
-    await Promise.all(uids.map(uid => allLiveHeart(uid, areaItem, { value: 0 })));
+    await Promise.all(ids.map(uid => allLiveHeart(uid, areaItem, { value: 0 })));
   });
   logger.info('直播间心跳结束');
 }
@@ -61,10 +67,16 @@ async function allLiveHeart(uid: number, [parentId, areaId]: number[], countRef:
 }
 
 async function liveHeartPromise(resolve: (value: unknown) => void) {
-  const { uid: uids, area } = TaskConfig.watchLink;
-  if (uids.length === 0 || area.length === 0) return;
+  const { uid: uids, roomid, area } = TaskConfig.watchLink;
+  const ids = [] as number[];
+  if (roomid && roomid.length > 0) {
+    ids.push(...roomid);
+  } else {
+    ids.push(...uids);
+  }
+  if (ids.length === 0 || area.length === 0) return;
   area.forEach(async areaItem => {
-    for (const uid of uids) {
+    for (const uid of ids) {
       const user = await getUserInfo(uid);
       if (!user) return;
       bindWatchEvent(user, areaItem);
@@ -120,7 +132,17 @@ function bindWatchEvent(user: LiveHeartRunOptions['user'], [parentId, areaId]: n
   }
 }
 
-async function getUserInfo(uid: number | string) {
+async function getUserInfo(uid: number) {
+  const { roomid: rid } = TaskConfig.watchLink;
+
+  if (rid && rid.length > 0 && rid.includes(uid)) {
+    return {
+      roomid: uid as number,
+      name: '指定直播间',
+      mid: 0,
+    };
+  }
+
   const user = await request(getUser, { name: '获取用户直播间' }, uid);
   if (!user) return;
   if (!user.live_room) {
