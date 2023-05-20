@@ -25,13 +25,13 @@ export async function watchLinkService() {
 
 async function liveHeartPromiseSync() {
   const { uid: uids, roomid, area, heart } = TaskConfig.watchLink;
+  if (!heart) return;
   const ids = [] as number[];
   if (roomid && roomid.length > 0) {
     ids.push(...roomid);
   } else {
     ids.push(...uids);
   }
-  if (!heart) return;
   if (ids.length === 0 || area.length === 0) return;
   // area 异步，所以用 foreach
   area.forEach(async areaItem => {
@@ -136,6 +136,7 @@ async function getUserInfo(uid: number) {
   const { roomid: rid } = TaskConfig.watchLink;
 
   if (rid && rid.length > 0 && rid.includes(uid)) {
+    logger.debug(`目标[${uid}]为指定直播间`);
     return {
       roomid: uid as number,
       name: '指定直播间',
