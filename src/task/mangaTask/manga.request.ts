@@ -152,11 +152,12 @@ export function takeSeasonGift(season_id: number | string = '31') {
  * 获取赛季信息
  */
 export function getSeasonInfo() {
-  return mangaApi.post<SeasonInfoDto>(`twirp/user.v1.Season/GetSeasonInfo`, {
-    ...MANGA_DATA,
-    take_type: 1,
-    ts: new Date().getTime(),
-  });
+  return mangaApi.post<SeasonInfoDto>(
+    `twirp/user.v1.SeasonV2/GetSeasonInfo?platform=android&device=android&mobi_app=android_comic`,
+    {
+      type: 1,
+    },
+  );
 }
 
 /**

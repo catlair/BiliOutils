@@ -1,9 +1,8 @@
-import type { Eplist, SearchMangaDto, SeasonInfoDto } from './manga.dto';
+import type { Eplist, SearchMangaDto } from './manga.dto';
 import { TaskConfig } from '@/config';
 import * as mangaApi from './manga.request';
-import { apiDelay, getRandomItem, isBoolean, isUnDef, logger, random } from '@/utils';
+import { apiDelay, isBoolean, isUnDef, logger } from '@/utils';
 import { Bilicomic } from '@catlair/bilicomic-dataflow';
-import { RPS, RPSResult, RoundResult } from './manga-game.emum';
 
 let expireCouponNum: number;
 
@@ -47,7 +46,7 @@ async function getFavoriteList() {
 }
 
 /**
- * 获取需要购买的漫画章节
+ * 获取漫画章节
  */
 async function getMangaEpList(comic_id: number) {
   try {
@@ -312,10 +311,6 @@ export async function takeSeasonGift() {
       logger.debug('没有赛季信息，跳过任务');
       return;
     }
-    if (!seasonInfo.tasks?.length && !seasonInfo.today_tasks.find(el => el.status === 1)) {
-      logger.debug('没有可领取的任务奖励，跳过任务');
-      return;
-    }
 
     const { code, msg } = await mangaApi.takeSeasonGift(seasonInfo.season_id);
     if (code === 0) return;
@@ -342,69 +337,38 @@ export async function shareComicService() {
   }
 }
 
-function getKeyTaskItem(today_tasks: SeasonInfoDto['data']['today_tasks']) {
-  const task30min = today_tasks.find(el => el.type === 17 && el.sub_id === 5),
-    task15min = today_tasks.find(el => el.type === 22 && el.comics.length > 0);
-  return {
-    task15min,
-    task30min,
-  };
-}
-
-async function getTaskInfo() {
+/**
+ * 获取需要阅读的漫画
+ */
+async function getNeedReadManga() {
   try {
     const seasonInfo = await getSeasonInfo();
     if (!seasonInfo) {
-      logger.error('跳过每日阅读');
-      return false;
-    }
-    const { task15min, task30min } = getKeyTaskItem(seasonInfo.today_tasks);
-
-    if (!task30min || !task15min) {
-      logger.warn('未知异常');
-      return false;
+      logger.error('获取需要阅读的漫画异常');
+      return [];
     }
 
-    const task30minProgress = task30min.progress,
-      task15minProgress = task15min.progress;
+    const bookTask = seasonInfo?.day_task?.book_task || [];
 
-    if (task30minProgress === 30 && task15minProgress === 15) {
-      logger.info('每日阅读任务已完成');
-      return true;
-    }
-
-    const time = Math.max(30 - task30minProgress, 15 - task15minProgress);
-    return {
-      comicId: task15min?.comics[0].comic_id,
-      time,
-    };
+    return bookTask.filter(task => task.user_read_min < 5);
   } catch (error) {
-    logger.error(`获取每日阅读进度异常：`, error);
+    logger.exception(`获取需要阅读的漫画`, error);
   }
-  return false;
+  return [];
 }
 
-async function readManga(comicId: number, epId: number, needTime: number) {
-  let time = needTime;
-  const bilicomic = new Bilicomic(TaskConfig.USERID, comicId, epId);
-  for (let index = 0; index < 3; index++) {
-    logger.debug(`开始阅读漫画第${index + 1}轮`);
-    try {
-      await bilicomic.read(time * 2 + 2);
-      await apiDelay(1000);
-    } catch (error) {
-      logger.debug(`阅读漫画第${index + 1}轮异常：${error.message}`);
-    }
-    await apiDelay(7000);
-    const taskInfo = await getTaskInfo();
-    if (isBoolean(taskInfo)) {
-      return taskInfo;
-    }
-    time = taskInfo.time;
-    // 如果一轮下来时间一点没变，直接跳过
-    if (time === needTime) break;
+async function readManga(comicId: number, needTime: number) {
+  const { ep_list } = (await getMangaEpList(comicId)) || {};
+  if (!ep_list) {
+    return;
   }
-  return false;
+  const epId = ep_list[0].id;
+  const bilicomic = new Bilicomic(TaskConfig.USERID, comicId, epId);
+  try {
+    await bilicomic.read(needTime * 2 + 2);
+    await apiDelay(1000);
+  } catch {}
+  await apiDelay(5000);
 }
 
 /**
@@ -416,260 +380,21 @@ export async function readMangaService(isNoLogin?: boolean) {
   }
   logger.debug('开始每日阅读');
   try {
-    const taskInfo = await getTaskInfo();
-    if (isBoolean(taskInfo)) {
-      return taskInfo;
+    const seasonInfo = await getSeasonInfo();
+    if (isBoolean(seasonInfo)) {
+      return seasonInfo;
     }
-    const { comicId, time } = taskInfo;
-    const { ep_list } = (await getMangaEpList(comicId)) || {};
-    if (!ep_list) {
-      return;
+    const needReadManga = await getNeedReadManga();
+    for (const { user_read_min, read_min, id, title } of needReadManga) {
+      logger.info(`开始阅读漫画：${id}[${title}]`);
+      await readManga(id, read_min - user_read_min);
     }
-    const result = await readManga(comicId, ep_list[0].id, time);
     if (isNoLogin) {
       logger.info('非登录状态，不判断阅读结果');
       return;
     }
-    if (!result) {
-      logger.warn('每日漫画阅读未完成×_×');
-    }
+    logger.debug('阅读结束');
   } catch (error) {
     logger.error(`每日漫画阅读任务异常`, error);
-  }
-}
-
-/**
- * 猜拳游戏
- */
-export async function guessGameService() {
-  if (!TaskConfig.manga.guess) {
-    return;
-  }
-  const init = await gameInit();
-  if (!init) return;
-  const { times, round_limit, round } = init;
-  // 积分
-  let score = 0;
-  if (round) {
-    logger.debug(`上次游戏还有未完成的局数，继续游戏`);
-    for (let index = 0; index < round; index++) {
-      await apiDelay(1000);
-      await doRoundGuessGame();
-    }
-  }
-  for (let index = 0; index < times; index++) {
-    logger.debug(`开始第${index + 1}次猜拳游戏`);
-    score -= 10;
-    score += await gamePlay(round_limit);
-    if (index !== times - 1) await apiDelay(1500);
-  }
-  logger.info(`猜拳游戏结束，获得积分：${score}`);
-}
-
-/**
- * 游戏初始化
- */
-async function gameInit() {
-  try {
-    const { code, msg, data } = await mangaApi.gameInit();
-    if (code !== 0) {
-      logger.error(`游戏初始化失败：${code} ${msg}`);
-      return;
-    }
-    const { have_tried, play_times, change_role, last_round } = data.home || {};
-    const { play_limit = 5, round_limit = 2 } = data.conf || {};
-    // 今日还能玩的次数
-    const times = play_limit - play_times;
-    logger.debug(`今天还能玩${times}次`);
-    const rData = {
-      times,
-      round_limit,
-      last_round,
-      // 剩余回合数
-      round: last_round === 0 ? 0 : round_limit - last_round,
-    };
-    if (times <= 0) {
-      // 回合没有剩余了
-      if (rData.round === 0) {
-        return;
-      }
-      return rData;
-    }
-    if (have_tried || !change_role) {
-      return rData;
-    }
-    logger.info(`开始初始化角色`);
-    const roles = data.conf.role_resources;
-    if (!roles?.length) {
-      logger.error('角色列表为空');
-      return;
-    }
-    await finishTry(roles);
-    return rData;
-  } catch (error) {
-    logger.error(`游戏初始化异常：`, error);
-  }
-}
-
-async function finishTry(
-  roles: {
-    name: string;
-    url: string;
-  }[],
-) {
-  try {
-    const role = getRandomItem(roles);
-    await mangaApi.chooseRole(role.name);
-    await apiDelay(500);
-    await mangaApi.finishTry();
-  } catch (error) {
-    logger.error(`游戏试玩异常：`, error);
-  }
-}
-
-/**
- * 进行一轮猜拳
- */
-async function gamePlay(round_limit = 2) {
-  try {
-    // 开始游戏
-    const { code, msg } = await mangaApi.startGame();
-    let round = 0;
-    if (code === 1) {
-      logger.warn(msg);
-      logger.verbose(`出现此问题请反馈给作者`);
-      round = 1;
-    } else if (code !== 0) {
-      logger.error(`开始游戏失败：${code} ${msg}`);
-      return 0;
-    }
-
-    for (let index = 0; index < round_limit - round; index++) {
-      // 开始回合
-      await apiDelay(2000);
-      await doRoundGuessGame();
-    }
-
-    // 查看结果
-    await apiDelay(300);
-    return await checkLastResult();
-  } catch (error) {
-    logger.error(`进行一轮猜拳异常：`, error);
-  }
-  return 0;
-}
-
-/**
- * 查看结果
- */
-async function checkLastResult() {
-  const { code, data, msg } = await mangaApi.checkLastResult();
-  if (code !== 0) {
-    logger.error(`查看结果失败：${code} ${msg}`);
-    return 0;
-  }
-  logger.debug(`本轮猜拳获取积分：${data.total_amount}`);
-  return data.total_amount;
-}
-
-/**
- * 进行一回合猜拳
- */
-async function doRoundGuessGame() {
-  try {
-    const { code, msg, data } = await mangaApi.startRound();
-    if (code === 1) {
-      logger.warn(msg);
-      logger.verbose(`出现此问题请反馈给作者`);
-    } else if (code !== 0) {
-      logger.error(`开始回合失败：${code} ${msg}`);
-      return;
-    }
-    if (data && data.round) {
-      logger.debug(`开始第${data.round}回合`);
-    }
-    // 猜拳
-    await apiDelay(1500);
-    const guessGame = new GuessGame();
-    let lastResult = 0;
-    while (lastResult === 0) {
-      lastResult = await guessGame.run();
-      await apiDelay(2060);
-    }
-    logger.debug(`回合猜拳结束：${RoundResult[lastResult]}`);
-  } catch (error) {
-    logger.error(`开始回合异常：`, error);
-  }
-}
-
-/**
- * 获取克制关系
- */
-function getRestrict(card: number) {
-  return card === 1 ? 3 : card - 1;
-}
-
-class GuessGame {
-  card: number;
-  pc_card: number;
-  // 上次输赢
-  last_result: number;
-  // 电脑相同手势次数
-  pc_same_count = 0;
-  // 我方相同手势次数
-  my_same_count = 0;
-
-  // 虽然每次都是随机的，但是我就要玄学一波
-  setCard() {
-    const { last_result } = this;
-    let card: number;
-    // 上次没赢，且电脑相同手势次数大小于 2，则出和电脑相反的手势
-    if ((last_result === RPSResult.平 || last_result === RPSResult.输) && this.pc_same_count < 2) {
-      card = getRestrict(this.pc_card);
-    } else {
-      card = random(1, 3);
-    }
-    if (card === this.card) {
-      this.my_same_count++;
-    } else {
-      this.my_same_count = 0;
-    }
-    if (this.my_same_count >= 2) {
-      // 两次相同手势，在另外两种手势中随机
-      card = getRandomItem([1, 2, 3].filter(item => item !== card));
-    }
-    this.card = card;
-  }
-
-  setData(pc_card: number, win: number) {
-    this.last_result = win;
-    if (pc_card === this.pc_card) {
-      this.pc_same_count++;
-    } else {
-      this.pc_same_count = 0;
-    }
-    this.pc_card = pc_card;
-  }
-
-  async run() {
-    try {
-      this.setCard();
-      const { data, msg, code } = await mangaApi.guessFinger(this.card);
-      if (code !== 0) {
-        logger.error(`猜拳失败：${code} ${msg}`);
-        return RoundResult.输;
-      }
-      const { pc_card, win, round_result } = data || {};
-      if (pc_card === 0) {
-        logger.debug(`出现异常，重新猜拳`);
-        return RoundResult.输;
-      }
-      this.setData(pc_card, win);
-      logger.debug(`我[${RPS[this.card]}] VS 电脑[${RPS[pc_card]}] ${RPSResult[win]}`);
-      return round_result;
-    } catch (error) {
-      logger.error(`猜拳异常：`, error);
-    }
-    return RoundResult.输;
   }
 }
