@@ -27,17 +27,21 @@ export async function watchLinkService() {
 async function liveHeartPromiseSync() {
   const { uid: uids, roomid, area, heart } = TaskConfig.watchLink;
   if (!heart) return;
-  const ids = [] as number[];
+  let ids: number[];
   if (roomid && roomid.length > 0) {
-    ids.push(...roomid);
+    ids = roomid;
   } else {
-    ids.push(...uids);
+    ids = uids;
   }
   if (ids.length === 0 || area.length === 0) return;
-  // area 异步，所以用 foreach
-  area.forEach(async areaItem => {
-    await Promise.all(ids.map(uid => allLiveHeart(uid, areaItem, { value: 0 })));
-  });
+  await Promise.all(
+    area.map(
+      async areaItem =>
+        await Promise.all(
+          ids.map(async uid => allLiveHeart(await getUserInfo(uid), areaItem, { value: 0 })),
+        ),
+    ),
+  );
   logger.info('直播间心跳结束');
 }
 
@@ -46,10 +50,13 @@ async function liveHeartPromiseSync() {
  * @param options
  * @param countRef
  */
-async function allLiveHeart(uid: number, [parentId, areaId]: number[], countRef: Ref<number>) {
+async function allLiveHeart(
+  user: UnPromisify<ReturnType<typeof getUserInfo>>,
+  [parentId, areaId]: number[],
+  countRef: Ref<number>,
+) {
   const { time } = TaskConfig.watchLink;
   for (let i = 0; i < time; i++) {
-    const user = await getUserInfo(uid);
     if (!user) continue;
     await liveMobileHeart(
       {
@@ -137,19 +144,19 @@ async function getUserInfo(uid: number) {
   const { roomid: rid } = TaskConfig.watchLink;
 
   if (rid && rid.length > 0 && rid.includes(uid)) {
-    logger.debug(`目标[${uid}]为指定直播间`);
-    const user = await liveApi.get(`xlive/web-room/v2/index/getRoomPlayInfo?room_id=${uid}`);
-    console.log(user);
-    if (!user || !user.data) return;
-    return {
-      roomid: user.data.room_id,
-      name: '指定直播间',
-      mid: user.data.uid,
-    };
+    try {
+      logger.debug(`目标[${uid}]为指定直播间`);
+      const user = await liveApi.get(`xlive/web-room/v2/index/getRoomPlayInfo?room_id=${uid}`);
+      if (!user || !user.data) return;
+      return {
+        roomid: user.data.room_id,
+        name: '指定直播间',
+        mid: user.data.uid,
+      };
+    } catch {}
   }
 
   const user = await request(getUser, { name: '获取用户直播间' }, uid);
-  if (!user) return;
   if (!user.live_room) {
     logger.warn(`目标[${uid}]没有直播间`);
   }

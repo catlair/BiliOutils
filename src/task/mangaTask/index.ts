@@ -1,7 +1,6 @@
 import {
   mangaSign,
   buyMangaService,
-  takeSeasonGift,
   shareComicService,
   readMangaService,
   guessGameService,
@@ -19,8 +18,6 @@ export default async function mangaTask() {
     await readMangaService();
     // 每日游戏
     await guessGameService();
-    // 领取任务奖励
-    await takeSeasonGift();
     // 购买漫画
     await buyMangaService();
   } catch (error) {
