@@ -5,6 +5,7 @@ import { isServerless, logger } from '@/utils';
 import { apiDelay, apiDelaySync } from '@/utils/effect';
 import { request } from '@/utils/request';
 import { getRandomOptions, liveMobileHeart } from '../liveIntimacy/intimacy.service';
+import { liveApi } from '@/net/api';
 
 type LiveHeartRunOptions = {
   user: {
@@ -24,13 +25,23 @@ export async function watchLinkService() {
 }
 
 async function liveHeartPromiseSync() {
-  const { uid: uids, area, heart } = TaskConfig.watchLink;
+  const { uid: uids, roomid, area, heart } = TaskConfig.watchLink;
   if (!heart) return;
-  if (uids.length === 0 || area.length === 0) return;
-  // area 异步，所以用 foreach
-  area.forEach(async areaItem => {
-    await Promise.all(uids.map(uid => allLiveHeart(uid, areaItem, { value: 0 })));
-  });
+  let ids: number[];
+  if (roomid && roomid.length > 0) {
+    ids = roomid;
+  } else {
+    ids = uids;
+  }
+  if (ids.length === 0 || area.length === 0) return;
+  await Promise.all(
+    area.map(
+      async areaItem =>
+        await Promise.all(
+          ids.map(async uid => allLiveHeart(await getUserInfo(uid), areaItem, { value: 0 })),
+        ),
+    ),
+  );
   logger.info('直播间心跳结束');
 }
 
@@ -39,10 +50,13 @@ async function liveHeartPromiseSync() {
  * @param options
  * @param countRef
  */
-async function allLiveHeart(uid: number, [parentId, areaId]: number[], countRef: Ref<number>) {
+async function allLiveHeart(
+  user: UnPromisify<ReturnType<typeof getUserInfo>>,
+  [parentId, areaId]: number[],
+  countRef: Ref<number>,
+) {
   const { time } = TaskConfig.watchLink;
   for (let i = 0; i < time; i++) {
-    const user = await getUserInfo(uid);
     if (!user) continue;
     await liveMobileHeart(
       {
@@ -61,10 +75,16 @@ async function allLiveHeart(uid: number, [parentId, areaId]: number[], countRef:
 }
 
 async function liveHeartPromise(resolve: (value: unknown) => void) {
-  const { uid: uids, area } = TaskConfig.watchLink;
-  if (uids.length === 0 || area.length === 0) return;
+  const { uid: uids, roomid, area } = TaskConfig.watchLink;
+  const ids = [] as number[];
+  if (roomid && roomid.length > 0) {
+    ids.push(...roomid);
+  } else {
+    ids.push(...uids);
+  }
+  if (ids.length === 0 || area.length === 0) return;
   area.forEach(async areaItem => {
-    for (const uid of uids) {
+    for (const uid of ids) {
       const user = await getUserInfo(uid);
       if (!user) return;
       bindWatchEvent(user, areaItem);
@@ -120,9 +140,23 @@ function bindWatchEvent(user: LiveHeartRunOptions['user'], [parentId, areaId]: n
   }
 }
 
-async function getUserInfo(uid: number | string) {
+async function getUserInfo(uid: number) {
+  const { roomid: rid } = TaskConfig.watchLink;
+
+  if (rid && rid.length > 0 && rid.includes(uid)) {
+    try {
+      logger.debug(`目标[${uid}]为指定直播间`);
+      const user = await liveApi.get(`xlive/web-room/v2/index/getRoomPlayInfo?room_id=${uid}`);
+      if (!user || !user.data) return;
+      return {
+        roomid: user.data.room_id,
+        name: '指定直播间',
+        mid: user.data.uid,
+      };
+    } catch {}
+  }
+
   const user = await request(getUser, { name: '获取用户直播间' }, uid);
-  if (!user) return;
   if (!user.live_room) {
     logger.warn(`目标[${uid}]没有直播间`);
   }

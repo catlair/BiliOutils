@@ -14,6 +14,7 @@ export const biliTaskArray = [
   ['matchGame', () => import('./matchGame')],
   ['giveGift', () => import('./giveGift')],
   ['liveIntimacy', () => import('./liveIntimacy')],
+  ['liveDm', () => import('./liveDm')],
   ['watchLink', () => import('./watchLink')],
   ['batchUnfollow', () => import('./batchUnfollow')],
   ['liveLottery', () => import('./liveLottery')],
