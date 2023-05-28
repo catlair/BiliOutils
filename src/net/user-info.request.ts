@@ -16,6 +16,7 @@ import type { VideoByUpDto } from '@/dto/video.dto';
 import { biliApi, accountApi } from './api';
 import { OriginURLs } from '@/constant/biliUri';
 import { TaskConfig } from '@/config';
+import { getWbiQuery } from '@/service/sgin.service';
 
 /**
  * 登录账号
@@ -138,7 +139,21 @@ export function getVideosByUpId(upId: number, pageSize = 50): Promise<VideoByUpD
  * @param mid 用户 id
  */
 export function getUser(mid: IdType): Promise<OtherUserDto> {
-  return biliApi.get(`x/space/wbi/acc/info?mid=${mid}&jsonp=jsonp`);
+  return biliApi.get(`x/space/wbi/acc/info?${getWbiQuery({ mid, jsonp: 'jsonp' })}`);
+}
+
+/**
+ * 获取直播间开播信息
+ */
+export function getRoomPlayInfo(roomId: IdType): Promise<
+  ApiBaseProp<{
+    room_id: number;
+    short_id: number;
+    uid: number;
+    live_time: number;
+  }>
+> {
+  return biliApi.get(`xlive/web-room/v1/index/getRoomPlayInfo?room_id=${roomId}`);
 }
 
 /**
