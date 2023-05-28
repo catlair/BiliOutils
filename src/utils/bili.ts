@@ -2,7 +2,7 @@ import { isArray, isNumber, isObject } from './is';
 import { getUnixTime, md5, stringify } from './pure';
 import * as crypto from 'crypto';
 
-type Params = Record<string, string | boolean | number | Array<any>>;
+export type Params = Record<string, string | boolean | number | Array<any>>;
 
 /**
  * API 接口签名
@@ -19,12 +19,15 @@ export function appSign(params: Params, appkey?: string, appsec?: string) {
 }
 
 function sortParams(params: Params) {
-  const keys = Object.keys(params).sort();
-  return keys.map(key => [key, params[key]]);
+  return Object.entries(params).sort((a, b) => a[0].localeCompare(b[0]));
+}
+
+function getSortQuery(params: Params) {
+  return stringify(sortParams(params));
 }
 
 export function getSign(params: Params, appsec: string, noSign = false) {
-  const query = stringify(sortParams(params));
+  const query = getSortQuery(params);
   if (noSign) {
     return { query, sign: '' };
   }
@@ -108,4 +111,35 @@ export function conciseNickname(nickname = '') {
   const firstWord = nickname[0];
   const lastWord = nickname[length - 1];
   return `${firstWord}**${lastWord}`;
+}
+
+/**
+ * wbi 签名
+ * https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/misc/sign/wbi.md#JavaScript
+ */
+
+// 对 imgKey 和 subKey 进行字符顺序打乱编码
+function getMixinKey(orig: string) {
+  return [
+    46, 47, 18, 2, 53, 8, 23, 32, 15, 50, 10, 31, 58, 3, 45, 35, 27, 43, 5, 49, 33, 9, 42, 19, 29,
+    28, 14, 39, 12, 38, 41, 13, 37, 48, 7, 16, 24, 55, 40, 61, 26, 17, 0, 1, 60, 51, 30, 4, 22, 25,
+    54, 21, 56, 59, 6, 63, 57, 62, 11, 36, 20, 34, 44, 52,
+  ]
+    .map(n => orig[n])
+    .join('')
+    .slice(0, 32);
+}
+
+// 从 url 中获取 imgKey 和 subKey
+export function getImgKeyAndSubKey({ img_url, sub_url }: { img_url: string; sub_url: string }) {
+  function getKey(url: string) {
+    return url.split('/').pop()?.split('.')[0] || '';
+  }
+  return { imgKey: getKey(img_url), subKey: getKey(sub_url) };
+}
+
+// 为请求参数进行 wbi 签名
+export function encWbi(params: Params, imgKey: string, subKey: string) {
+  const queryString = getSortQuery({ ...params, wts: getUnixTime() });
+  return `${queryString}&w_rid=${md5(queryString + getMixinKey(imgKey + subKey))}`;
 }

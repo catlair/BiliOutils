@@ -28,7 +28,7 @@ function setLevelInfo(data: UserNavData) {
   }
   logger.info(`当前等级: ${levelInfo.current_level}`);
   if (currentLevel < 6) {
-    const upLevelExp = levelInfo.next_exp - levelInfo.current_exp;
+    const upLevelExp = Number(levelInfo.next_exp) - levelInfo.current_exp;
     // 实际天数肯定会少一些
     logger.info(`距升级还需 ${upLevelExp} 经验，预计 ${estimatedDays(upLevelExp).toFixed(2)} 天`);
     return;

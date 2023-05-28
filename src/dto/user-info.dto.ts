@@ -70,38 +70,102 @@ export interface VideosByUpIdDto extends ApiBaseProp {
 }
 
 /** 用户信息 */
-export interface UserInfoNavDto extends ApiBaseProp {
-  data: {
-    isLogin: boolean;
-    email_verified: number;
-    //等级信息
-    level_info: {
-      current_level: number;
-      current_min: number;
-      current_exp: number;
-      next_exp: number;
-    };
-    mid: number;
-    mobile_verified: number;
-    money: number;
-    moral: number;
-    scores: number;
-    uname: string;
-    /** 会员到期时间 */
-    vipDueDate: number;
-    /** 0无 1有 */
-    vipStatus: 0 | 1;
-    /** 0:无 1:月度 2:年度及以上 */
-    vipType: 0 | 1 | 2;
-    wallet: {
-      mid: number;
-      /** b 币数量（包含券） */
-      bcoin_balance: number;
-      /** b 币券数量 */
-      coupon_balance: number;
-      coupon_due_time: number;
-    };
+export type UserInfoNavDto = ApiBaseProp<{
+  isLogin: boolean;
+  email_verified: number;
+  face: string;
+  face_nft: number;
+  face_nft_type: number;
+  level_info: {
+    current_level: number;
+    current_min: number;
+    current_exp: number;
+    next_exp: string | number;
   };
+  mid: number;
+  mobile_verified: number;
+  money: number;
+  moral: number;
+  official: {
+    role: number;
+    title: string;
+    desc: string;
+    type: number;
+  };
+  officialVerify: {
+    type: number;
+    desc: string;
+  };
+  pendant: {
+    pid: number;
+    name: string;
+    image: string;
+    expire: number;
+    image_enhance: string;
+    image_enhance_frame: string;
+  };
+  scores: number;
+  uname: string;
+  /** 会员到期时间 */
+  vipDueDate: number;
+  /** 0无 1有 */
+  vipStatus: 0 | 1;
+  /** 0:无 1:月度 2:年度及以上 */
+  vipType: 0 | 1 | 2;
+  vip_pay_type: number;
+  vip_theme_type: number;
+  vip_label: Viplabel;
+  vip_avatar_subscript: number;
+  vip_nickname_color: string;
+  vip: {
+    type: number;
+    status: number;
+    due_date: number;
+    vip_pay_type: number;
+    theme_type: number;
+    label: Viplabel;
+    avatar_subscript: number;
+    nickname_color: string;
+    role: number;
+    avatar_subscript_url: string;
+    tv_vip_status: number;
+    tv_vip_pay_type: number;
+    tv_due_date: number;
+  };
+  wallet: {
+    mid: number;
+    /** b 币数量（包含券） */
+    bcoin_balance: number;
+    /** b 币券数量 */
+    coupon_balance: number;
+    coupon_due_time: number;
+  };
+  has_shop: boolean;
+  shop_url: string;
+  allowance_count: number;
+  answer_status: number;
+  is_senior_member: number;
+  wbi_img: Wbiimg;
+  is_jury: boolean;
+}>;
+
+interface Viplabel {
+  path: string;
+  text: string;
+  label_theme: string;
+  text_color: string;
+  bg_style: number;
+  bg_color: string;
+  border_color: string;
+  use_img_label: boolean;
+  img_label_uri_hans: string;
+  img_label_uri_hant: string;
+  img_label_uri_hans_static: string;
+  img_label_uri_hant_static: string;
+}
+export interface Wbiimg {
+  img_url: string;
+  sub_url: string;
 }
 
 /** 每日任务完成情况 */

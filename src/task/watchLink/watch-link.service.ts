@@ -1,11 +1,10 @@
 import { TaskConfig } from '@/config';
-import { getUser } from '@/net/user-info.request';
+import { getRoomPlayInfo, getUser } from '@/net/user-info.request';
 import { biliDmWs } from '@/service/ws.service';
 import { isServerless, logger } from '@/utils';
 import { apiDelay, apiDelaySync } from '@/utils/effect';
 import { request } from '@/utils/request';
 import { getRandomOptions, liveMobileHeart } from '../liveIntimacy/intimacy.service';
-import { liveApi } from '@/net/api';
 
 type LiveHeartRunOptions = {
   user: {
@@ -146,7 +145,7 @@ async function getUserInfo(uid: number) {
   if (rid && rid.length > 0 && rid.includes(uid)) {
     try {
       logger.debug(`目标[${uid}]为指定直播间`);
-      const user = await liveApi.get(`xlive/web-room/v2/index/getRoomPlayInfo?room_id=${uid}`);
+      const user = await getRoomPlayInfo(uid);
       if (!user || !user.data) return;
       return {
         roomid: user.data.room_id,
