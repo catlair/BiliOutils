@@ -287,6 +287,8 @@ export const defaultConfig = {
     delay: 2000,
     // 保留积分数
     keepAmount: 0,
+    // 兑换开始时间，h
+    startHour: 0,
   },
   bigPoint: {
     // 是否重试，或者重试间隔时间，单位秒
