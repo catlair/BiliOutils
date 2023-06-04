@@ -13,8 +13,8 @@ process.env.IS_LOCAL = 'true';
 
 const USAGE = `
 Usage:
-  bilitools [options] [value]
-  bilitools [options]=[value]
+  bilioutils [options] [value]
+  bilioutils [options]=[value]
 
 Options:
   --version, -v             输出版本号
@@ -39,7 +39,7 @@ Options:
 
 (async () => {
   if (isArg('version')) {
-    process.stdout.write('BiliTools v' + getPkg().version + '\n');
+    process.stdout.write('BiliOutils v' + getPkg().version + '\n');
     process.stdout.write(`node ${process.version}\n`);
     process.stdout.write(`platform ${process.platform} ${process.arch}\n`);
     return;

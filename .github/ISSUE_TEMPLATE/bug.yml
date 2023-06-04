@@ -14,7 +14,7 @@ body:
     id: env
     attributes:
       label: 运行环境和版本
-      description: 您的程序是运行在什么环境下的，是什么版本的软件？如果在使用 npm 可以将 `bilitools -v` 的结果输入。
+      description: 您的程序是运行在什么环境下的，是什么版本的软件？如果在使用 npm 可以将 `bilioutils -v` 的结果输入。
       placeholder: 腾讯云函数、本地 Windows11、MacOS、青龙面板 2.13.2 等，版本 0.5.1。
     validations:
       required: true

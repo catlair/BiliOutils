@@ -8,6 +8,6 @@ fi
 
 node processConfig.js
 
-bilitools -v
+bilioutils -v
 
-bilitools -c /usr/src/app/config/config.json $@
+bilioutils -c /usr/src/app/config/config.json $@
