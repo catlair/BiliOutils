@@ -1,7 +1,7 @@
 {
   "name": "bilioutils",
   "version": "9.9.9",
-  "description": "this is BiliTools",
+  "description": "this is BiliOutils",
   "main": "main.js",
   "types": "main.d.ts",
   "bin": {
@@ -85,7 +85,6 @@
   "dependencies": {
     "@catlair/bilicomic-dataflow": "^0.0.4",
     "@catlair/node-got": "^0.0.10",
-    "commander": "^10.0.0",
     "core-js": "^3.28.0",
     "json5": "^2.2.3",
     "node-schedule": "^2.1.1",
@@ -94,7 +93,7 @@
     "ws": "^8.12.1"
   },
   "optionalDependencies": {
-    "@alicloud/fc2": "^2.6.3",
+    "@alicloud/fc2": "^2.5.0",
     "@catlair/blogin": "^0.0.8",
     "dotenv": "^16.0.3",
     "pm2": "^5.2.2",

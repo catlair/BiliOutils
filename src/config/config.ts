@@ -287,7 +287,7 @@ export const defaultConfig = {
     delay: 2000,
     // 保留积分数
     keepAmount: 0,
-    // 兑换开始时间，h
+    // 兑换开始时间，0、10、12
     startHour: 0,
   },
   bigPoint: {
