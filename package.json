@@ -97,7 +97,7 @@
     "@catlair/blogin": "^0.0.8",
     "dotenv": "^16.0.3",
     "pm2": "^5.2.2",
-    "puppeteer": "^19.7.1",
+    "puppeteer": "^20.0.0",
     "tencentcloud-sdk-nodejs": "^4.0.541"
   },
   "publishConfig": {
