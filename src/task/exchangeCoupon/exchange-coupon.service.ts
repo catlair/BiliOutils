@@ -56,18 +56,32 @@ async function getExchangeNum() {
 }
 
 /**
+ * 是否在兑换时间段内
+ */
+function isInExchangeTime(startTime = 22, endTime = 0) {
+  const hour = getPRCDate().getHours(),
+    minute = getPRCDate().getMinutes();
+  if (hour === endTime) {
+    return minute < 3;
+  }
+  return hour > startTime && hour < endTime;
+}
+
+/**
  * 等待兑换时间的到来
  */
 async function waitExchangeTime() {
-  const hour = getPRCDate().getHours(),
-    minute = getPRCDate().getMinutes(),
-    { startTime, endTime } = getWaitTime();
-  if (hour < startTime || hour > endTime || (hour === endTime && minute > 3)) {
+  const { startTime, endTime } = getWaitTime();
+  if (endTime === 12) {
+    logger.debug('当前目标时间为 12 点，直接开始兑换');
+    return false;
+  }
+  if (!isInExchangeTime(startTime, endTime)) {
     logger.warn(`当前时间不在 ${startTime}:00 - ${endTime}:03 之间，跳过任务`);
     return true;
   }
   logger.debug(`循环等待，到 ${endTime} 点才开始兑换...`);
-  while (endTime !== 12) {
+  while (getPRCDate().getHours() !== endTime) {
     await apiDelay(100);
   }
   return false;
