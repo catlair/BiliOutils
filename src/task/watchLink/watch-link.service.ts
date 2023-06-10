@@ -146,7 +146,11 @@ async function getUserInfo(uid: number) {
     try {
       logger.debug(`目标[${uid}]为指定直播间`);
       const user = await getRoomPlayInfo(uid);
-      if (!user || !user.data) return;
+      if (!user || !user.data) {
+        logger.warn(`目标[${uid}]的直播间信息获取失败`);
+        logger.debug(JSON.stringify(user));
+        return;
+      }
       return {
         roomid: user.data.room_id,
         name: '指定直播间',

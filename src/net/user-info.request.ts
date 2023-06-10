@@ -13,7 +13,7 @@ import type {
 } from '@/dto/user-info.dto';
 import type { ApiBaseProp } from '@/dto/bili-base-prop';
 import type { VideoByUpDto } from '@/dto/video.dto';
-import { biliApi, accountApi } from './api';
+import { biliApi, accountApi, liveApi } from './api';
 import { OriginURLs } from '@/constant/biliUri';
 import { TaskConfig } from '@/config';
 import { getWbiQuery } from '@/service/sgin.service';
@@ -153,7 +153,7 @@ export function getRoomPlayInfo(roomId: IdType): Promise<
     live_time: number;
   }>
 > {
-  return biliApi.get(`xlive/web-room/v1/index/getRoomPlayInfo?room_id=${roomId}`);
+  return liveApi.get(`xlive/web-room/v1/index/getRoomPlayInfo?room_id=${roomId}`);
 }
 
 /**

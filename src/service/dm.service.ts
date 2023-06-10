@@ -9,6 +9,7 @@ export async function sendDmMessage(roomid: number, nickName?: string, msg?: str
   msg = msg || getRandomItem(messageArray);
   nickName = nickName || roomid.toString();
   try {
+    logger.debug(`【${nickName}】${roomid}-发送弹幕 ${msg}`);
     const { code, message } = await liveRequest.sendMessage(roomid, msg);
 
     if (code === SeedMessageResult.Success) {

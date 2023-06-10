@@ -334,6 +334,12 @@ export const defaultConfig = {
       [3, 549],
     ],
   },
+  liveDm: {
+    roomid: [] as number[],
+    // 次数
+    num: 0,
+    delay: [8, 13],
+  },
   blink: {
     // 直播间标题
     title: '',
