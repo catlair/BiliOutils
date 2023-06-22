@@ -34,16 +34,20 @@ async function getOnePrivilege(type: number): Promise<boolean> {
     const name = getPrivilegeName(type);
     const { code, message } = await receiveVipPrivilege(type);
 
-    if (code === 73319) {
-      logger.error(`${name}领取失败，需要手机验证（可能异地登陆），跳过`);
-      return true;
+    switch (code) {
+      case 0:
+        logger.info(`领取${name}成功！`);
+        return true;
+      case 73319:
+        logger.error(`${name}领取失败，需要手机验证（可能异地登陆），跳过`);
+        return true;
+      case 69802:
+        logger.warn(`${name}领取失败，${message}`);
+        return true;
+      default:
+        logger.info(`领取${name}失败：${code} ${message}`);
+        return false;
     }
-
-    if (code !== 0) {
-      logger.info(`领取${name}失败：${code} ${message}`);
-    }
-    logger.info(`领取${name}成功！`);
-    return true;
   } catch (error) {
     logger.error(`领取权益出现异常：`, error);
   }
@@ -68,8 +72,8 @@ async function getPrivilege(type: number) {
 export default async function getVipPrivilege() {
   try {
     logger.info('----【领取大会员权益】----');
-    if (TaskModule.vipStatus === 0 || TaskModule.vipType === 0) {
-      logger.info('您还不是大会员，无法领取权益');
+    if (TaskModule.vipStatus === 0 || TaskModule.vipType < 2) {
+      logger.info('您还不是年度大会员，无法领取权益');
       return;
     }
 

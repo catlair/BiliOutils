@@ -273,6 +273,7 @@ export async function mangaSign() {
     switch (code) {
       case 0:
         return logger.info('漫画签到成功');
+      case 1:
       case 'invalid_argument':
         return logger.info('已经签过到了');
       default:

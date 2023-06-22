@@ -10,12 +10,12 @@ async function getTaskStatus() {
     const { code, data, message } = await getAnchorTaskCenter();
     if (code !== 0) {
       logger.fatal('获取任务进度', code, message);
-      return;
+      return true;
     }
     const weekTaskInfo = data.taskGroups?.find(t => t.title.includes('天天开播'))?.weekTaskInfo;
     if (!weekTaskInfo) {
       logger.error('获取任务进度失败，未找到任务');
-      return;
+      return true;
     }
     logger.debug('获取任务进度');
     return weekTaskInfo.weekDailyTask.isFinished;

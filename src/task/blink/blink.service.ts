@@ -35,7 +35,7 @@ async function clickStartLive() {
     const { code, message } = await startLive(TaskModule.roomid, TaskConfig.blink.areaId);
     if (code !== 0) {
       // 4 没有权限
-      logger.warn(`开播失败：${code} ${message}`);
+      logger.error(`开播失败：${code} ${message}`);
       return;
     }
     logger.info(`开播成功`);
@@ -93,6 +93,7 @@ export async function linkService(
   if (!TaskModule.roomid) return;
   const stopRef = { value: false };
   const timeout = setTimeout(() => (stopRef.value = true), TaskConfig.blink.time * 60 * 1000);
+  const clearTimer = () => clearTimeout(timeout);
   const sigintSwitch = init(timeout);
 
   callback?.(stopRef, timeout);
@@ -107,9 +108,9 @@ export async function linkService(
       addr: { addr, code },
     } = (await getLink()) || { addr: {} };
 
-    if (!addr || !code) return;
+    if (!addr || !code) return clearTimer();
     await liveConfig(TaskModule.roomid);
-    if (!(await clickStartLive())) return;
+    if (!(await clickStartLive())) return clearTimer();
 
     sigintSwitch.on();
     await startLiveByRtmp(addr + code, stopRef);

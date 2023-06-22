@@ -1,11 +1,29 @@
 {
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
-  extends: ['config:base'],
-  baseBranches: ['dev'],
+  extends: [
+    'config:base',
+    'schedule:daily',
+    ':disableRateLimiting',
+    'group:allNonMajor',
+    ':semanticCommitTypeAll(chore)',
+  ],
+  timezone: 'Asia/Shanghai',
+  rangeStrategy: 'bump',
+  npm: {
+    commitMessageTopic: '{{prettyDepType}} {{depName}}',
+  },
+  docker: {
+    enabled: false,
+  },
+  nuget: {
+    enabled: false,
+  },
   packageRules: [
     {
-      matchDepTypes: ['devDependencies'],
+      matchUpdateTypes: ['minor', 'patch', 'pin', 'digest'],
       automerge: true,
     },
   ],
+  platformAutomerge: true,
+  ignoreTests: true,
 }

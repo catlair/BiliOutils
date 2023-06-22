@@ -39,12 +39,20 @@ async function getTaskStatus() {
 async function receiveTaskReward() {
   try {
     const { code, message } = await net.receiveTaskReward();
-    if (code !== 0) {
-      logger.warn(`领取任务奖励失败：${code}-${message}`);
-      return true;
+    switch (code) {
+      case 0: {
+        logger.info('领取任务奖励成功');
+        return true;
+      }
+      case 27000001: {
+        logger.warn(`${message}，建议早点运行`);
+        return true;
+      }
+      default: {
+        logger.warn(`领取任务奖励失败：${code}-${message}`);
+        return false;
+      }
     }
-    logger.info('领取任务奖励成功');
-    return true;
   } catch (error) {
     logger.error('领取任务奖励异常', error);
     return false;

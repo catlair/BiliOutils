@@ -388,20 +388,8 @@ function configValueHandle(config: TheConfig) {
   gift.mids = arr2numArr(gift.mids);
 
   // 处理 charge
-  const couponBalanceUse = couponBalance.use;
-  switch (couponBalanceUse) {
-    case 'battery':
-    case '电池':
-      couponBalance.use = '电池';
-      break;
-    case 'charge':
-    case '充电':
-      couponBalance.use = '充电';
-      break;
-    default:
-      couponBalance.use = '充电';
-      break;
-  }
+  couponBalance.use =
+    couponBalance.use === 'charge' || couponBalance.use === '充电' ? '充电' : '电池';
 
   /**
    * 部分默认值处理
