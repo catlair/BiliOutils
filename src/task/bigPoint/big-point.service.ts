@@ -330,7 +330,7 @@ async function getManyTask(taskCodes: TaskCodeType[]) {
  * 获取今日积分
  */
 async function getPoint() {
-  const keyword = ['观看任意', '签到', '10秒'];
+  const keyword = ['观看任意', '签到', '10秒', '浏览装扮'];
   try {
     const { code, data, message } = await getPointList();
     if (code !== 0) {
