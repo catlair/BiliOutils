@@ -19,15 +19,19 @@ export interface Taskinfo {
 
 export interface CommonTaskItem {
   task_code:
-    | 'bonus'
-    | 'privilege'
-    | '626act'
-    | 'animatetab'
-    | 'filmtab'
-    | 'vipmallview'
-    | 'ogvwatch'
-    | 'tvodbuy'
-    | 'vipmallbuy';
+    | 'bonus' // 大会员福利
+    | 'dress-up' // 使用免费体验装扮
+    | 'privilege' // 浏览大会员专享福利
+    | 'getrights' // 领取大会员福利
+    | 'dress-view' // 浏览装扮商城
+    | '626act' //
+    | 'animatetab' // 浏览追番页面 10 秒
+    | 'filmtab' //
+    | 'vipmallview' // 浏览会员购页面 10 秒
+    | 'ogvwatch' // 观看任意正片
+    | 'tvodbuy' // 购买付费点播影片
+    | 'dressbuyamount' // 购买指定装扮
+    | 'vipmallbuy'; // 购买指定大会员商品
   /** 0 未领取 1 未完成 2 未知 3 已领取 */
   state: number;
   title: string;
@@ -66,8 +70,11 @@ interface Module {
 interface Pointinfo {
   /** 目前积分 */
   point: number;
+  /** 即将过期积分 */
   expire_point: number;
+  /** 过期时间 */
   expire_time: number;
+  /** 剩余天数 */
   expire_days: number;
 }
 

@@ -2,6 +2,7 @@ import type { TaskCodeType } from './big-point.emum';
 import type { CommonTaskItem, SingTaskHistory, Taskinfo } from './big-point.dto';
 import {
   complete,
+  completeV2,
   getPointList,
   getTaskCombine,
   receiveTask,
@@ -55,9 +56,12 @@ export async function bigPointService() {
   }
   const {
     vip_info: { status, type },
-    point_info: { point },
+    point_info: { point, expire_point, expire_days },
     task_info,
   } = taskStatus;
+  if (expire_point > 0) {
+    logger.warn(`${expire_point}积分即将过期，剩余${expire_days}天`);
+  }
   if (!baseInfo(status, type, point)) return;
   if (task_info.score_month >= task_info.score_limit) {
     logger.info('本月积分已领取完');
@@ -138,6 +142,9 @@ async function handleDailyTask(taskItems: CommonTaskItem[]) {
       case 'vipmallview':
         await vipMallView();
         break;
+      case 'dress-view':
+        await completeTask('dress-view', '浏览装扮中心', true);
+        break;
       default:
         break;
     }
@@ -193,19 +200,26 @@ async function getRandomEpid() {
 
 /**
  * complete 每日任务
+ * 当 v2 为 true 时，taskCode 为 TaskCodeType 类型
  */
-async function completeTask(taskCode: string, msg: string) {
+async function completeTask(taskCode: string | TaskCodeType, name: string, v2?: boolean) {
   try {
-    await susWin();
-    await apiDelay(1000, 2000);
-    const { code: comCode, message: comMsg } = await complete(taskCode);
-    if (comCode !== 0) {
-      logger.error(`${msg}失败: ${comCode} ${comMsg}`);
+    let completeFn: (taskCode: string | TaskCodeType) => Promise<{ code: number; message: string }>;
+    if (v2) {
+      completeFn = completeV2;
+    } else {
+      completeFn = complete;
+      await susWin();
+      await apiDelay(1000, 2000);
+    }
+    const { code, message } = await completeFn(taskCode);
+    if (code !== 0) {
+      logger.error(`${name}失败: ${code} ${message}`);
       return;
     }
-    bigLogger.debug(`${msg}每日任务 ✓`);
+    bigLogger.debug(`${name}每日任务 ✓`);
   } catch (error) {
-    logger.error(`每日任务${msg}出现异常：`, error);
+    logger.error(`每日任务${name}出现异常：`, error);
   }
 }
 
@@ -305,9 +319,9 @@ async function getOneTask(taskCode: TaskCodeType) {
 /**
  * 领取多个任务
  */
-async function getManyTask(taskCodes: string[]) {
+async function getManyTask(taskCodes: TaskCodeType[]) {
   for (const taskCode of taskCodes) {
-    await getOneTask(taskCode as TaskCodeType);
+    await getOneTask(taskCode);
     await apiDelay(100, 300);
   }
 }

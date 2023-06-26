@@ -83,6 +83,25 @@ export function complete(position: string) {
 }
 
 /**
+ * 完成大积分每日任务 v2
+ */
+export function completeV2(taskCode: TaskCodeType) {
+  return biliApi.post<PureDataProp>(
+    'pgc/activity/score/task/complete/v2',
+    appSignString({
+      csrf: TaskConfig.BILIJCT,
+      taskCode,
+    }),
+    {
+      headers: {
+        ...baseHeader,
+        referer: RefererURLs.bigPointTask,
+      },
+    },
+  );
+}
+
+/**
  * 提交事件
  */
 export function showDispatch(eventId: string) {
