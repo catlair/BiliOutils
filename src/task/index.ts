@@ -1,6 +1,7 @@
 export const biliTaskArray = [
   ['beforeTask', () => import('./beforeTask')],
   ['loginTask', () => import('./loginTask')],
+  ['exchangeBigPoint', () => import('./exchangeBigPoint')],
   ['exchangeCoupon', () => import('./exchangeCoupon')],
   ['liveSignTask', () => import('./liveSignTask')],
   ['addCoins', () => import('./addCoins')],

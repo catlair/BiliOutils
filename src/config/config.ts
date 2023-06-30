@@ -272,7 +272,7 @@ export const defaultConfig = {
     // 购买漫画
     buy: false,
     // read
-    read: false,
+    read: true,
     // 购买漫画 id（优先级高）
     mc: [] as number[],
     // 购买漫画名称（优先级中）
@@ -289,6 +289,16 @@ export const defaultConfig = {
     keepAmount: 0,
     // 兑换开始时间，0、10、12
     startHour: 0,
+  },
+  exchangeBigPoint: {
+    // 间隔时间，单位 ms，随机误差 -50 ~ 150
+    delay: 2000,
+    // 保留积分数
+    keepAmount: 0,
+    // 兑换商品名称
+    name: [] as string[],
+    // 兑换商品 token
+    token: [] as string[],
   },
   bigPoint: {
     // 是否重试，或者重试间隔时间，单位秒

@@ -18,6 +18,7 @@ export interface Taskinfo {
 }
 
 export interface CommonTaskItem {
+  /** 任务代码 */
   task_code:
     | 'bonus' // 大会员福利
     | 'dress-up' // 使用免费体验装扮

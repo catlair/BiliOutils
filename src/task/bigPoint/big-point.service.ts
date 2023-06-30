@@ -78,6 +78,7 @@ async function retry(taskStatus: TaskStatus) {
   const cfgIsRetry = TaskConfig.bigPoint.isRetry;
   isRetry = true;
   if (cfgIsRetry) {
+    logger.verbose('开始尝试重试');
     await apiDelay(isBoolean(cfgIsRetry) ? 20000 : cfgIsRetry * 1000);
     await bigPointTask(taskStatus);
   }
@@ -106,50 +107,39 @@ async function bigPointTask(taskStatus: TaskStatus) {
  * 完成每日任务
  */
 async function doDailyTask(taskStatus: TaskStatus | undefined) {
-  if (!taskStatus || !taskStatus.task_info) return;
-  const TaskItems = taskStatus.task_info.modules?.at(-1)?.common_task_item;
-  if (!TaskItems) {
-    logger.info('没有需要完成的每日任务');
+  if (!taskStatus?.task_info?.modules || taskStatus.task_info.modules.length === 0) {
+    logger.warn('处理错误：没有需要完成的每日任务');
     return;
   }
-  const waitTaskItems = TaskItems.filter(taskItem => {
-    if (taskItem.vip_limit > TaskModule.vipType) return false;
-    // 似乎没有意义，但是为了保险起见
-    if (taskItem.complete_times >= taskItem.max_times) return false;
-    if (taskItem.state === 1) return true;
-  });
-  if (waitTaskItems.length === 0) {
+
+  const waitTaskItems =
+    taskStatus.task_info.modules.at(-1)?.common_task_item?.filter(taskItem => {
+      return (
+        taskItem.vip_limit <= TaskModule.vipType &&
+        taskItem.complete_times < taskItem.max_times &&
+        taskItem.state === 1
+      );
+    }) || [];
+
+  if (waitTaskItems.every(taskItem => taskItem.state !== 1)) {
+    logger.info('没有需要完成的每日任务');
     return true;
   }
-  await handleDailyTask(waitTaskItems);
-}
 
-/**
- * 处理每一个每日任务
- */
-async function handleDailyTask(taskItems: CommonTaskItem[]) {
-  for (const taskItem of taskItems) {
-    switch (taskItem.task_code) {
-      case 'ogvwatch':
-        await watchTask(taskItem.complete_times);
-        break;
-      case 'filmtab':
-        await completeTask('tv_channel', '浏览影视频道');
-        break;
-      case 'animatetab':
-        await completeTask('jp_channel', '浏览追番频道');
-        break;
-      case 'vipmallview':
-        await vipMallView();
-        break;
-      case 'dress-view':
-        await completeTask('dress-view', '浏览装扮中心', true);
-        break;
-      default:
-        break;
-    }
-    await apiDelay(1000, 3000);
-  }
+  const taskFunctions = {
+    ogvwatch: watchTask,
+    filmtab: () => completeTask('tv_channel', '浏览影视频道'),
+    animatetab: () => completeTask('jp_channel', '浏览追番频道'),
+    vipmallview: vipMallView,
+    'dress-view': () => completeTask('dress-view', '浏览装扮中心', true),
+  };
+
+  await waitTaskItems.reduce(async (previousPromise, { task_code, complete_times }) => {
+    await previousPromise;
+    return taskFunctions[task_code]?.(complete_times);
+  }, Promise.resolve());
+
+  await apiDelay(1000, 3000);
 }
 
 /**
@@ -163,7 +153,7 @@ async function watchTask(completeTimes: number) {
   await apiDelay(watchDelay * 1000);
   try {
     const { id, name, title, md, aid, cid, season } = await getRandomEpid();
-    bigLogger.debug(`使用《${name}·${title}》`);
+    bigLogger.debug(`观看《${name}·${title}》`);
     const watchTime = completeTimes === 1 ? random(905, 1800) : random(1805, 2000);
     // 播放西游记
     await videoHeartbeat({
@@ -177,7 +167,6 @@ async function watchTask(completeTimes: number) {
       cid,
       sid: season,
     });
-    bigLogger.debug(`观看视频任务 ✓`);
   } catch (error) {
     logger.error(`观看视频任务出现异常：`, error);
   }

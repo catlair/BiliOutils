@@ -1,7 +1,7 @@
 import type { Eplist, SearchMangaDto } from './manga.dto';
 import { TaskConfig } from '@/config';
 import * as mangaApi from './manga.request';
-import { apiDelay, isBoolean, isUnDef, logger } from '@/utils';
+import { apiDelay, isBoolean, isUnDef, logger, random } from '@/utils';
 import { Bilicomic } from '@catlair/bilicomic-dataflow';
 
 let expireCouponNum: number;
@@ -360,11 +360,11 @@ async function getNeedReadManga() {
 
 async function readManga(comicId: number, needTime: number) {
   const { ep_list } = (await getMangaEpList(comicId)) || {};
-  if (!ep_list) {
-    return;
-  }
-  const epId = ep_list[0].id;
-  const bilicomic = new Bilicomic(TaskConfig.USERID, comicId, epId);
+  const bilicomic = new Bilicomic(
+    TaskConfig.USERID,
+    comicId,
+    ep_list ? ep_list[0].id : random(1, 1000),
+  );
   try {
     await bilicomic.read(needTime * 2 + 2);
     await apiDelay(1000);
@@ -379,7 +379,7 @@ export async function readMangaService(isNoLogin?: boolean) {
   if (!TaskConfig.manga.read) {
     return;
   }
-  logger.debug('开始每日阅读');
+  logger.info('开始每日阅读');
   try {
     const seasonInfo = await getSeasonInfo();
     if (isBoolean(seasonInfo)) {
@@ -387,7 +387,7 @@ export async function readMangaService(isNoLogin?: boolean) {
     }
     const needReadManga = await getNeedReadManga();
     for (const { user_read_min, read_min, id, title } of needReadManga) {
-      logger.info(`开始阅读漫画：${id}[${title}]`);
+      logger.debug(`开始阅读漫画：${id}[${title}]`);
       await readManga(id, read_min - user_read_min);
     }
     if (isNoLogin) {
