@@ -42,7 +42,7 @@ jobs:
     environment: Build
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: set Docker version tag
         run: |
           echo DOCKER_TAG1=${{ github.ref  }} | sed -e "s/refs\/tags\/v//g" >> $GITHUB_ENV
