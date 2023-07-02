@@ -40,7 +40,7 @@
     "url": "https://github.com/catlair/BiliOutils/issues"
   },
   "engines": {
-    "node": ">= v12.22.12"
+    "node": ">= v18.16.1"
   },
   "homepage": "https://btdocs.vercel.app/",
   "author": "catlair",
