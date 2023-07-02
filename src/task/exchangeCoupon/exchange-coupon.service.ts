@@ -2,6 +2,7 @@ import { TaskConfig } from '@/config';
 import { apiDelay, getPRCDate, logger } from '@/utils';
 import { request } from '@/utils/request';
 import * as mangaApi from './exchange-coupon.request';
+import { getWaitTime, isInExchangeTime } from './utils';
 
 // 兑换时间与兑换 id 对应关系
 const exchangeTimeMap = {
@@ -56,27 +57,15 @@ async function getExchangeNum() {
 }
 
 /**
- * 是否在兑换时间段内
- */
-function isInExchangeTime(startTime = 22, endTime = 0) {
-  const hour = getPRCDate().getHours(),
-    minute = getPRCDate().getMinutes();
-  if (hour === endTime) {
-    return minute < 3;
-  }
-  return hour > startTime && hour < endTime;
-}
-
-/**
  * 等待兑换时间的到来
  */
 async function waitExchangeTime() {
-  const { startTime, endTime } = getWaitTime();
+  const { startTime, endTime } = getWaitTime(getStartTime());
   if (endTime === 12) {
     logger.debug('当前目标时间为 12 点，直接开始兑换');
     return false;
   }
-  if (!isInExchangeTime(startTime, endTime)) {
+  if (!isInExchangeTime(startTime, endTime, getPRCDate())) {
     logger.warn(`当前时间不在 ${startTime}:00 - ${endTime}:03 之间，跳过任务`);
     return true;
   }
@@ -85,18 +74,6 @@ async function waitExchangeTime() {
     await apiDelay(100);
   }
   return false;
-}
-
-/**
- * 获取等待时间段
- * @description startHour - 2 ~ startHour，如果 startHour 为 0，则为 22 ~ 0
- */
-function getWaitTime() {
-  const startHour = getStartTime();
-  return {
-    startTime: startHour < 2 ? 22 + startHour : startHour - 2,
-    endTime: startHour,
-  };
 }
 
 function getStartTime() {

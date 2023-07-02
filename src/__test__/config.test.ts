@@ -63,6 +63,10 @@ const theConfig = {
     activityLottery: false,
     useCouponBp: false,
     dailyBattery: false,
+    watchLink: false,
+    blink: false,
+    liveDm: false,
+    liveWeekTask: false,
   },
   apiDelay: [2, 6],
   userAgent: '',
@@ -119,16 +123,34 @@ const theConfig = {
   manga: {
     sign: true,
     buy: false,
-    read: false,
+    read: true,
     mc: [],
     name: [],
     love: true,
-    guess: false,
+  },
+  liveDm: {
+    delay: [8, 13],
+    num: 0,
+    roomid: [],
   },
   exchangeCoupon: {
     num: 1,
     delay: 2000,
     keepAmount: 0,
+    startHour: 0,
+  },
+  exchangeBigPoint: {
+    delay: 2000,
+    keepAmount: 0,
+    name: [],
+    token: [],
+  },
+  blink: {
+    areaId: 0,
+    parentId: 0,
+    roomid: 0,
+    time: 33,
+    title: '',
   },
   lottery: {
     excludeAward: [
@@ -202,6 +224,20 @@ const theConfig = {
     follow: false,
     proxyPrefix: 'https://ghproxy.com/',
     customUrl: '',
+  },
+  watchLink: {
+    area: [
+      [3, 321],
+      [3, 549],
+    ],
+    areaId: undefined,
+    heart: true,
+    parentId: undefined,
+    roomid: [],
+    tcp: false,
+    time: 30,
+    uid: [],
+    wss: false,
   },
   charge: {},
 };
