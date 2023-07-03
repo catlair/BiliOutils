@@ -3,6 +3,7 @@ import { apiDelay, getPRCDate, logger } from '@/utils';
 import { request } from '@/utils/request';
 import * as mangaApi from './exchange-coupon.request';
 import { getWaitTime, isInExchangeTime } from './utils';
+import { waitForTime } from '@/utils/time';
 
 // 兑换时间与兑换 id 对应关系
 const exchangeTimeMap = {
@@ -70,9 +71,7 @@ async function waitExchangeTime() {
     return true;
   }
   logger.debug(`循环等待，到 ${endTime} 点才开始兑换...`);
-  while (getPRCDate().getHours() !== endTime) {
-    await apiDelay(100);
-  }
+  await waitForTime({ hour: endTime });
   return false;
 }
 

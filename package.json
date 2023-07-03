@@ -86,6 +86,7 @@
     "@catlair/bilicomic-dataflow": "^0.0.4",
     "@catlair/node-got": "^0.0.10",
     "core-js": "^3.31.0",
+    "dayjs": "^1.11.9",
     "json5": "^2.2.3",
     "node-schedule": "^2.1.1",
     "nodemailer": "^6.9.3",

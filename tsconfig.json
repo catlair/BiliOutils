@@ -12,15 +12,29 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
-      "@/*": ["./src/*"],
-      "#/*": ["./src/types/*"],
-      "~/*": ["./src/task/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "#/*": [
+        "./src/types/*"
+      ],
+      "~/*": [
+        "./src/task/*"
+      ]
     },
-    "lib": ["esnext"],
+    "lib": [
+      "esnext"
+    ],
     "skipLibCheck": true,
     "moduleResolution": "node",
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "strictNullChecks": true
   },
-  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
+  "exclude": [
+    "node_modules",
+    "test",
+    "dist",
+    "**/*spec.ts"
+  ]
 }

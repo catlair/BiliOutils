@@ -1,7 +1,8 @@
 import type { CronDateType, SLSType } from '@/types';
 import * as crypto from 'crypto';
-import { DAILY_RUN_TIME, MS2HOUR } from '@/constant';
+import { DAILY_RUN_TIME } from '@/constant';
 import { isArray, isNumber, isObject } from './is';
+import { getShanghaiDate } from './time';
 
 const MAX_MINUTES = 59,
   MAX_HOURS = 23,
@@ -41,11 +42,7 @@ export function createUUID() {
  * 不同时区获取北京时间
  */
 export function getPRCDate(): Date {
-  const now = new Date(),
-    nowTime = now.getTime(),
-    timezone = now.getTimezoneOffset() / 60;
-  // 3600000 为每小时毫秒数
-  return new Date(nowTime + (timezone + 8) * MS2HOUR);
+  return getShanghaiDate().toDate();
 }
 
 /**

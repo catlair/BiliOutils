@@ -1,31 +1,45 @@
-import { logger } from '@/utils';
+import { apiDelay, logger } from '@/utils';
 import * as bigPointApi from './exchange-bigpoint.request';
 import { TaskConfig } from '@/config';
+import { waitForTime } from '@/utils/time';
 
 export async function exchangeBigPointService() {
   const tokenList = await getTokenList();
   if (!tokenList.length) {
+    logger.info('没有需要兑换的商品');
     return;
   }
-  for (const token of tokenList) {
-    // 验证商品是否可兑换
-    const canPurchase = await verifyOrder(token);
-    if (!canPurchase) {
-      continue;
+  await waitForTime({ hour: 12 });
+  for (let index = 0; index < 2; index++) {
+    for (const token of tokenList) {
+      await exchangeBigPoint(token);
     }
-    // 创建订单
-    const order = await createOrder(token);
-    if (!order) {
-      continue;
-    }
-    // 支付
-    const state = await paymentOrder(order, token);
-    if (state === 4) {
-      logger.info(`兑换成功：${token}`);
-    } else {
-      logger.verbose(`${token}：${state}`);
-    }
+    await apiDelay(1000, 2000);
   }
+}
+
+/**
+ * 完成一个流程
+ */
+export async function exchangeBigPoint(token: string) {
+  // 验证商品是否可兑换
+  const canPurchase = await verifyOrder(token);
+  if (!canPurchase) {
+    return false;
+  }
+  // 创建订单
+  const order = await createOrder(token);
+  if (!order) {
+    return false;
+  }
+  // 支付
+  const state = await paymentOrder(order, token);
+  if (state === 4) {
+    logger.info(`兑换成功：${token}`);
+    return true;
+  }
+  logger.verbose(`${token}：${state}`);
+  return false;
 }
 
 /**
@@ -33,9 +47,10 @@ export async function exchangeBigPointService() {
  */
 async function getTokenList() {
   const { token } = TaskConfig.exchangeBigPoint;
-  if (token) {
+  if (token.length) {
     return token;
   }
+  logger.debug('获取需要兑换商品的token');
   try {
     const { skus } = (await getSkuList()) || {};
     if (!skus || !skus.length) {
@@ -82,7 +97,7 @@ async function verifyOrder(token: string, price?: number) {
       if (data.can_purchase) {
         return Boolean(data.can_purchase);
       }
-      logger.warn(data.reject_reason || '未知错误，不可兑换');
+      logger.warn(`${token}：${data.reject_reason || '未知错误，不可兑换'}`);
       return false;
     }
     logger.fatal(`验证商品是否可兑换`, code, message);
