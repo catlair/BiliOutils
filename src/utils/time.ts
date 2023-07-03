@@ -40,5 +40,5 @@ export function waitForTime(options: WaitOptions) {
  * 返回当前时间的中国时区时间
  */
 export function getShanghaiDate() {
-  return dayjs().tz('Asia/Shanghai');
+  return dayjs().add(new Date().getTimezoneOffset() / 60 + 8, 'hour');
 }
