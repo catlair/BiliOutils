@@ -19,7 +19,7 @@ import { TaskConfig } from '@/config';
 import { getWbiQuery } from '@/service/sgin.service';
 
 /**
- * 登录账号
+ * 账号基本信息
  */
 export function getNav(): Promise<UserInfoNavDto> {
   return biliApi.get('x/web-interface/nav', {

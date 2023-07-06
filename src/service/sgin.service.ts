@@ -1,14 +1,16 @@
-import { getNav } from '@/net/user-info.request';
 import { logger, stringify } from '@/utils';
 import { Params, encWbi, getImgKeyAndSubKey } from '@/utils/bili';
 
 async function getWbiUrl() {
   try {
+    const { getNav } = await import('@/net/user-info.request');
     const { data, code } = await getNav();
     if (code === 0) {
       return data.wbi_img;
     }
-  } catch {}
+  } catch (error) {
+    logger.error(error);
+  }
 }
 
 export async function getWbiQuery(params: Params) {

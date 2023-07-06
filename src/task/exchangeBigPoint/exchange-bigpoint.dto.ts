@@ -11,7 +11,7 @@ interface Page {
   total: number;
 }
 
-interface Skus {
+export interface Skus {
   token: string;
   title: string;
   picture: string;
