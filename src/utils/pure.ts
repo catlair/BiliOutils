@@ -1,32 +1,14 @@
 import type { CronDateType, SLSType } from '@/types';
 import * as crypto from 'crypto';
 import { DAILY_RUN_TIME } from '@/constant';
-import { isArray, isNumber, isObject } from './is';
-import { getShanghaiDate } from './time';
+import { isArray, isObject } from './is';
+import { getPRCDate } from './time';
+
+export * from './time';
 
 const MAX_MINUTES = 59,
   MAX_HOURS = 23,
   DAILY_MIN_HOURS = 19;
-
-/**
- * 返回本月天数
- */
-export function getMonthHasDays(now?: Date) {
-  const nowTime = now || getPRCDate(),
-    year = nowTime.getFullYear(),
-    month = nowTime.getMonth() + 1,
-    smallMonth = [4, 6, 9, 11];
-
-  const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
-
-  if (month === 2) {
-    return isLeapYear ? 29 : 28;
-  } else if (smallMonth.includes(month)) {
-    return 30;
-  } else {
-    return 31;
-  }
-}
 
 /**
  * 生成一个 UUID
@@ -36,25 +18,6 @@ export function createUUID() {
     const e = crypto.randomBytes(1)[0] % 16;
     return (t === 'x' ? e : (3 & e) | 8).toString(16);
   });
-}
-
-/**
- * 不同时区获取北京时间
- */
-export function getPRCDate(): Date {
-  return getShanghaiDate().toDate();
-}
-
-/**
- * 获取当前日期（自动补齐两位）
- */
-export function getDateString(now?: Date) {
-  const nowTime = now || getPRCDate();
-  const year = nowTime.getFullYear(),
-    month = nowTime.getMonth() + 1,
-    day = nowTime.getDate();
-
-  return `${year}-${month < 10 ? '0' + month : month}-${day < 10 ? '0' + day : day}`;
 }
 
 /**
@@ -411,36 +374,8 @@ export function base64Decode(str: string) {
 }
 
 /**
- * 今天是否在预设的时间数组中
- * @param timeArr 时间数组（为空则判断为在）
- */
-export function isTodayInTimeArr(timeArr: number[]) {
-  if (!timeArr || !timeArr.length) {
-    return true;
-  }
-  const today = getPRCDate().getDate();
-  return timeArr.includes(today);
-}
-
-export function isToday(date: Date): boolean;
-export function isToday(date: number, isUnix?: boolean): boolean;
-export function isToday(date: Date | number, isUnix = true): boolean {
-  if (isNumber(date)) {
-    date = isUnix ? new Date(date * 1000) : new Date(date);
-  }
-  return getPRCDate().toDateString() === date.toDateString();
-}
-
-/**
- * 获取 unix 时间戳
- */
-export function getUnixTime() {
-  return Math.floor(new Date().getTime() / 1000);
-}
-
-/**
  * 获取 Buvid
- * @description buvid 以 XY 开头，后面跟 35 位 16 进制字符串大写
+ * @description 以 XY 开头，后面跟 35 位 16 进制字符串大写
  * @param prefix 前缀
  */
 export function createBuvid(prefix = 'XY') {

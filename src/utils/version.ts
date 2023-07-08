@@ -53,7 +53,8 @@ async function patchEnv(version: string | undefined) {
  */
 export async function printVersion() {
   const { logger } = await import('./log');
-  if (process.env.NODE_ENV === 'development') {
+  // fuck you qinglong
+  if (process.env.NODE_ENV === 'development' && !process.env.IS_QING_LONG) {
     logger.info(`开发版`);
     return;
   }

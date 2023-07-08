@@ -14,6 +14,14 @@ import { TODAY_MAX_FEED } from '~/liveIntimacy/constant';
 type DefaultConfig = typeof defaultConfig;
 export type TheConfig = DefaultConfig;
 
+export type LiveDmCustom =
+  | {
+      id: number;
+      num: number;
+      msg: string[];
+    }
+  | [number, number, string[]];
+
 export const defaultConfig = {
   cookie: '',
   accessKey: '',
@@ -291,11 +299,13 @@ export const defaultConfig = {
     startHour: 0,
   },
   exchangeBigPoint: {
-    // 间隔时间，单位 ms，随机误差 -50 ~ 150
-    delay: 2000,
-    // 保留积分数
-    keepAmount: 0,
-    // 兑换商品名称
+    // 多次尝试间隔时间，单位 ms
+    delay: 200,
+    // 重试次数
+    retry: 3,
+    // 启动延时 ms
+    startDelay: 30,
+    // 兑换商品名称，与 token 二选一
     name: [] as string[],
     // 兑换商品 token
     token: [] as string[],
@@ -345,10 +355,14 @@ export const defaultConfig = {
     ],
   },
   liveDm: {
-    roomid: [] as number[],
+    // 直播间 id
+    roomid: [],
+    // 延时 s
+    delay: [8, 13],
     // 次数
     num: 0,
-    delay: [8, 13],
+    // 自定义
+    custom: [] as LiveDmCustom[],
   },
   blink: {
     // 直播间标题

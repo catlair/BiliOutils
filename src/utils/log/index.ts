@@ -32,7 +32,7 @@ export class Logger extends SimpleLogger {
     TaskModule.hasError = true;
   }
 
-  public fatal(str: string, code: number, message: string) {
+  public fatal(str: string, code: number | string, message: string) {
     this.warn(`${str}：[${code}] ${message}`);
   }
 

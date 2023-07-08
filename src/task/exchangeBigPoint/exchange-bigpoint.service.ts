@@ -1,27 +1,24 @@
-import { apiDelay, logger } from '@/utils';
+import { apiDelay, isNotEmpty, logger } from '@/utils';
 import * as bigPointApi from './exchange-bigpoint.request';
 import { TaskConfig } from '@/config';
 import { waitForTime } from '@/utils/time';
+import type { Skus } from './exchange-bigpoint.dto';
 
 export async function exchangeBigPointService() {
   const tokenList = await getTokenList();
-  if (!tokenList.length) {
+  if (!isNotEmpty(tokenList)) {
     logger.info('没有需要兑换的商品');
     return;
   }
   await waitForTime({ hour: 12 });
-  for (let index = 0; index < 2; index++) {
-    for (const token of tokenList) {
-      await exchangeBigPoint(token);
-    }
-    await apiDelay(1000, 2000);
-  }
+  await apiDelay(TaskConfig.exchangeBigPoint.startDelay);
+  await Promise.all(tokenList.map(token => exchangeBigPointRetry(token)));
 }
 
 /**
  * 完成一个流程
  */
-export async function exchangeBigPoint(token: string) {
+async function exchangeBigPoint(token: string) {
   // 验证商品是否可兑换
   const canPurchase = await verifyOrder(token);
   if (!canPurchase) {
@@ -34,11 +31,27 @@ export async function exchangeBigPoint(token: string) {
   }
   // 支付
   const state = await paymentOrder(order, token);
-  if (state === 4) {
+  if (state === 4 || state === 2) {
+    logger.debug(`${token}：${state}`);
     logger.info(`兑换成功：${token}`);
     return true;
   }
   logger.verbose(`${token}：${state}`);
+  return false;
+}
+
+/**
+ * 多次尝试兑换
+ */
+async function exchangeBigPointRetry(token: string) {
+  const { retry, delay } = TaskConfig.exchangeBigPoint;
+  for (let index = 0; index < retry; index++) {
+    const result = await exchangeBigPoint(token);
+    if (result) {
+      return true;
+    }
+    await apiDelay(delay - index, delay + index);
+  }
   return false;
 }
 
@@ -52,10 +65,8 @@ async function getTokenList() {
   }
   logger.debug('获取需要兑换商品的token');
   try {
-    const { skus } = (await getSkuList()) || {};
-    if (!skus || !skus.length) {
-      return [];
-    }
+    const skus = await getSkuList();
+    if (!isNotEmpty(skus)) return [];
     const { name } = TaskConfig.exchangeBigPoint;
     return name
       .map(item => {
@@ -73,18 +84,27 @@ async function getTokenList() {
   return [];
 }
 /**
- * 获取商品列表
+ * 获取所有商品列表
  */
 async function getSkuList() {
-  try {
-    const { data, code, message } = await bigPointApi.getSkuList();
+  const pageSize = 20; // 每次获取的商品数量
+  let page = 1; // 当前页码
+  let total = Infinity; // 商品总数，初始值为无穷大
+  const allSkus: Skus[] = []; // 所有商品的数组
+
+  while (allSkus.length < total) {
+    const { data, code, message } = await bigPointApi.getSkuList(page, pageSize);
     if (code === 0) {
-      return data;
+      allSkus.push(...data.skus);
+      total = data.page.total;
+      page++;
+    } else {
+      logger.fatal(`获取商品列表`, code, message);
+      break;
     }
-    logger.fatal(`获取商品列表`, code, message);
-  } catch (error) {
-    logger.exception('获取商品列表', error);
   }
+
+  return allSkus;
 }
 
 /**

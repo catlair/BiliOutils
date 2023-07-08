@@ -10,7 +10,7 @@ async function getSignInfo() {
   try {
     const { data } = await liveSignRequest.getSignInfo();
     if (data.status === 1) {
-      logger.info('已签到，跳过签到');
+      logger.debug('已签到，跳过签到');
       logger.info(`已经签到${data.hadSignDays}天，${data.specialText}`);
       return true;
     }

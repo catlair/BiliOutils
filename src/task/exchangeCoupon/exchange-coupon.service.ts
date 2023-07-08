@@ -46,13 +46,7 @@ async function getExchangeNum() {
     logger.info('可兑换的漫读券数量不足 1，跳过任务');
     return 0;
   }
-  let num: number;
-  // 是否设置自动数量
-  if (exchangeCouponNum < 1) {
-    num = buyCouponNum;
-  } else {
-    num = Math.min(buyCouponNum, exchangeCouponNum);
-  }
+  const num = exchangeCouponNum < 1 ? buyCouponNum : Math.min(buyCouponNum, exchangeCouponNum);
   logger.info(`漫读券需要兑换数量：${num}/${buyCouponNum}`);
   return num;
 }
@@ -70,21 +64,14 @@ async function waitExchangeTime() {
     logger.warn(`当前时间不在 ${startTime}:00 - ${endTime}:03 之间，跳过任务`);
     return true;
   }
-  logger.debug(`循环等待，到 ${endTime} 点才开始兑换...`);
+  logger.debug(`等待，到 ${endTime} 点才开始兑换...`);
   await waitForTime({ hour: endTime });
   return false;
 }
 
 function getStartTime() {
   const { startHour } = TaskConfig.exchangeCoupon;
-  switch (startHour) {
-    case 0:
-    case 10:
-    case 12:
-      return startHour;
-    default:
-      return 12;
-  }
+  return [0, 10, 12].includes(startHour) ? startHour : 12;
 }
 
 /**
@@ -101,7 +88,7 @@ async function exchangeCoupon(num: number) {
     }
     if (code === 0) {
       logger.info(`兑换商品成功，兑换数量：${num}`);
-      return;
+      return false;
     }
     // 太快
     if (code === 1 && msg.includes('快')) {
@@ -118,8 +105,8 @@ async function exchangeCoupon(num: number) {
       logger.debug(`库存不足，但时间是 ${startHour}:02 之前，尝试重新兑换`);
       return true;
     }
-    logger.warn(`兑换商品失败：${code} ${msg}`);
+    logger.fatal('商城兑换', code, msg);
   } catch (error) {
-    logger.error(`商城兑换异常: ${error}`);
+    logger.exception('商城兑换', error);
   }
 }
