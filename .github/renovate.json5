@@ -1,29 +1,31 @@
 {
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
   extends: [
-    'config:base',
+    'config:recommended',
+    ':dependencyDashboard',
     'schedule:daily',
-    ':disableRateLimiting',
-    'group:allNonMajor',
+    'schedule:automergeEarlyMondays',
     ':semanticCommitTypeAll(chore)',
+    ':automergeAll',
+    ':automergeBranch',
+    ':docker',
+    'group:allNonMajor',
+    ':skipStatusChecks',
   ],
   timezone: 'Asia/Shanghai',
-  rangeStrategy: 'bump',
   npm: {
-    commitMessageTopic: '{{prettyDepType}} {{depName}}',
-  },
-  docker: {
-    enabled: false,
-  },
-  nuget: {
-    enabled: false,
+    minimumReleaseAge: '3 days',
   },
   packageRules: [
     {
-      matchUpdateTypes: ['minor', 'patch', 'pin', 'digest'],
-      automerge: true,
+      dependencyDashboardApproval: true,
+      matchUpdateTypes: ['major'],
+      excludePackagePatterns: ['^@types/', '^eslint', 'prettier', 'typescript', '^ts-'],
+      automerge: false,
     },
   ],
+  lockFileMaintenance: {
+    enabled: true,
+  },
   platformAutomerge: true,
-  ignoreTests: true,
 }
