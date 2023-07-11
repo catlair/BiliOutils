@@ -1,3 +1,4 @@
+import { TaskConfig } from '@/config';
 import { isArray, isNumber, isObject } from './is';
 import { getUnixTime, md5, stringify } from './pure';
 import * as crypto from 'crypto';
@@ -44,14 +45,16 @@ function getAppSign(
   appsec = '560c52ccd288fed045859ed18bffd973',
 ) {
   params = {
-    ...params,
     platform: 'android',
     mobi_app: 'android',
+    device: 'android',
     disable_rcmd: 0,
-    build: 6780300,
+    channel: 'xiaomi',
     c_locale: 'zh_CN',
     s_locale: 'zh_CN',
     ts: getUnixTime(),
+    ...TaskConfig.app.http,
+    ...params,
   };
   // 某些情况下不需要也不能从配置文件中读取
   params.access_key = params.access_key || require('../config')?.TaskConfig.access_key;
