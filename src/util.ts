@@ -13,8 +13,13 @@ import { onExit } from './utils/node';
  */
 export async function config() {
   const { getConfigPathFile } = await import('./config/utils');
-  const configPath = getArg('config') as string;
+  const configPath = getArg('config')?.trim() as string;
   try {
+    // 判断 configPath 是否有空格
+    if (/\s/.test(configPath)) {
+      writeError('配置路径不能包含空格');
+      return;
+    }
     const configs = getConfigPathFile(resolve(process.cwd(), configPath));
     if (!configs.length) {
       writeError('配置文件不存在');
@@ -26,7 +31,7 @@ export async function config() {
     }
     return configs;
   } catch (error) {
-    writeError('配置路径可能存在问题');
+    writeError('配置路径可能存在问题\n');
     writeError(error.message);
   }
 }

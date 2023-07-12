@@ -56,12 +56,12 @@ function multi2SingleUserConfig(config: UserConfig[]) {
 }
 
 export function getConfigPathFile(filepath: string): ConfigArray {
+  logger.debug(`读取配置文件 ${filepath}`);
   const config = readJsonFile(filepath);
   if (!config) {
     logger.error('配置文件为空，或配置内容缺失！');
     throw new Error('配置文件为空，或配置内容缺失！');
   }
-  logger.debug(`读取配置文件 ${filepath}`);
   process.env.__BT_CONFIG_PATH__ = filepath;
   if (isMultiUserConfig(config)) {
     return mapMultiUserConfig(config);

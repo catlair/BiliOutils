@@ -374,6 +374,19 @@ export const defaultConfig = {
     // 直播时间
     time: 33,
   },
+  app: {
+    http: {
+      build: 7370300,
+    } as Record<string, string | number | boolean>,
+  },
+  dailyBattery: {
+    // 是否开启任务 39
+    task39: false,
+    // 是否开启老的任务 34
+    task34old: true,
+    // 是否开启新的任务 34
+    task34: true,
+  },
   BILIJCT: '',
   USERID: 0,
 };

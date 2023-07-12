@@ -3,7 +3,6 @@ import * as fs from 'fs';
 import { isServerless, isQingLongPanel } from '@/utils/env';
 import { isBoolean, isObject } from '../is';
 import { resolvePwd } from '../path';
-import { getPRCDate } from '../pure';
 import { writeError, writeOut } from './std';
 
 const LEVEL_VALUE = ['error', 'warn', 'info', 'verbose', 'debug'];
@@ -11,15 +10,18 @@ const LEVEL_VALUE = ['error', 'warn', 'info', 'verbose', 'debug'];
 function formatTime(date: Date, hasDate = true) {
   // 月-日 时:分:秒
   if (hasDate) {
-    return date.toLocaleString('zh-CN', { hour12: false });
+    return date.toLocaleString('zh-CN', { hour12: false, timeZone: 'Asia/Shanghai' });
   }
   // 时:分:秒
-  return date.toLocaleString('zh-CN', {
-    hour12: false,
-    hour: 'numeric',
-    minute: 'numeric',
-    second: 'numeric',
-  });
+  return date
+    .toLocaleString('zh-CN', {
+      hour12: false,
+      timeZone: 'Asia/Shanghai',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    })
+    .replace(/^24/, '00');
 }
 
 function getLevelValues(level: LevelType = 'info') {
@@ -101,7 +103,7 @@ export class SimpleLogger {
 
   public log({ level = 'info' }: LogOptions, message: MessageType, emoji?: string) {
     emoji = emoji || SimpleLogger.emojis[level];
-    const prcTime = getPRCDate(),
+    const prcTime = new Date(),
       stderr = ['error', 'warn'].includes(level),
       payload = this.options.payload ? ` \u005b${this.options.payload}\u005d ` : ' ';
     if (this.consoleLeval.includes(level)) {

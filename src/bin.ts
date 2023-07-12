@@ -1,66 +1,57 @@
 #! /usr/bin/env node
 
 import type { ConfigArray } from './types/config';
-import { getArg, isArg } from './utils/args';
 import { resolve, dirname } from 'path';
 import { existsSync, readFileSync } from 'fs';
 import { config, runTask, waitForArgs } from './util';
 import * as schedule from 'node-schedule';
 import { isBiliCookie } from './utils/cookie';
 import { scanLogin } from './utils/login';
+import { program } from 'commander';
 
 process.env.IS_LOCAL = 'true';
 
-const USAGE = `
-Usage:
-  bilioutils [options] [value]
-  bilioutils [options]=[value]
-
-Options:
-  --version, -v             输出版本号
-  --help, -h                输出帮助信息
-  --config, -c <path>       配置文件路径
-    eg: --config=./config.json
-  --createCookie, -cck      输出新的 cookie 到控制台
-    eg: --createCookie=./cookie.txt
-        --createCookie="cookie1=value1; cookie2=value2"
-  --once, -o                每日任务只执行一次
-  --task, -t <taskString>   执行指定的 task，使用英文逗号（,）分隔
-    eg: --task=loginTask,judgement
-  --item, -i <item>         多用户配置执行指定的配置，下标 1 开始（倒数 -1 开始），使用英文逗号（,）分隔
-    eg: --item=2
-  --cron <cronString>       cron 表达式
-    eg: --cron="0 0 0 * * *"
-  --delay <time[-time]>     不带单位是延迟 time 分钟后执行，单位可以为 ms（毫秒）、s（秒）、m（分）、h（小时）
-    eg: --delay=10  延迟 0-10 分钟后执行
-        --delay=10m-2h 延迟 10分钟-2小时 后执行
-  --login, -l               扫码登录，可以配和 --config 使用
-`;
-
 (async () => {
-  if (isArg('version')) {
-    process.stdout.write('BiliOutils v' + getPkg().version + '\n');
-    process.stdout.write(`node ${process.version}\n`);
-    process.stdout.write(`platform ${process.platform} ${process.arch}\n`);
-    return;
-  }
-  if (isArg('help')) {
-    process.stdout.write(USAGE);
-    return;
-  }
-  if (isArg('login', 'l')) {
-    if (isArg('config')) {
-      return await scanLogin(resolve(process.cwd(), getArg('config')!));
+  program
+    .version(
+      `BiliOutils v${getPkg().version}\nnode ${process.version}\nplatform ${process.platform} ${
+        process.arch
+      }`,
+      '-v, --version',
+      '输出版本号',
+    )
+    .helpOption('-h, --help', '输出帮助信息')
+    .description('BiliOutils 哔哩哔哩自动化工具箱')
+    .option('-c, --config <path>', '配置文件路径')
+    .option(
+      '-i, --item <item>',
+      '多用户配置执行指定的配置，下标 1 开始（倒数 -1 开始），使用英文逗号（,）分隔',
+    )
+    .option('-cck, --createCookie <path>', '输出新的 cookie 到控制台')
+    .option('-o, --once', '每日任务只执行一次', false)
+    .option('-t, --task <task>', '执行指定的 task，使用英文逗号（,）分隔')
+    .option('--cron <cron>', 'cron 表达式')
+    .option(
+      '--delay <time1[-time2]>',
+      '不带单位是延迟 time 分钟后执行，单位可以为 ms（毫秒）、s（秒）、m（分）、h（小时）',
+    )
+    .option('-l, --login', '扫码登录，可以配合 --config 使用')
+    .parse(process.argv);
+
+  const opts = program.opts();
+
+  if (opts.login) {
+    if (opts.config) {
+      return await scanLogin(resolve(process.cwd(), opts.config));
     }
     return await scanLogin();
   }
-  if (isArg('createCookie', 'cck')) {
-    return await createCookie();
+  if (opts.createCookie) {
+    return await createCookie(opts.createCookie);
   }
-  if (isArg('config')) {
-    return await run();
+  if (opts.config) {
+    return await run(opts.config);
   }
-  process.stdout.write(USAGE);
 })();
 
 /**
@@ -78,7 +69,7 @@ async function remember(jobsPath: string) {
  * 判断今日是否已经运行过
  */
 async function isTodayRun(jobsPath: string) {
-  if (!isArg('once')) {
+  if (!program.opts().once) {
     return;
   }
   // 判断文件是否存在
@@ -101,21 +92,21 @@ async function isTodayRun(jobsPath: string) {
   }
 }
 
-async function run() {
-  const configDir = dirname(resolve(process.cwd(), getArg('config')!));
+async function run(configPath: string) {
+  const configDir = dirname(resolve(process.cwd(), configPath));
   const jobsPath = resolve(configDir, 'bt_jobs.json');
   const configs = await config();
   if (!configs) {
     return;
   }
-  const cronStr = getArg('cron', false);
+  const { cron } = program.opts();
 
-  if (cronStr) {
-    process.stdout.write(`等待运行：cron ${cronStr}\n`);
+  if (cron) {
+    process.stdout.write(`等待运行：cron ${cron}\n`);
     schedule.scheduleJob(
       'tasks',
       {
-        rule: cronStr,
+        rule: cron,
         tz: 'Asia/Shanghai',
       },
       async () => {
@@ -131,17 +122,18 @@ async function run() {
 }
 
 async function argTaskHandle(jobsPath: string, configs: ConfigArray) {
-  if (isArg('task')) {
-    return await runTask(configs, './bin/inputTask', getArg('task'));
+  const { task } = program.opts();
+  if (task) {
+    return await runTask(configs, './bin/inputTask', task);
   }
   if (await isTodayRun(jobsPath)) return;
   await runTask(configs);
   await remember(jobsPath);
 }
 
-async function createCookie() {
+async function createCookie(cookiePath: string) {
   // 获取 old cookie 路径或者内容
-  const oldCookie = getArg('createCookie', 'cck');
+  const oldCookie = cookiePath;
   if (!oldCookie) {
     process.stdout.write('请输入 cookie\n');
     return;
@@ -154,11 +146,11 @@ async function createCookie() {
     return;
   }
   // 如果 old cookie 是 cookie 文件路径
-  const cookiePath = resolve(process.cwd(), oldCookie);
-  if (!existsSync(cookiePath)) {
+  const resolvedCookiePath = resolve(process.cwd(), oldCookie);
+  if (!existsSync(resolvedCookiePath)) {
     process.stdout.write('cookie 文件不存在\n');
   }
-  const cookie = readFileSync(cookiePath, 'utf-8');
+  const cookie = readFileSync(resolvedCookiePath, 'utf-8');
   if (!isBiliCookie(cookie)) {
     process.stdout.write('cookie 文件不是 cookie\n');
     return;
