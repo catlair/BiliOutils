@@ -88,10 +88,10 @@ function getRandmonNum([video, audio, article]: number[]) {
     ...getPageInfo(12, tempNum),
   };
 
-  function getPageInfo(ps: number, tempNum: number) {
+  function getPageInfo(ps: number, total: number) {
     return {
-      page: getPageNum(ps, tempNum + 1),
-      index: tempNum % ps,
+      page: getPageNum(ps, total + 1),
+      index: total % ps,
     };
   }
 }

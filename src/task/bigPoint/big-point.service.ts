@@ -159,7 +159,7 @@ async function watchTask(completeTimes: number) {
     await videoHeartbeat({
       start_ts: getUnixTime() - watchTime,
       realtime: watchTime,
-      played_time: random(1000) + watchTime,
+      played_time: random(watchTime, watchTime + 1000),
       real_played_time: watchTime,
       refer_url: `https://www.bilibili.com/bangumi/media/md${md}/`,
       epid: id,

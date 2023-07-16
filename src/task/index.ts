@@ -60,7 +60,7 @@ export async function getBiliTasks<T extends BiliTaskName>(
  */
 export function getInputBiliTask(taskNameStr: string) {
   const taskNameArr = taskNameStr.split(',');
-  const taskArr: Defined<ReturnType<typeof biliTasks.get>>[] = [biliTaskArray[0][1]];
+  const taskArr: Defined<ReturnType<typeof biliTasks.get>>[] = [];
   taskNameArr.forEach(name => {
     const task = biliTasks.get(name);
     if (task) {

@@ -15,7 +15,7 @@ export default async function getNewCookie() {
     return false;
   }
   const btJob = readJsonFile(btJonPath);
-  if (!isNeedCreateCookie(btJob?.lastNewCookie, day)) {
+  if (!isNeedCreateCookie(btJob?.[TaskConfig.USERID], day)) {
     return;
   }
   const newCookie = await auth.getNewCookie(TaskConfig.cookie);
@@ -25,7 +25,10 @@ export default async function getNewCookie() {
   TaskConfig.cookie = newCookie;
   logger.debug('cookie 使用新 cookie');
   writeJsonFile(btJonPath, {
-    lastNewCookie: Date.now(),
+    [TaskConfig.USERID]: {
+      ...btJob?.[TaskConfig.USERID],
+      lastNewCookie: Date.now(),
+    },
   });
 }
 
@@ -45,7 +48,11 @@ function getBtJonPath() {
  * @param timestamp 上次运行时间
  * @param day 间隔天数
  */
-function isNeedCreateCookie(timestamp: number, day: number) {
+function isNeedCreateCookie(obj: Record<number, number>, day: number) {
+  if (!obj) {
+    return true;
+  }
+  const timestamp = obj['lastNewCookie'];
   if (!timestamp) {
     return true;
   }
