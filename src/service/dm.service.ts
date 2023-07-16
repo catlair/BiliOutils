@@ -5,12 +5,24 @@ import * as liveRequest from '@/net/live.request';
 
 const messageArray = kaomoji.concat('1', '2', '3', '4', '5', '6', '7', '8', '9', '签到', '哈哈');
 
-export async function sendDmMessage(roomid: number, nickName?: string, msg?: string) {
+async function sendMessage({
+  roomid,
+  msg,
+  nickName,
+  isApp,
+}: {
+  roomid: number;
+  msg?: string;
+  nickName?: string;
+  isApp?: boolean;
+}) {
   msg = msg || generateRandomDm();
   nickName = nickName || roomid.toString();
   try {
     logger.debug(`【${nickName}】${roomid}-发送弹幕 ${msg}`);
-    const { code, message } = await liveRequest.sendMessage(roomid, msg);
+    const { code, message } = isApp
+      ? await liveRequest.sendMessageApp(roomid, msg)
+      : await liveRequest.sendMessage(roomid, msg);
 
     if (code === SeedMessageResult.Success) {
       return 0;
@@ -25,6 +37,14 @@ export async function sendDmMessage(roomid: number, nickName?: string, msg?: str
     logger.verbose(`发送弹幕异常 ${error.message}`);
   }
   return SeedMessageResult.Unknown;
+}
+
+export async function sendDmMessage(roomid: number, msg?: string, nickName?: string) {
+  return await sendMessage({ roomid, msg, nickName });
+}
+
+export async function sendDmMessageApp(roomid: number, msg?: string, nickName?: string) {
+  return await sendMessage({ roomid, msg, nickName, isApp: true });
 }
 
 /**

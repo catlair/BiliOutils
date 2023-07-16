@@ -68,6 +68,82 @@ export function sendMessage(roomid: number, msg: string, dm_type?: number): Prom
 }
 
 /**
+ * 发送一个直播弹幕（app）
+ * @param roomid 直播房间号
+ * @param msg 消息
+ */
+export async function sendMessageApp(roomid: number, msg: string) {
+  const info = (await getInfoByRoom(roomid)).data;
+
+  const {
+    room_info: { sub_session_key, up_session, uid, area_id, parent_area_id },
+  } = info;
+  return await liveApi.post(`xlive/app-room/v1/dM/sendmsg?${appSignString()}`, {
+    type: 'json',
+    fontsize: 25,
+    pool: 0,
+    mode: 1,
+    color: 16777215,
+    av_id: -99998,
+    screen_status: 2,
+    dm_type: 0,
+    mid: TaskConfig.USERID,
+    cid: roomid,
+    msg,
+    csrf: TaskConfig.BILIJCT,
+    rnd: getUnixTime(),
+    data_extend: {
+      from_launch_id: '-99998',
+      from_session_id: '-99998',
+      live_key: up_session,
+      sub_session_key,
+    },
+    bubble: '0',
+    msg_type: '0',
+    room_type: '0',
+    live_statistics: {
+      buvid: TaskConfig.buvid.replace(/^XY/, 'XX'),
+      session_id: '-99998',
+      launch_id: '-99998',
+      jumpfrom: '28031',
+      jumpfrom_extend: '-99998',
+      screen_status: '2',
+      live_status: 'live',
+      av_id: '-99998',
+      flow_extend: '{"position":"1","s_position":"1","slide_direction":"-99998"}',
+      bussiness_extend: '{"broadcast_type":"0","stream_scale":"2","watch_ui_type":"2"}',
+      data_extend: `{"from_launch_id":"-99998","from_session_id":"-99998","live_key":"${up_session}","sub_session_key":"${sub_session_key}"}`,
+      spm_id: '-99998',
+      up_id: uid,
+      room_id: roomid,
+      parent_area_id,
+      area_id,
+      // simple_id: '347206e5-045f-4687-83e7-1d4158da5781',
+      room_category: '0',
+      official_channel: '-99998',
+      gift_method: '-99998',
+      gift_position: '-99998',
+      gift_subname: '-99998',
+    },
+    launch_id: '-99998',
+    jumpfrom: '28031',
+    bussiness_extend: '{"broadcast_type":"0","stream_scale":"2","watch_ui_type":"2"}',
+    flow_extend: '{"position":"1","s_position":"1","slide_direction":"-99998"}',
+    jumpfrom_extend: '-99998',
+    session_id: '-99998',
+    playTime: '0.0',
+  });
+}
+
+/**
+ * 获取直播间信息
+ * @param roomid 直播间id
+ */
+export function getInfoByRoom(roomid: number) {
+  return liveApi.get(`xlive/web-room/v1/index/getInfoByRoom?room_id=${roomid}`);
+}
+
+/**
  * 获取勋章
  * @param page 页
  * @param page_size 页大小

@@ -21,7 +21,7 @@ export type UserTaskProgress = ApiBaseProp<{
   count_down: number;
 }>;
 
-interface Tasklist {
+export interface Tasklist {
   task_id: number;
   type: number;
   goal_type: number;
@@ -36,6 +36,7 @@ interface Tasklist {
   rules: string;
   priority: number;
   progress: number;
+  /** 0 未开始 1 进行中 2 可领取 3 已领取  */
   status: number;
   schema_dst: number;
   btn_text: string;

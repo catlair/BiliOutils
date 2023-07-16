@@ -1,7 +1,9 @@
 import * as net from './daily-battery.request';
 import { apiDelay, getRandomItem, logger } from '@/utils';
-import { sendDmMessage } from '@/service/dm.service';
+import { generateRandomDm, sendDmMessage } from '@/service/dm.service';
 import { TaskConfig } from '@/config';
+import { sendMessageApp } from '@/net/live.request';
+import type { Tasklist } from './daily-battery.dto';
 
 /**
  * 获取任务进度
@@ -45,15 +47,28 @@ async function getTaskStatus() {
       return;
     }
     if (data.is_surplus === -1) {
-      logger.debug(JSON.stringify(data));
-      logger.info('账号无法完成该任务，故跳过');
+      logger.warn('账号无法完成该任务，故跳过');
       return;
     }
     const { task_list } = data;
-    return task_list || [];
+    return task_list;
   } catch (error) {
     logger.exception('获取任务进度', error);
   }
+}
+
+/**
+ * 获取未完成的任务
+ */
+async function getUnfinishedTask() {
+  const tasks = await getTaskStatus();
+  if (!tasks) return;
+  const notFinish = tasks.filter(item => item.status !== 3);
+  if (notFinish.length === 0) {
+    logger.info('所有任务已完成');
+    return;
+  }
+  return notFinish;
 }
 
 /**
@@ -77,12 +92,12 @@ async function receiveTaskReward(version = 2) {
         return true;
       }
       default: {
-        logger.warn(`领取任务奖励失败：${code}-${message}`);
+        logger.fatal(`领取任务奖励`, code, message);
         return false;
       }
     }
   } catch (error) {
-    logger.error('领取任务奖励异常', error);
+    logger.exception('领取任务奖励', error);
     return false;
   }
 }
@@ -121,18 +136,18 @@ async function doOldTask(lastProgress: Ref<number> & { time: number }) {
       return await receiveTaskReward(1);
     }
     case 3: {
-      logger.info('任务已完成');
+      logger.info('任务已完成[老任务]');
       return true;
     }
     default: {
       if (status.p === undefined) {
-        logger.warn(`任务进度未知，${JSON.stringify(status)}`);
+        logger.warn(`任务进度[老任务]未知，${JSON.stringify(status)}`);
         return true;
       }
       if (status.p === lastProgress.value) {
         lastProgress.time++;
         if (lastProgress.time > 3) {
-          logger.debug('任务进度未更新，跳过');
+          logger.debug('任务进度[老任务]未更新，跳过');
           return true;
         }
       } else {
@@ -149,50 +164,88 @@ async function doOldTask(lastProgress: Ref<number> & { time: number }) {
  * 每日任务
  */
 async function dailyBattery() {
-  // 完成 new 任务
-  const taskList = await getTaskStatus();
-  if (!taskList) {
-    return;
+  const tasks = await getUnfinishedTask();
+  if (!tasks) return;
+
+  if (TaskConfig.dailyBattery.task39) {
+    await task39(tasks);
   }
-  // 获取需要完成的任务
-  const tasks = taskList.filter(item => item.total_reward !== item.received_reward);
-  if (tasks.length === 0) {
-    logger.info('所有任务已完成');
-    return;
-  }
+
   if (TaskConfig.dailyBattery.task34) {
-    // taskid 34
-    const task34 = tasks.find(item => item.task_id === 34);
-    if (task34) {
-      // 发送 5 条弹幕
-      await sendLiveDm(5);
-      // 领取任务奖励
-      await receiveTaskReward();
+    await task34(tasks);
+  }
+}
+
+async function task39(tasks: Tasklist[]) {
+  const task = tasks.find(item => item.task_title?.includes('鼓励新主播'));
+  if (!task) {
+    logger.info('[鼓励新主播]任务已完成');
+    return true;
+  }
+  const first = await runTask39(task);
+  if (first === 0) return true;
+
+  let result: any;
+  while ((result = await runTask39(result))) {
+    await apiDelay(3000);
+  }
+}
+
+async function runTask39(task?: Tasklist | number) {
+  if (!task || task !== -1) {
+    const tasks = await getUnfinishedTask();
+    if (!tasks) return 0;
+    if (tasks.length === 0) {
+      logger.info('所有任务已完成');
+      return 0;
+    }
+    task = tasks.find(item => item.task_title?.includes('鼓励新主播'));
+    if (!task) {
+      logger.info('[鼓励新主播]任务已完成');
+      return 0;
     }
   }
-
-  if (!TaskConfig.dailyBattery.task39) {
-    return;
+  await apiDelay(3000);
+  // 进行一次
+  const roomid = await getLandingRoom();
+  if (!roomid) {
+    await apiDelay(10000, 30000);
+    return -1;
   }
+  // 发送弹幕
+  const dm = generateRandomDm();
+  logger.debug(`发送弹幕[${roomid}] ${dm}`);
+  await sendMessageApp(roomid, dm);
+  await apiDelay(5000, 10000);
+  return 1;
+}
 
-  // 39 任务
-  const task39 = tasks.find(item => item.task_id === 39);
-  if (task39) {
-    // 需要次数
-    let times = task39.total_reward - task39.received_reward;
-    // 循环进行 times 次
-    while (times > 0) {
-      const roomid = await getLandingRoom();
-      if (!roomid) {
-        await apiDelay(10000, 30000);
-        continue;
-      }
-      // 发送弹幕
-      await sendDmMessage(roomid);
-      await apiDelay(7000, 12000);
-      times--;
+async function task34(tasks: Tasklist[]) {
+  let task34 = tasks.find(item => item.task_title?.includes('5条弹幕') || item.task_id === 34);
+  if (!task34) {
+    logger.info('34 任务已完成');
+    return true;
+  }
+  const { status } = task34;
+  if (status === 2) {
+    await receiveTaskReward();
+    return true;
+  }
+  // 如果先完成了 39 任务，那么可能不需要发送弹幕了
+  if (TaskConfig.dailyBattery.task39) {
+    const tasks = await getUnfinishedTask();
+    if (!tasks) return;
+    task34 = tasks.find(item => item.task_title?.includes('5条弹幕') || item.task_id === 34);
+    if (!task34) {
+      logger.info('34 任务已完成');
+      return true;
     }
   }
+  const times = task34.target;
+  if (times) {
+    await sendLiveDm(times);
+  }
+  await receiveTaskReward();
 }
 
 async function sendLiveDm(times: number) {
@@ -205,16 +258,18 @@ async function sendLiveDm(times: number) {
 
 export async function dailyBatteryService() {
   const { task34, task34old, task39 } = TaskConfig.dailyBattery;
-  // value 是当前进度，time 是连续未更新进度的次数
+  if (task34 || task39) {
+    await dailyBattery();
+  }
+
+  // 旧任务
   if (task34old) {
+    // value 是当前进度，time 是连续未更新进度的次数
     const lastProgress = { value: 0, time: 0 };
     while (lastProgress.value < 5) {
       const result = await doOldTask(lastProgress);
       if (result) break;
       await apiDelay(16000);
     }
-  }
-  if (task34 || task39) {
-    await dailyBattery();
   }
 }

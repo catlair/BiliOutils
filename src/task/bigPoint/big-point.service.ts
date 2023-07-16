@@ -78,7 +78,7 @@ async function retry(taskStatus: TaskStatus) {
   const cfgIsRetry = TaskConfig.bigPoint.isRetry;
   isRetry = true;
   if (cfgIsRetry) {
-    logger.verbose('开始尝试重试');
+    logger.debug('开始尝试重试');
     await apiDelay(isBoolean(cfgIsRetry) ? 20000 : cfgIsRetry * 1000);
     await bigPointTask(taskStatus);
   }
