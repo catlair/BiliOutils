@@ -1,11 +1,12 @@
 import type { ApiBaseProp } from '@/dto/bili-base-prop';
 import type { LotteryResult } from './activity-lottery.dto';
 import { TaskConfig } from '@/config';
-import { OriginURLs } from '@/constant/biliUri';
+import { OriginURLs, RefererURLs } from '@/constant/biliUri';
 import { biliApi } from '@/net/api';
 
 const wwwHeader = {
   origin: OriginURLs.www,
+  Referer: RefererURLs.www,
 };
 /**
  * 检测抽奖次数
@@ -42,6 +43,7 @@ export function addLotteryTimes(sid: string, action_type = 3) {
     {
       sid,
       action_type,
+      csrf: TaskConfig.BILIJCT,
     },
     {
       headers: wwwHeader,

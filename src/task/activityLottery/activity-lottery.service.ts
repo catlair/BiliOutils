@@ -157,14 +157,13 @@ export async function doLottery({ sid, title }: ActivityLotteryIdType) {
       pushIfNotExist(TaskModule.pushTitle, '【转盘】');
       return;
     }
-    logger.warn(`【${title}】抽奖失败 ${code} ${message}`);
+    logger.fatal(`【${title}】抽奖`, code, message);
     if (code === ActivityLotteryStatus.NoTimes) {
       return -1;
     }
     return await commonError(code);
   } catch (error) {
-    logger.error(`获取抽奖次数异常`);
-    logger.error(error);
+    logger.exception(`获取抽奖次数`, error);
   }
   return -1;
 }
@@ -181,11 +180,10 @@ export async function addTimes(sid: string) {
     if (code === ActivityLotteryStatus.Max) {
       return -1;
     }
-    logger.warn(`增加次数失败 ${code} ${message}`);
+    logger.fatal(`增加次数`, code, message);
     return await commonError(code);
   } catch (error) {
-    logger.error(`增加次数异常`);
-    logger.error(error);
+    logger.exception(`增加次数`, error);
   }
   return -1;
 }
