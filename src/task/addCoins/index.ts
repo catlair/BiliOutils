@@ -86,7 +86,7 @@ async function coinHandle(state: State) {
   }
 
   if (!data || !data.id || code !== 0) {
-    msg && logger.debug(msg);
+    msg && logger.debug(`获取稿件错误：${msg}`);
     state.eAidCount++;
     if (state.eAidCount >= 10) {
       logger.warn(`获取稿件错误次数超过 10 次，自动退出投币`);

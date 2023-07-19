@@ -1,18 +1,14 @@
 {
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
   extends: [
-    'config:recommended',
+    'config:base',
     ':dependencyDashboard',
     'schedule:daily',
-    'schedule:automergeEarlyMondays',
-    ':semanticCommitTypeAll(chore)',
-    ':automergeAll',
-    ':automergeBranch',
     ':docker',
     'group:allNonMajor',
-    ':skipStatusChecks',
   ],
   timezone: 'Asia/Shanghai',
+  automergeSchedule: ['before 4am'],
   npm: {
     minimumReleaseAge: '3 days',
   },
@@ -27,5 +23,8 @@
   lockFileMaintenance: {
     enabled: true,
   },
+  automerge: true,
+  automergeType: 'pr',
+  ignoreTests: false,
   platformAutomerge: true,
 }

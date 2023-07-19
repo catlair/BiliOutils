@@ -13,6 +13,7 @@ import type {
   LiveRoomDto,
   LiveRoomInfoDto,
   OnlineGoldRankDto,
+  RoomInfoDto,
 } from '../dto/live.dto';
 import type { ApiBaseProp, PureDataProp } from '../dto/bili-base-prop';
 import { liveApi } from './api';
@@ -72,12 +73,23 @@ export function sendMessage(roomid: number, msg: string, dm_type?: number): Prom
  * @param roomid 直播房间号
  * @param msg 消息
  */
-export async function sendMessageApp(roomid: number, msg: string) {
-  const info = (await getInfoByRoom(roomid)).data;
-
-  const {
-    room_info: { sub_session_key, up_session, uid, area_id, parent_area_id },
-  } = info;
+export async function sendMessageApp(
+  roomid: number,
+  msg: string,
+  {
+    sub_session_key,
+    up_session,
+    uid,
+    area_id,
+    parent_area_id,
+  }: {
+    sub_session_key: string;
+    up_session: string;
+    uid: number;
+    area_id: number;
+    parent_area_id: number;
+  },
+) {
   return await liveApi.post(`xlive/app-room/v1/dM/sendmsg?${appSignString()}`, {
     type: 'json',
     fontsize: 25,
@@ -140,7 +152,7 @@ export async function sendMessageApp(roomid: number, msg: string) {
  * @param roomid 直播间id
  */
 export function getInfoByRoom(roomid: number) {
-  return liveApi.get(`xlive/web-room/v1/index/getInfoByRoom?room_id=${roomid}`);
+  return liveApi.get<RoomInfoDto>(`xlive/web-room/v1/index/getInfoByRoom?room_id=${roomid}`);
 }
 
 /**

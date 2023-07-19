@@ -2,8 +2,9 @@ import * as net from './daily-battery.request';
 import { apiDelay, getRandomItem, logger } from '@/utils';
 import { generateRandomDm, sendDmMessage } from '@/service/dm.service';
 import { TaskConfig } from '@/config';
-import { sendMessageApp } from '@/net/live.request';
+import { getInfoByRoom, sendMessageApp } from '@/net/live.request';
 import type { Tasklist } from './daily-battery.dto';
+import { liveMobileHeartBeat } from '../liveIntimacy/intimacy.request';
 
 /**
  * 获取任务进度
@@ -51,6 +52,10 @@ async function getTaskStatus() {
       return;
     }
     const { task_list } = data;
+    if (!task_list) {
+      logger.warn('获取任务进度失败');
+      return;
+    }
     return task_list;
   } catch (error) {
     logger.exception('获取任务进度', error);
@@ -164,7 +169,7 @@ async function doOldTask(lastProgress: Ref<number> & { time: number }) {
  * 每日任务
  */
 async function dailyBattery() {
-  const tasks = await getUnfinishedTask();
+  const tasks = await getTaskStatus();
   if (!tasks) return;
 
   if (TaskConfig.dailyBattery.task39) {
@@ -177,31 +182,54 @@ async function dailyBattery() {
 }
 
 async function task39(tasks: Tasklist[]) {
-  const task = tasks.find(item => item.task_title?.includes('鼓励新主播'));
-  if (!task) {
-    logger.info('[鼓励新主播]任务已完成');
+  const task1 = tasks.find(item => item.task_title?.includes('鼓励新主播'));
+  const task2 = tasks.find(item => item.task_title?.includes('30秒'));
+
+  if (!task1 && !task2) {
+    logger.info('[鼓励新主播]不存在');
     return true;
   }
-  const first = await runTask39(task);
-  if (first === 0) return true;
 
-  let result: any;
-  while ((result = await runTask39(result))) {
-    await apiDelay(3000);
+  // 判断当前用户需要完成的是1还是2
+  if (task1) {
+    if (task1.status === 3) {
+      logger.info('[鼓励新主播（弹幕）]任务已完成');
+      return true;
+    }
+    const first = await runTask1(task1);
+    if (first === 0) return true;
+
+    let result: any;
+    while ((result = await runTask1(result))) {
+      await apiDelay(3000);
+    }
+    return true;
+  }
+
+  if (task2) {
+    if (task2.status === 3) {
+      logger.info('[鼓励新主播（弹幕/观看）]任务已完成');
+      return true;
+    }
+    const first = await runTask2(task2);
+    if (first === 0) return true;
+
+    let result: any;
+    while ((result = await runTask2(result))) {
+      await apiDelay(3000);
+    }
+    return true;
   }
 }
 
-async function runTask39(task?: Tasklist | number) {
+async function runTask1(task?: Tasklist | number) {
   if (!task || task !== -1) {
     const tasks = await getUnfinishedTask();
     if (!tasks) return 0;
-    if (tasks.length === 0) {
-      logger.info('所有任务已完成');
-      return 0;
-    }
+    if (tasks.length === 0) return 0;
     task = tasks.find(item => item.task_title?.includes('鼓励新主播'));
     if (!task) {
-      logger.info('[鼓励新主播]任务已完成');
+      logger.info('[鼓励新主播（弹幕）]任务已完成');
       return 0;
     }
   }
@@ -215,8 +243,61 @@ async function runTask39(task?: Tasklist | number) {
   // 发送弹幕
   const dm = generateRandomDm();
   logger.debug(`发送弹幕[${roomid}] ${dm}`);
-  await sendMessageApp(roomid, dm);
+  const { code, message, data } = await getInfoByRoom(roomid);
+  if (code !== 0) {
+    logger.fatal('获取房间信息', code, message);
+    return -1;
+  }
+  await sendMessageApp(roomid, dm, data?.room_info);
   await apiDelay(5000, 10000);
+  return 1;
+}
+
+async function runTask2(task?: Tasklist | number) {
+  if (!task || task !== -1) {
+    const tasks = await getUnfinishedTask();
+    if (!tasks) return 0;
+    if (tasks.length === 0) return 0;
+    task = tasks.find(item => item.task_title?.includes('30秒'));
+    if (!task) {
+      logger.info('[鼓励新主播（弹幕/观看）]任务已完成');
+      return 0;
+    }
+  }
+  await apiDelay(3000);
+  // 进行一次
+  const roomid = await getLandingRoom();
+  if (!roomid) {
+    await apiDelay(10000, 30000);
+    return -1;
+  }
+  // 发送弹幕
+  const dm = generateRandomDm();
+  logger.debug(`发送弹幕[${roomid}] ${dm}`);
+  const { code, message, data } = await getInfoByRoom(roomid);
+  if (code !== 0) {
+    logger.fatal('获取房间信息', code, message);
+    return -1;
+  }
+  const { room_info } = data;
+  await sendMessageApp(roomid, dm, room_info);
+  // 观看30秒
+  logger.debug(`观看30秒[${roomid}]`);
+  await liveMobileHeartBeat({
+    room_id: roomid,
+    up_id: room_info?.uid,
+    up_session: room_info?.up_session,
+    area_id: room_info?.parent_area_id,
+    parent_id: room_info?.area_id,
+  });
+  await apiDelay(30000);
+  await liveMobileHeartBeat({
+    room_id: roomid,
+    up_id: room_info?.uid,
+    up_session: room_info?.up_session,
+    area_id: room_info?.parent_area_id,
+    parent_id: room_info?.area_id,
+  });
   return 1;
 }
 

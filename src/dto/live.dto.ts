@@ -457,3 +457,498 @@ export type LiveHeartBeatRes = ApiBaseProp<{
   /** axoaadsffcazxksectbbb */
   secret_key: string;
 }>;
+
+export type RoomInfoDto = ApiBaseProp<{
+  room_info: Roominfo;
+  anchor_info: Anchorinfo;
+  news_info: Newsinfo;
+  rankdb_info: Rankdbinfo;
+  area_rank_info: Arearankinfo;
+  battle_rank_entry_info?: any;
+  tab_info: Tabinfo;
+  activity_init_info: Activityinitinfo;
+  voice_join_info: Voicejoininfo;
+  ad_banner_info: Adbannerinfo;
+  skin_info: Skininfo;
+  web_banner_info: Webbannerinfo;
+  lol_info?: any;
+  pk_info?: any;
+  battle_info?: any;
+  silent_room_info: Silentroominfo;
+  switch_info: Switchinfo;
+  record_switch_info?: any;
+  room_config_info: Roomconfiginfo;
+  gift_memory_info: Giftmemoryinfo;
+  new_switch_info: Newswitchinfo;
+  super_chat_info: Superchatinfo;
+  online_gold_rank_info_v2: Onlinegoldrankinfov2;
+  dm_brush_info: Dmbrushinfo;
+  dm_emoticon_info: Dmemoticoninfo;
+  dm_tag_info: Dmtaginfo;
+  topic_info: Topicinfo;
+  game_info: Gameinfo;
+  watched_show: Watchedshow;
+  topic_room_info: Topicroominfo;
+  show_reserve_status: boolean;
+  second_create_info: Secondcreateinfo;
+  play_together_info?: any;
+  cloud_game_info: Cloudgameinfo;
+  like_info_v3: Likeinfov3;
+  live_play_info: Liveplayinfo;
+  multi_voice: Multivoice;
+  popular_rank_info: Popularrankinfo;
+  new_area_rank_info: Newarearankinfo;
+  gift_star: Giftstar;
+  progress_for_widget: Progressforwidget;
+  revenue_demotion: Revenuedemotion;
+  revenue_material_md5?: any;
+  video_connection_info?: any;
+  player_throttle_info: Playerthrottleinfo;
+  guard_info: Guardinfo;
+  hot_rank_info?: any;
+}>;
+
+interface Guardinfo {
+  count: number;
+  anchor_guard_achieve_level: number;
+}
+
+interface Playerthrottleinfo {
+  status: number;
+  normal_sleep_time: number;
+  fullscreen_sleep_time: number;
+  tab_sleep_time: number;
+  prompt_time: number;
+}
+
+interface Revenuedemotion {
+  global_gift_config_demotion: boolean;
+}
+
+interface Progressforwidget {
+  gift_star_process: Giftstarprocess;
+  wish_process?: any;
+}
+
+interface Giftstarprocess {
+  task_info?: any;
+  preload_timestamp: number;
+  preload: boolean;
+  preload_task_info?: any;
+  widget_bg: string;
+  jump_schema: string;
+  ab_group: number;
+}
+
+interface Giftstar {
+  show: boolean;
+  display_widget_ab_group: number;
+}
+
+interface Newarearankinfo {
+  items?: any;
+  rotation_cycle_time_web: number;
+}
+
+interface Popularrankinfo {
+  rank: number;
+  countdown: number;
+  timestamp: number;
+  url: string;
+  on_rank_name: string;
+  rank_name: string;
+}
+
+interface Multivoice {
+  switch_status: number;
+  members: any[];
+  mv_role: number;
+  seat_type: number;
+  invoking_time: number;
+  version: number;
+  pk?: any;
+  biz_session_id: string;
+  mode_details?: any;
+  hat_list?: any;
+}
+
+interface Liveplayinfo {
+  show_widget_banner: boolean;
+  show_left_entry: boolean;
+}
+
+interface Likeinfov3 {
+  total_likes: number;
+  click_block: boolean;
+  count_block: boolean;
+  guild_emo_text: string;
+  guild_dm_text: string;
+  like_dm_text: string;
+  hand_icons: string[];
+  dm_icons: string[];
+  eggshells_icon: string;
+  count_show_time: number;
+  process_icon: string;
+  process_color: string;
+}
+
+interface Cloudgameinfo {
+  is_gaming: number;
+}
+
+interface Secondcreateinfo {
+  click_permission: number;
+  common_permission: number;
+  icon_name: string;
+  icon_url: string;
+  url: string;
+}
+
+interface Topicroominfo {
+  interactive_h5_url: string;
+  watermark: number;
+}
+
+interface Watchedshow {
+  switch: boolean;
+  num: number;
+  text_small: string;
+  text_large: string;
+  icon: string;
+  icon_location: number;
+  icon_web: string;
+}
+
+interface Gameinfo {
+  game_status: number;
+}
+
+interface Topicinfo {
+  topic_id: number;
+  topic_name: string;
+}
+
+interface Dmtaginfo {
+  dm_tag: number;
+  platform: any[];
+  extra: string;
+  dm_chronos_extra: string;
+  dm_mode: any[];
+  dm_setting_switch: number;
+  material_conf?: any;
+}
+
+interface Dmemoticoninfo {
+  is_open_emoticon: number;
+  is_shield_emoticon: number;
+}
+
+interface Dmbrushinfo {
+  min_time: number;
+  brush_count: number;
+  slice_count: number;
+  storage_time: number;
+}
+
+interface Onlinegoldrankinfov2 {
+  list: List2[];
+}
+
+interface List2 {
+  uid: number;
+  face: string;
+  uname: string;
+  score: string;
+  rank: number;
+  guard_level: number;
+  wealth_level: number;
+}
+
+interface Superchatinfo {
+  status: number;
+  jump_url: string;
+  icon: string;
+  ranked_mark: number;
+  message_list: any[];
+}
+
+interface Newswitchinfo {
+  'room-socket': number;
+  'room-prop-send': number;
+  'room-sailing': number;
+  'room-info-popularity': number;
+  'room-danmaku-editor': number;
+  'room-effect': number;
+  'room-fans_medal': number;
+  'room-report': number;
+  'room-feedback': number;
+  'room-player-watermark': number;
+  'room-recommend-live_off': number;
+  'room-activity': number;
+  'room-web_banner': number;
+  'room-silver_seeds-box': number;
+  'room-wishing_bottle': number;
+  'room-board': number;
+  'room-supplication': number;
+  'room-hour_rank': number;
+  'room-week_rank': number;
+  'room-anchor_rank': number;
+  'room-info-integral': number;
+  'room-super-chat': number;
+  'room-tab': number;
+  'room-hot-rank': number;
+  'fans-medal-progress': number;
+  'gift-bay-screen': number;
+  'room-enter': number;
+  'room-my-idol': number;
+  'room-topic': number;
+  'fans-club': number;
+  'room-popular-rank': number;
+  mic_user_gift: number;
+  'new-room-area-rank': number;
+  wealth_medal: number;
+  bubble: number;
+  title: number;
+}
+
+interface Giftmemoryinfo {
+  list?: any;
+}
+
+interface Roomconfiginfo {
+  dm_text: string;
+}
+
+interface Switchinfo {
+  close_guard: boolean;
+  close_gift: boolean;
+  close_online: boolean;
+  close_danmaku: boolean;
+}
+
+interface Silentroominfo {
+  type: string;
+  level: number;
+  second: number;
+  expire_time: number;
+}
+
+interface Webbannerinfo {
+  id: number;
+  title: string;
+  left: string;
+  right: string;
+  jump_url: string;
+  bg_color: string;
+  hover_color: string;
+  text_bg_color: string;
+  text_hover_color: string;
+  link_text: string;
+  link_color: string;
+  input_color: string;
+  input_text_color: string;
+  input_hover_color: string;
+  input_border_color: string;
+  input_search_color: string;
+}
+
+interface Skininfo {
+  id: number;
+  skin_name: string;
+  skin_config: string;
+  show_text: string;
+  skin_url: string;
+  start_time: number;
+  end_time: number;
+  current_time: number;
+}
+
+interface Adbannerinfo {
+  data?: any;
+}
+
+interface Voicejoininfo {
+  status: Status;
+  icons: Icons;
+  web_share_link: string;
+}
+
+interface Icons {
+  icon_close: string;
+  icon_open: string;
+  icon_wait: string;
+  icon_starting: string;
+}
+
+interface Status {
+  open: number;
+  anchor_open: number;
+  status: number;
+  uid: number;
+  user_name: string;
+  head_pic: string;
+  guard: number;
+  start_at: number;
+  current_time: number;
+}
+
+interface Activityinitinfo {
+  eventList: any[];
+  weekInfo: WeekInfo;
+  giftName?: any;
+  lego: Lego;
+}
+
+interface Lego {
+  timestamp: number;
+  config: string;
+}
+
+interface WeekInfo {
+  bannerInfo?: any;
+  giftName?: any;
+}
+
+interface Tabinfo {
+  list: List[];
+}
+
+interface List {
+  type: string;
+  desc: string;
+  isFirst: number;
+  isEvent: number;
+  eventType: string;
+  listType: string;
+  apiPrefix: string;
+  rank_name: string;
+}
+
+interface Arearankinfo {
+  areaRank: AreaRank;
+  liveRank: LiveRank;
+}
+
+interface LiveRank {
+  rank: string;
+}
+
+interface AreaRank {
+  index: number;
+  rank: string;
+}
+
+interface Rankdbinfo {
+  roomid: number;
+  rank_desc: string;
+  color: string;
+  h5_url: string;
+  web_url: string;
+  timestamp: number;
+}
+
+interface Newsinfo {
+  uid: number;
+  ctime: string;
+  content: string;
+}
+
+interface Anchorinfo {
+  base_info: Baseinfo;
+  live_info: Liveinfo;
+  relation_info: Relationinfo;
+  medal_info: Medalinfo;
+  gift_info: Giftinfo;
+}
+
+interface Giftinfo {
+  price: number;
+  price_update_time: number;
+}
+
+interface Medalinfo {
+  medal_name: string;
+  medal_id: number;
+  fansclub: number;
+}
+
+interface Relationinfo {
+  attention: number;
+}
+
+interface Liveinfo {
+  level: number;
+  level_color: number;
+  score: number;
+  upgrade_score: number;
+  current: number[];
+  next: any[];
+  rank: string;
+}
+
+interface Baseinfo {
+  uname: string;
+  face: string;
+  gender: string;
+  official_info: Officialinfo;
+}
+
+interface Officialinfo {
+  role: number;
+  title: string;
+  desc: string;
+  is_nft: number;
+  nft_dmark: string;
+}
+
+interface Roominfo {
+  uid: number;
+  room_id: number;
+  short_id: number;
+  title: string;
+  cover: string;
+  tags: string;
+  background: string;
+  description: string;
+  live_status: number;
+  live_start_time: number;
+  live_screen_type: number;
+  lock_status: number;
+  lock_time: number;
+  hidden_status: number;
+  hidden_time: number;
+  area_id: number;
+  area_name: string;
+  parent_area_id: number;
+  parent_area_name: string;
+  keyframe: string;
+  special_type: number;
+  up_session: string;
+  pk_status: number;
+  is_studio: boolean;
+  pendants: Pendants;
+  on_voice_join: number;
+  online: number;
+  room_type: Roomtype;
+  sub_session_key: string;
+  live_id: number;
+  live_id_str: string;
+  official_room_id: number;
+  official_room_info?: any;
+  voice_background: string;
+}
+
+interface Roomtype {
+  '2-3': number;
+  '3-21': number;
+}
+
+interface Pendants {
+  frame: Frame;
+}
+
+interface Frame {
+  name: string;
+  value: string;
+  desc: string;
+}

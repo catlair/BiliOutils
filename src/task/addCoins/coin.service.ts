@@ -131,7 +131,7 @@ export async function getAidByFollowing(types?: string[], special = false): Prom
     };
   } catch (error) {
     return {
-      msg: error.message,
+      msg: '关注列表：' + error.message,
       code: -2,
     };
   }
@@ -161,7 +161,7 @@ export async function getAidByRecommend(): Promise<AidInfo> {
     };
   } catch (error) {
     return {
-      msg: error.message,
+      msg: '首页推荐：' + error.message,
       code: -2,
     };
   }
@@ -194,7 +194,7 @@ export async function getAidByRegionRank(): Promise<AidInfo> {
     };
   } catch (error) {
     return {
-      msg: error.message,
+      msg: '排行：' + error.message,
       code: -2,
     };
   }
@@ -255,9 +255,9 @@ export async function getIdByRandom(mid: number, types?: string[]) {
       data: handleData as AidInfo['data'],
     };
   } catch (error) {
-    logger.debug(error);
+    logger.debug('获取随机投稿：' + error);
     return {
-      msg: error.message,
+      msg: '获取随机投稿：' + error.message,
       code: -2,
     };
   }
@@ -307,7 +307,7 @@ async function getVideoByRandom(mid: number, page: number, index: number, total:
 async function getAudioByRandom(mid: number, page: number, index: number) {
   const { code, data, msg } = await searchAudiosByUpId(mid, 30, page);
   if (code) {
-    return { message: msg };
+    return { message: '获取指定up主音频：' + msg };
   }
   const { data: list } = data;
   const { id, uname, title } = list[index];
@@ -317,7 +317,7 @@ async function getAudioByRandom(mid: number, page: number, index: number) {
 async function getArticleByRandom(mid: number, page: number, index: number) {
   const { code, data, message } = await searchArticlesByUpId(mid, 12, page);
   if (code) {
-    return { message };
+    return { message: '获取指定up主专栏：' + message };
   }
   const { articles } = data;
   const {
