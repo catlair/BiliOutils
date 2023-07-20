@@ -25,6 +25,7 @@ jobs:
         run: |
           cat package.json | jq "del( .optionalDependencies ) | .version = \"${{ env.BILI_VERSION }}\"" > temp.json
           mv temp.json package.json
+          jq '.engines.node = ">= 14"' package.json > tmp && mv tmp package.json
           yarn install
       - name: Build and Handle
         run: |
