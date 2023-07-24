@@ -29,7 +29,7 @@ export async function request<
     const { code, message, msg, data } = resp || {};
     if (code !== successCode) {
       thatlogger.warn(`${name || reqFunc.name}请求失败：${code} ${message || msg}`);
-      return data as Record<string, any>;
+      return (data || {}) as Record<string, any>;
     }
     if (okMsg) {
       thatlogger.info(okMsg);

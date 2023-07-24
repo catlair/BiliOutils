@@ -382,8 +382,6 @@ export const defaultConfig = {
   dailyBattery: {
     // 是否开启任务 39
     task39: false,
-    // 是否开启老的任务 34
-    task34old: true,
     // 是否开启新的任务 34
     task34: true,
   },

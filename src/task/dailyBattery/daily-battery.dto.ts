@@ -88,3 +88,60 @@ interface Qualitydescription {
   qn: number;
   desc: string;
 }
+
+export type RecList = ApiBaseProp<{
+  list: List[];
+  has_more: number;
+  room_cache_limit: number;
+  load_trigger: number;
+  cycle_rounds: number;
+  min_trigger_time: number;
+  max_trigger_time: number;
+  is_need_refresh: number;
+  need_show_guide: number;
+  guide_duration: number;
+}>;
+
+interface List {
+  room_id: number;
+  title: string;
+  cover: string;
+  link: string;
+  session_id: string;
+  group_id: number;
+  show_callback: string;
+  click_callback: string;
+  broadcast_type: number;
+  accept_quality: number[];
+  current_qn: number;
+  current_quality: number;
+  play_url: string;
+  play_url_h265: string;
+  quality_description: Qualitydescription[];
+  play_url_card: string;
+  p2p_type: number;
+  uid: number;
+  uname: string;
+  face: string;
+  head_box?: Headbox;
+  verify: Verify;
+  app_background: string;
+  is_nft: number;
+  nft_dmark: string;
+}
+
+interface Verify {
+  role: number;
+  title: string;
+}
+
+interface Headbox {
+  name: string;
+  value: string;
+  desc: string;
+}
+
+interface Qualitydescription {
+  qn: number;
+  desc: string;
+}

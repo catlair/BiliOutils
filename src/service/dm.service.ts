@@ -5,7 +5,7 @@ import * as liveRequest from '@/net/live.request';
 
 const messageArray = kaomoji.concat('1', '2', '3', '4', '5', '6', '7', '8', '9', '签到', '哈哈');
 
-export async function sendDmMessage(roomid: number, msg?: string, nickName?: string) {
+export async function sendDmMessage(roomid: number, nickName?: string, msg?: string) {
   msg = msg || generateRandomDm();
   nickName = nickName || roomid.toString();
   try {
