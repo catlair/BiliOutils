@@ -1,6 +1,12 @@
 {
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
-  extends: ['config:base', ':dependencyDashboard', ':docker', 'group:allNonMajor'],
+  extends: [
+    'config:base',
+    ':dependencyDashboard',
+    ':docker',
+    'group:allNonMajor',
+    'schedule:automergeEarlyMondays',
+  ],
   timezone: 'Asia/Shanghai',
   npm: {
     minimumReleaseAge: '3 days',
@@ -17,7 +23,7 @@
     enabled: true,
   },
   automerge: true,
-  automergeType: 'pr',
+  automergeType: 'branch',
   ignoreTests: true,
   platformAutomerge: true,
   labels: ['renovate'],
