@@ -59,3 +59,17 @@ export function getRecList(roomid: number) {
     })}`,
   );
 }
+
+/**
+ * 任务观看上报
+ * @param target_id 目标直播间的用户id
+ * @param task_id 任务id
+ */
+export function tickerUploadUserTask(target_id: number, task_id = 48) {
+  return liveApi.get(
+    `xlive/app-ucenter/v1/userTask/UserTaskTickerUpload?${appSignString({
+      target_id,
+      task_id,
+    })}`,
+  );
+}

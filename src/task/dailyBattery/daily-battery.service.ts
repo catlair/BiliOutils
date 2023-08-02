@@ -102,18 +102,26 @@ async function dailyBattery() {
   const tasks = await getTaskStatus();
   if (!tasks) return;
 
-  if (TaskConfig.dailyBattery.task39) {
-    await task39(tasks);
+  const tasksConfig = TaskConfig.dailyBattery.tasks;
+  try {
+    await task20(tasks);
+  } catch (error) {
+    logger.exception('鼓励新主播', error);
   }
 
-  if (TaskConfig.dailyBattery.task34) {
-    await task34(tasks);
+  try {
+    if (tasksConfig.includes('5弹幕')) {
+      await task5(tasks);
+    }
+  } catch (error) {
+    logger.exception('5条弹幕', error);
   }
 }
 
-async function task39(tasks: Tasklist[]) {
+async function task20(tasks: Tasklist[]) {
   const task1 = tasks.find(item => item.task_title?.includes('鼓励新主播'));
   const task2 = tasks.find(item => item.task_title?.includes('30秒'));
+  const tasksConfig = TaskConfig.dailyBattery.tasks;
 
   if (!task1 && !task2) {
     logger.info('[鼓励新主播]不存在');
@@ -121,7 +129,7 @@ async function task39(tasks: Tasklist[]) {
   }
 
   // 判断当前用户需要完成的是1还是2
-  if (task1) {
+  if (task1 && tasksConfig.includes('20弹幕')) {
     logger.debug(`[运行模块1] ${task1.task_id} ${task1.task_title}`);
     if (task1.status === 3) {
       logger.info('[鼓励新主播（弹幕）]任务已完成');
@@ -143,7 +151,7 @@ async function task39(tasks: Tasklist[]) {
         count++;
       }
       total++;
-      if (count > 35 || total > 100) {
+      if (count > 40 || total > 100) {
         logger.warn('任务进度未更新，跳过');
         break;
       }
@@ -151,21 +159,23 @@ async function task39(tasks: Tasklist[]) {
     return true;
   }
 
-  if (task2) {
+  if (task2 && tasksConfig.includes('20弹幕30秒观看')) {
     logger.debug(`[运行模块2] ${task2.task_id} ${task2.task_title}`);
     if (task2.status === 3) {
       logger.info('[鼓励新主播（弹幕/观看）]任务已完成');
       return true;
     }
-    const first = await runTask2(task2);
+    const first = await runTask2({
+      task: task2,
+    });
     if (first === 0) return true;
 
     let result: any,
       count = 0;
-    while ((result = await runTask2(result))) {
+    while ((result = await runTask2({ num: result }))) {
       await apiDelay(3000);
       count++;
-      if (count > 35) {
+      if (count > 40) {
         logger.warn('任务进度未更新，跳过');
         break;
       }
@@ -211,8 +221,8 @@ async function runTask1({ task, num }: { task?: Tasklist; num?: number }) {
   return roomid;
 }
 
-async function runTask2(task?: Tasklist | number) {
-  if (!task || task !== -1) {
+async function runTask2({ task, num }: { task?: Tasklist; num?: number }) {
+  if (num && num !== -1) {
     const tasks = await getUnfinishedTask();
     if (!tasks) return 0;
     if (tasks.length === 0) return 0;
@@ -222,6 +232,11 @@ async function runTask2(task?: Tasklist | number) {
       return 0;
     }
   }
+  if (!task?.btn_text.includes('去')) {
+    // 如果不是去观看，那么就等待并重试
+    await apiDelay(3000, 5000);
+    return -2;
+  }
   await apiDelay(3000);
   // 进行一次
   const roomid = await getLandingRoom();
@@ -229,17 +244,17 @@ async function runTask2(task?: Tasklist | number) {
     await apiDelay(10000, 30000);
     return -1;
   }
+  logger.debug(`已经获取 ${task.received_reward}`);
   // 发送弹幕
   const dm = generateRandomDm();
-  logger.debug(`发送弹幕[${roomid}] ${dm}`);
   const { code, message, data } = await getInfoByRoom(roomid);
   if (code !== 0) {
     logger.fatal('获取房间信息', code, message);
     return -1;
   }
   const { room_info } = data;
+  logger.debug(`发送弹幕[${roomid}] ${dm}`);
   await sendMessageApp(roomid, dm, room_info);
-  // 观看30秒
   logger.debug(`观看30秒[${roomid}]`);
   const options = {
     ...getRandomOptions(),
@@ -248,14 +263,17 @@ async function runTask2(task?: Tasklist | number) {
     up_session: room_info?.up_session,
     area_id: room_info?.parent_area_id,
     parent_id: room_info?.area_id,
+    watch_time: '30',
   };
   await liveMobileHeartBeat(options);
-  await apiDelay(30000);
+  await apiDelay(30200);
   await liveMobileHeartBeat(options);
-  return 1;
+  await apiDelay(200);
+  await net.tickerUploadUserTask(room_info?.uid, task.task_id);
+  return roomid;
 }
 
-async function task34(tasks: Tasklist[]) {
+async function task5(tasks: Tasklist[]) {
   let task34 = tasks.find(item => item.task_title?.includes('5条弹幕') || item.task_id === 34);
   if (!task34) {
     logger.info('34 任务已完成');
@@ -267,7 +285,7 @@ async function task34(tasks: Tasklist[]) {
     return true;
   }
   // 如果先完成了 39 任务，那么可能不需要发送弹幕了
-  if (TaskConfig.dailyBattery.task39) {
+  if (TaskConfig.dailyBattery.tasks?.length > 1) {
     const tasks = await getUnfinishedTask();
     if (!tasks) return;
     task34 = tasks.find(item => item.task_title?.includes('5条弹幕') || item.task_id === 34);
@@ -292,8 +310,7 @@ async function sendLiveDm(times: number) {
 }
 
 export async function dailyBatteryService() {
-  const { task34, task39 } = TaskConfig.dailyBattery;
-  if (task34 || task39) {
-    await dailyBattery();
-  }
+  const { tasks } = TaskConfig.dailyBattery;
+  if (tasks.length === 0) return;
+  await dailyBattery();
 }

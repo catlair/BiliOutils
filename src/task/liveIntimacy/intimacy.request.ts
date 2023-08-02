@@ -43,36 +43,40 @@ export interface MobileHeartBeatParams {
   up_session?: string;
   parent_id?: number | string;
   area_id?: number | string;
+  watch_time?: string;
 }
 
 /**
  * 直播心跳（移动端）
  */
-export function liveMobileHeartBeat({
-  buvid = createBuvid(),
-  gu_id = randomString(43).toLocaleUpperCase(),
-  visit_id = randomString(32).toLocaleLowerCase(),
-  uuid = createUUID(),
-  click_id = createUUID(),
-  room_id,
-  up_id,
-  uid,
-  up_level = 40,
-  up_session = '',
-  parent_id = 11,
-  area_id = 376,
-}: MobileHeartBeatParams) {
+export function liveMobileHeartBeat(
+  {
+    buvid = createBuvid(),
+    gu_id = randomString(43).toLocaleUpperCase(),
+    visit_id = randomString(32).toLocaleLowerCase(),
+    uuid = createUUID(),
+    room_id,
+    up_id,
+    uid,
+    up_level = 40,
+    up_session = '',
+    parent_id = 11,
+    area_id = 376,
+    watch_time = '60',
+  }: MobileHeartBeatParams,
+  superOptions: Record<string, any> = {},
+) {
   const baseData = {
     platform: 'android',
     uuid,
-    buvid,
+    buvid: buvid.replace('XY', 'XX'),
     seq_id: '1',
     room_id,
     parent_id,
     area_id,
     timestamp: String(parseInt(String(new Date().getTime() / 1000)) - 60),
     secret_key: 'axoaadsffcazxksectbbb',
-    watch_time: '60',
+    watch_time,
     up_id: up_id || uid || 0,
     up_level,
     jump_from: '30000',
@@ -85,17 +89,24 @@ export function liveMobileHeartBeat({
     up_session,
     visit_id,
     watch_status: '',
-    click_id,
+    click_id: '',
     session_id: '-99998',
     player_type: '0',
+    ...superOptions,
     client_ts: String(parseInt(String(new Date().getTime() / 1000))),
   };
   const data = {
     ...baseData,
     ts: parseInt(String(new Date().getTime() / 1000)),
     client_sign: clientSign(baseData),
+    mobi_app: 'android',
+    channel: 'xiaomi_cn_tv.danmaku.bili_20210930',
+    c_locale: 'zh_CN',
+    device: 'android',
+    build: TaskConfig.app.http.build,
     csrf_token: TaskConfig.BILIJCT,
     csrf: TaskConfig.BILIJCT,
+    disable_rcmd: '0',
   };
   return liveTraceApi.post<LiveHeartBeatRes>(
     'xlive/data-interface/v1/heartbeat/mobileHeartBeat',

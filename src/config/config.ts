@@ -380,10 +380,7 @@ export const defaultConfig = {
     } as Record<string, string | number | boolean>,
   },
   dailyBattery: {
-    // 是否开启任务 39
-    task39: false,
-    // 是否开启新的任务 34
-    task34: true,
+    tasks: ['5弹幕', '20弹幕', '20弹幕30秒观看'] as ('5弹幕' | '20弹幕' | '20弹幕30秒观看')[],
   },
   BILIJCT: '',
   USERID: 0,
