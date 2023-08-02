@@ -1,7 +1,7 @@
 import type { LevelType, LogOptions, MessageType, SimpleLoggerOptions } from '@/types/log';
 import * as fs from 'fs';
 import { isServerless, isQingLongPanel } from '@/utils/env';
-import { isBoolean, isObject } from '../is';
+import { isBoolean, isError } from '../is';
 import { resolvePwd } from '../path';
 import { writeError, writeOut } from './std';
 
@@ -85,7 +85,10 @@ export class SimpleLogger {
   protected noFile = false;
   protected logFile = resolvePwd(`./logs/bt_combined-def.log`);
   protected errorFile = this.logFile;
-  constructor(options: SimpleLoggerOptions = {}, public name = 'default') {
+  constructor(
+    options: SimpleLoggerOptions = {},
+    public name = 'default',
+  ) {
     this.mergeOptions(options);
     const { console: cl, file, push } = this.options;
     this.consoleLeval = getLogLevel(cl);
@@ -107,7 +110,7 @@ export class SimpleLogger {
       stderr = ['error', 'warn'].includes(level),
       payload = this.options.payload ? ` \u005b${this.options.payload}\u005d ` : ' ';
     if (this.consoleLeval.includes(level)) {
-      this.conslole(
+      this.console(
         `\u005b${emoji} ${formatTime(prcTime, false)}\u005d${payload}${message}\n`,
         stderr,
       );
@@ -122,8 +125,8 @@ export class SimpleLogger {
     }
   }
 
-  public error(message: MessageType | Error, error?: Error) {
-    if (message instanceof Error) {
+  public error(message: MessageType | Error, error?: MessageType | Error) {
+    if (isError(message)) {
       error = message;
       message = '';
     }
@@ -131,7 +134,7 @@ export class SimpleLogger {
       this.log({ level: 'error' }, message);
       return;
     }
-    if (!isObject(error)) {
+    if (!isError(error)) {
       this.log({ level: 'error' }, `${message} ${error}`);
       return;
     }
@@ -159,7 +162,7 @@ export class SimpleLogger {
     this.log({ level: 'debug' }, message);
   }
 
-  protected conslole(message: string, stderr: boolean) {
+  protected console(message: string, stderr: boolean) {
     if (stderr) {
       writeError(message);
       return;

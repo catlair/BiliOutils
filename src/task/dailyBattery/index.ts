@@ -6,6 +6,6 @@ export default async function dailyBattery() {
   try {
     await dailyBatteryService();
   } catch (error) {
-    logger.error(`获取每日电池出现异常`, error);
+    logger.exception(`获取每日电池`, error);
   }
 }

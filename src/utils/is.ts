@@ -47,6 +47,10 @@ export function isNull(val: unknown): val is null {
   return val === null;
 }
 
+export function isError(val: unknown): val is Error {
+  return val instanceof Error;
+}
+
 export function isNullAndUnDef(val: unknown): val is null | undefined {
   return isUnDef(val) && isNull(val);
 }

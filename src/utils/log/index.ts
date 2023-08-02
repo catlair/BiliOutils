@@ -9,7 +9,10 @@ export { defLogger, clearLogs };
 export const emptyLogger = new EmptyLogger() as unknown as Logger;
 
 export class Logger extends SimpleLogger {
-  constructor(protected options: LoggerOptions = {}, public name = 'default') {
+  constructor(
+    protected options: LoggerOptions = {},
+    public name = 'default',
+  ) {
     super(options);
     this.mergeOptions({ ...options, fileSplit: 'day' } as LoggerOptions);
     const thisTime = getPRCDate(),
