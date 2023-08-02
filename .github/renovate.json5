@@ -19,9 +19,6 @@
       automerge: false,
     },
   ],
-  lockFileMaintenance: {
-    enabled: true,
-  },
   automerge: true,
   automergeType: 'branch',
   ignoreTests: true,
