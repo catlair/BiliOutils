@@ -1,4 +1,10 @@
-import { mangaSign, buyMangaService, shareComicService, readMangaService } from './manga.service';
+import {
+  mangaSign,
+  buyMangaService,
+  shareComicService,
+  readMangaService,
+  mangaSummerActivity,
+} from './manga.service';
 import { logger } from '@/utils/log';
 
 export default async function mangaTask() {
@@ -12,6 +18,8 @@ export default async function mangaTask() {
     await readMangaService();
     // 购买漫画
     await buyMangaService();
+    // 漫画夏季活动
+    await mangaSummerActivity();
   } catch (error) {
     logger.error(`漫画任务异常：`, error);
   }

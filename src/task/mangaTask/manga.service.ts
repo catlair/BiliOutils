@@ -3,6 +3,7 @@ import { TaskConfig } from '@/config';
 import * as mangaApi from './manga.request';
 import { apiDelay, isBoolean, isUnDef, logger, random } from '@/utils';
 import { Bilicomic } from '@catlair/bilicomic-dataflow';
+import { wd40Activity } from './manga.request';
 
 let expireCouponNum: number;
 
@@ -288,7 +289,7 @@ export async function mangaSign() {
     if (status === 400 || statusCode === 400) {
       logger.info('已经签到过了');
     } else {
-      logger.error(`漫画签到异常：`, error);
+      logger.exception(`漫画签到`, error);
     }
   }
 }
@@ -299,10 +300,11 @@ async function getSeasonInfo() {
     if (code === 0) {
       return data;
     }
-    logger.warn(`获取赛季信息失败：${code} ${msg}`);
+    logger.fatal(`获取赛季信息`, code, msg);
   } catch (error) {
-    logger.error(`获取赛季异常：`, error);
+    logger.exception(`获取赛季`, error);
   }
+  return false;
 }
 
 export async function takeSeasonGift() {
@@ -379,7 +381,7 @@ export async function readMangaService(isNoLogin?: boolean) {
   if (!TaskConfig.manga.read) {
     return;
   }
-  logger.info('开始每日阅读');
+  logger.debug('开始每日阅读');
   try {
     const seasonInfo = await getSeasonInfo();
     if (isBoolean(seasonInfo)) {
@@ -394,8 +396,109 @@ export async function readMangaService(isNoLogin?: boolean) {
       logger.info('非登录状态，不判断阅读结果');
       return;
     }
-    logger.debug('阅读结束');
+    logger.info('每日阅读结束');
   } catch (error) {
-    logger.error(`每日漫画阅读任务异常`, error);
+    logger.exception(`每日漫画阅读任务`, error);
+  }
+}
+
+/**
+ * 充值活动
+ */
+export async function mangaSummerActivity() {
+  if (!TaskConfig.manga.summer) return;
+  //2023 9 月 1 日 0 点之前
+  if (Date.now() > 1693497600000) {
+    logger.warn('夏日活动已经结束');
+    return;
+  }
+  // 获取当前金币数
+  const balance = await getRechargeBalance();
+  logger.info(`夏日活动金币数：${balance || 0}`);
+
+  // 获取任务
+  const tasks = await getRechargeTask();
+  // 没有任务
+  if (!tasks || tasks.length === 0) {
+    logger.info('夏日活动任务已经完成');
+    return;
+  }
+  // 有任务 270032，今日访问
+  const visitTask = tasks.find(task => task.id === 270032);
+  if (visitTask) {
+    logger.debug(`开始访问夏日活动主页`);
+    try {
+      await wd40Activity.doMannerMain();
+    } catch (error) {
+      logger.exception(`访问夏日活动主页`, error);
+    }
+  }
+  // 有任务 270033，每日阅读
+  const readTask = tasks.find(task => task.id === 270033);
+  if (readTask) {
+    TaskConfig.manga.read = true;
+    await readMangaService();
+  }
+  // 有任务 300052，访问会场
+  const visitHallTask = tasks.find(task => task.id === 300052);
+  if (visitHallTask) {
+    logger.debug(`开始访问夏日活动会场`);
+    try {
+      await wd40Activity.doMannerVenue();
+    } catch (error) {
+      logger.exception(`访问夏日活动会场`, error);
+    }
+  }
+  // 获取任务列表
+  const taskList = await getRechargeTask();
+  if (taskList?.length) {
+    // 领取任务奖励
+    await takeRechargeTask(taskList);
+  }
+}
+
+async function getRechargeBalance() {
+  try {
+    const { data, errors } = await wd40Activity.tokenInfos();
+    if (errors) {
+      logger.warn(`获取充值活动失败：${errors[0].message}`);
+      return;
+    }
+    const {
+      activity: {
+        common: { tokens },
+      },
+    } = data;
+    const token = tokens[0];
+    return token.balance || 0;
+  } catch (error) {
+    logger.exception(`获取充值活动`, error);
+  }
+}
+
+async function getRechargeTask() {
+  try {
+    const { data, errors } = await wd40Activity.tasks();
+    if (errors) {
+      logger.warn(`获取充值活动失败：${errors[0].message}`);
+      return;
+    }
+
+    const {
+      activity: {
+        common: { tasks },
+      },
+    } = data;
+    return tasks.filter(task => task.status !== 2);
+  } catch (error) {
+    logger.exception(`获取充值活动`, error);
+  }
+}
+
+async function takeRechargeTask(taskList: any[]) {
+  try {
+    taskList.forEach(task => wd40Activity.takeTask(task.id));
+  } catch (error) {
+    logger.exception(`领取充值活动`, error);
   }
 }

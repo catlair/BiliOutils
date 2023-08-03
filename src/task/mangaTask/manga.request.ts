@@ -20,6 +20,7 @@ import type {
   WalletDto,
 } from './manga.dto';
 import { mangaApi } from '@/net/api';
+import { TaskConfig } from '@/config';
 
 const MANGA_DATA = {
   is_teenager: 0,
@@ -224,3 +225,160 @@ export function checkLastResult() {
     ...MANGA_DATA,
   });
 }
+
+/**
+ * 充值活动 w40
+ */
+
+class Wd40Activity {
+  hashMap = {
+    ServerEnv: '0e5bae2246471825ae37772d6c1dbdbaf7eb0612ab3f80a84ab440ae20616990',
+    TokenLogs: '81e2040135d3186e72edb9943089d386e7a580d67248fd5ca288abacb8fe88d5',
+    Tasks: '4d57a11c2587a79d5f550b764ca70d0d6f317478ec2d44be4eb633ec96768c91',
+    TakeTask: '24b8448f2b8be0b16185ee5a9b11987185e206e375e142a753e9a6560f1c9247',
+    TokenInfos: 'f32775dd061668d4c37ca3081029b01b11b17569bca5d1ba53ab9a306d6e6b38',
+    TimeInfo: '05e7e45f1d580fb0d88a9ca56483c793481db4ebc6314d20ee7f233839760cc4',
+    NewSeasonState: '0897502d0136e65aee44f34ed3f660e7bfeea8bf48460e6e2501f1af3979df84',
+    MangaSeason: '17e71e6b4deac17bba9c7f28d63687cda75f4214561e9e869178dc56977a2b52',
+    MangaUserMeta: '26edfb63d8182e3cccd0cae307d346a28e5980bedb99d3904b4c3f08f91e165e',
+    DiscountSeasonsState: 'c74a204dbd30c6a6f7965c7edf1fdbb3180ca94e23ecd68d92256b7560312b75',
+    Login: '9d92b2da7493f63a530522294e927859f832ebd326b97b0a6b0ff450692a7394',
+    ActivityTimeInfo: 'fbf23a1376d473315649821ea33862940d7a67f3703d8986d985b775e515d31f',
+  };
+
+  defHeaders = {
+    referer: 'https://manga.bilibili.com/blackboard/activity-GD55upVIp5.html?jumpFrom=0',
+    'user-agent': TaskConfig.mobileUA,
+    'Content-Type': 'application/json',
+  };
+
+  wd40get<T>(op: string, variables: Record<string, any>, superOptions: Record<string, any> = {}) {
+    if (this.hashMap[op]) {
+      superOptions.extensions = {
+        persistedQuery: {
+          version: 1,
+          sha256Hash: this.hashMap[op],
+        },
+      };
+    }
+    return mangaApi.post<{
+      data: T;
+      errors: any[];
+    }>(
+      `wd40?op=${op}`,
+      {
+        operationName: op,
+        variables,
+        ...superOptions,
+      },
+      {
+        headers: this.defHeaders,
+      },
+    );
+  }
+
+  timeInfo() {
+    return this.wd40get<{
+      server: {
+        time: string;
+      };
+      activity: {
+        common: {
+          info: {
+            id: number;
+            end: string;
+          };
+        };
+      };
+    }>('TimeInfo', { id: 870056 });
+  }
+
+  tokenInfos() {
+    return this.wd40get<{
+      activity: {
+        common: {
+          tokens: {
+            id: number;
+            actId: number;
+            balance: number;
+            total: number;
+          }[];
+        };
+      };
+    }>('TokenInfos', {
+      actId: 870056,
+      tokenIds: [27],
+    });
+  }
+
+  tasks(ids = [270032, 270033, 300052, 210068]) {
+    return this.wd40get<{
+      activity: {
+        common: {
+          tasks: {
+            id: number;
+            /** 0  未完成 1 进行中 2 已完成 */
+            status: number;
+            available: number;
+            progress: number;
+            /** 任务进度上限 */
+            progressLimit: number;
+            count: number;
+            countLimit: number;
+          }[];
+        };
+      };
+    }>('Tasks', { ids });
+  }
+
+  takeTask(id: number) {
+    return this.wd40get<{
+      activity: {
+        common: {
+          task: {
+            id: number;
+            status: number;
+            available: number;
+            progress: number;
+            progressLimit: number;
+            count: number;
+            countLimit: number;
+          };
+        };
+      };
+    }>('TakeTask', {
+      id,
+      actId: 870056,
+    });
+  }
+
+  doManner(act_id: number, path: string) {
+    return mangaApi.post(
+      'twirp/user.v1.Strategy/DoManner',
+      {
+        act_id,
+        path,
+      },
+      {
+        headers: {
+          referer: path,
+          'user-agent': TaskConfig.mobileUA,
+          'Content-Type': 'application/json',
+        },
+      },
+    );
+  }
+
+  doMannerVenue() {
+    return this.doManner(990002, 'https://manga.bilibili.com/blackboard/activity-tfoshYo7Qx.html');
+  }
+
+  doMannerMain() {
+    return this.doManner(
+      870056,
+      'https://manga.bilibili.com/blackboard/activity-GD55upVIp5.html?jumpFrom=0',
+    );
+  }
+}
+
+export const wd40Activity = new Wd40Activity();
