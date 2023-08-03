@@ -38,18 +38,6 @@ jobs:
           cat package.json | jq "del( .optionalDependencies ) | .version = \"${{ env.BILI_VERSION }}\"" > temp.json
           mv temp.json package.json
           yarn install
-      - name: Build and ZIP CFC
-        run: |
-          yarn build:baidu
-          echo ${{ env.BILI_VERSION }} >> dist/version.txt
-          cp -rf ./tools/ ./package*.json yarn.lock ./build/.yarnclean ./node_modules/ ./dist/
-          cd dist
-          npm prune --omit=dev
-          yarn autoclear
-          mv index.cfc.js cfc
-          rm -rf bin.js index*.js main.js tools package*.json yarn.lock .yarnclean
-          mv cfc index.js
-          zip -r -q ../baidu_cfc.zip .
       - name: Build Babel
         run: |
           yarn build
@@ -69,28 +57,12 @@ jobs:
           rm -rf tools package*.json yarn.lock .yarnclean
           zip -r -q ../tencent_scf.zip *
           rm -rf node_modules
-      - name: ZIP FC
-        run: |
-          cp -rf ./tools/ ./package*.json yarn.lock ./build/.yarnclean ./node_modules/ ./dist/
-          mv ./index.fc.js ./dist/index.js
-          cd dist
-          # yarn add @alicloud/fc2 # 自带 fc2
-          npm prune --production
-          yarn autoclear
-          rm -rf tools package*.json yarn.lock .yarnclean
-          zip -r -q ../aliyun_fc.zip *
       - name: Build Rollup
         run: |
           cat package.json | jq .optionalDependencies="$(cat optionalDependencies.json)" > demo.json
           mv demo.json package.json
           yarn
           yarn build:rollup
-      - name: ZIP huawei AGC
-        run: |
-          mkdir temp
-          cp dist/rollup/index.agc.js temp/index.js
-          cd temp
-          zip -r -q ../huawei_agc.zip index.js
       - name: Pre Commit
         run: |
           rm dist/rollup/index.agc.js
@@ -101,8 +73,6 @@ jobs:
           files: |
             tencent_scf.zip
             aliyun_fc.zip
-            baidu_cfc.zip
-            huawei_agc.zip
           draft: ${{ env.IS_TAG == 'false' }}
           prerelease: ${{ env.IS_TAG == 'true' && env.IS_RC == 'true' }}
         env:
