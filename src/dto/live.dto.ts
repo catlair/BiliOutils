@@ -901,7 +901,7 @@ interface Officialinfo {
   nft_dmark: string;
 }
 
-interface Roominfo {
+export interface Roominfo {
   uid: number;
   room_id: number;
   short_id: number;
