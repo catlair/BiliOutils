@@ -1,27 +1,3 @@
 {
-  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
-  extends: [
-    'config:base',
-    ':dependencyDashboard',
-    ':docker',
-    'group:allNonMajor',
-    'schedule:automergeEarlyMondays',
-  ],
-  timezone: 'Asia/Shanghai',
-  npm: {
-    minimumReleaseAge: '3 days',
-  },
-  packageRules: [
-    {
-      dependencyDashboardApproval: true,
-      matchUpdateTypes: ['major'],
-      excludePackagePatterns: ['^@types/', '^eslint', 'prettier', 'typescript', '^ts-'],
-      automerge: false,
-    },
-  ],
-  automerge: true,
-  automergeType: 'branch',
-  ignoreTests: true,
-  platformAutomerge: true,
-  labels: ['renovate'],
+  "extends": ["github>catlair/renovate-config"]
 }

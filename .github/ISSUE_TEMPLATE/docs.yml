@@ -9,7 +9,7 @@ body:
     attributes:
       value: |
         感谢您花时间填写这个报告!
-        如果想要直接 PR 请提交 <https://github.com/kudouran/btdocs>
+        如果想要直接 PR 请提交 <https://github.com/catlair/btdocs>
   - type: textarea
     id: what-happened
     attributes:

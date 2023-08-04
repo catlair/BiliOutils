@@ -1,4 +1,4 @@
-name: 错误报告
+name: Bug 反馈
 description: 如果您发现了一个错误，请在此提交您的错误报告。
 title: '[Bug]: '
 labels: ['bug']
@@ -24,7 +24,6 @@ body:
       label: 发生了什么
       description: 还有，告诉我们，你希望发生什么，能否复现？
       placeholder: 告诉我们你看到了什么!
-      value: ''
     validations:
       required: true
   - type: textarea
@@ -33,7 +32,6 @@ body:
       label: 预期的结果
       description: 如果没有错误，将会是什么样的？
       placeholder: 告诉我们它应该是怎么样的!
-      value: ''
   - type: textarea
     id: logs
     attributes:
@@ -52,4 +50,3 @@ body:
       label: 有效的帮助
       description: 对此您能提供什么有效的帮助？
       placeholder: 告诉我们您能提供的帮助!
-      value: '这个接口是这样的。。。'
