@@ -25,28 +25,29 @@ export function getUserNavNum(mid: IdType): Promise<UserNavNumDto> {
 
 /**
  * 获取指定up主视频
- * @param upId upId
- * @param pageSize 页面数据条数 max: 30
- * @param pageNumber 页数
+ * @param mid upId
+ * @param ps 页面数据条数 max: 30
+ * @param pn 页数
  * @param keyword 搜索关键词
  */
-export function searchVideosByUpId(
-  upId: number,
-  pageSize = 30,
-  pageNumber = 1,
+export async function searchVideosByUpId(
+  mid: number,
+  ps = 30,
+  pn = 1,
   keyword = '',
 ): Promise<VideoSearchDto> {
-  return biliApi.get('x/space/arc/search', {
-    params: {
+  const { getWbiQuery } = await import('@/service/sgin.service');
+  return biliApi.get(
+    `x/space/wbi/arc/search?${await getWbiQuery({
       jsonp: 'jsonp',
       order: 'pubdate',
       keyword,
-      pn: pageNumber,
+      pn,
       tid: 0,
-      ps: pageSize,
-      mid: upId,
-    },
-  });
+      ps,
+      mid,
+    })}`,
+  );
 }
 
 /**

@@ -119,7 +119,7 @@ export async function getAidByFollowing(types?: string[], special = false): Prom
     }
 
     if (code === 0) {
-      await apiDelay();
+      await apiDelay(1000, 4000);
       const { mid } = getRandomItem(followList) || {};
       return await getIdByRandom(mid, types);
     }
@@ -233,7 +233,7 @@ export async function getIdByRandom(mid: number, types?: string[]) {
         code: -1,
       };
     }
-    await apiDelay();
+    await apiDelay(1000, 4000);
     // 获取随机投稿
     const randmonNumData = getRandmonNumData(data, types);
     if (!randmonNumData) {
@@ -290,7 +290,7 @@ async function getVideoByRandom(mid: number, page: number, index: number, total:
     };
 
   const { code, data, message } = await searchVideosByUpId(mid, 30, page);
-  if (code) return { message };
+  if (code) return { message: `获取指定up主视频 [${code}] ${message}` };
   countVideo++;
 
   const { aid, title, author, copyright, mid: upperMid } = data.list.vlist[index];
@@ -307,7 +307,7 @@ async function getVideoByRandom(mid: number, page: number, index: number, total:
 async function getAudioByRandom(mid: number, page: number, index: number) {
   const { code, data, msg } = await searchAudiosByUpId(mid, 30, page);
   if (code) {
-    return { message: '获取指定up主音频：' + msg };
+    return { message: `获取指定up主音频 [${code}] ${msg}` };
   }
   const { data: list } = data;
   const { id, uname, title } = list[index];
@@ -317,7 +317,7 @@ async function getAudioByRandom(mid: number, page: number, index: number) {
 async function getArticleByRandom(mid: number, page: number, index: number) {
   const { code, data, message } = await searchArticlesByUpId(mid, 12, page);
   if (code) {
-    return { message: '获取指定up主专栏：' + message };
+    return { message: `获取指定up主专栏 [${code}] ${message}` };
   }
   const { articles } = data;
   const {
@@ -363,7 +363,7 @@ export const aidFuncName = new (class {
  */
 export async function getAidByByPriority(types?: string[]) {
   const idFunc = idFuncMap.get(aidFuncName.value);
-  await apiDelay();
+  await apiDelay(1000, 2000);
   return idFunc?.(types && types.map(el => TypeEnum[el])) || getAidByRecommend();
 }
 

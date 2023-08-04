@@ -62,6 +62,11 @@ abstract class TaskModuleTemplate {
   static hasError = false;
   /** 直播间 */
   static roomid: number;
+  /** wbi keys */
+  static wbiKeys: { img: string | undefined; sub: string | undefined } = {
+    img: undefined,
+    sub: undefined,
+  };
 }
 
 export let TaskModule: typeof TaskModuleTemplate;
