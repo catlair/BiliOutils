@@ -39,6 +39,7 @@ import { TypeEnum } from './coin.emum';
 //   '-1': '获取错误',
 //   0: '获取成功',
 //   1: '数据为空',
+//   2: '没有更多 up 用于获取',
 // };
 
 export interface AidInfo {
@@ -364,7 +365,7 @@ export const aidFuncName = new (class {
 export async function getAidByByPriority(types?: string[]) {
   const idFunc = idFuncMap.get(aidFuncName.value);
   await apiDelay(1000, 2000);
-  return idFunc?.(types && types.map(el => TypeEnum[el])) || getAidByRecommend();
+  return idFunc?.(types && types.map(el => TypeEnum[el])) || ({ code: 2 } as AidInfo);
 }
 
 // 参数

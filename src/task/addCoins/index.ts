@@ -80,6 +80,11 @@ async function coinHandle(state: State) {
   // 这个函数不会报错的
   const { data, code, msg } = await getAidByByPriority();
 
+  if (code === 2) {
+    logger.info(`已经没有需要投币的稿件了`);
+    return true;
+  }
+
   if (code === 1) {
     aidFuncName.next();
     return false;
