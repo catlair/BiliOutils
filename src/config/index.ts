@@ -86,9 +86,19 @@ export function initialize(config?: UserConfig) {
     cookie: encodeCookie(`${userConfig.cookie}; Buvid=${buvid}`),
     buvid,
   };
+
+  setTaskModule(_taskConfig);
+}
+
+function setTaskModule(taskConfig: TaskConfigType) {
   TaskModule = class extends TaskModuleTemplate {};
-  TaskModule.coinsTask = _taskConfig.coin.targetCoins;
-  TaskModule.roomid = _taskConfig.blink.roomid;
+
+  if (taskConfig.limit.coins5 && taskConfig.coin.targetCoins > 5) {
+    taskConfig.coin.targetCoins = 5;
+  }
+  TaskModule.coinsTask = taskConfig.coin.targetCoins;
+
+  TaskModule.roomid = taskConfig.blink.roomid;
 }
 
 function getCookieBuvid(cookie: string) {

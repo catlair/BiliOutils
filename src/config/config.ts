@@ -434,9 +434,6 @@ function configValueHandle(config: TheConfig) {
   if (!couponBalance.mid) {
     couponBalance.mid = config.USERID;
   }
-  if (coin.targetCoins > 5) {
-    coin.targetCoins = 5;
-  }
   if (match.coins > 10) {
     match.coins = 10;
   }

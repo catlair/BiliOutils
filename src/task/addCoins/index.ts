@@ -30,17 +30,6 @@ interface State {
 
 type IdInfo = Defined<AidInfo['data']>;
 
-let MAX_COUNT = 5;
-
-function initMaxCount() {
-  // 突破数量限制
-  if (!TaskConfig.limit.coins5) {
-    MAX_COUNT = TaskModule.coinsTask;
-    return;
-  }
-  MAX_COUNT = TaskModule.coinsTask > 5 ? 5 : TaskModule.coinsTask;
-}
-
 export default async function addCoins() {
   logger.info('----【每日投币】----');
   await checkCoin();
@@ -58,9 +47,8 @@ export default async function addCoins() {
     refresh: true,
   };
   let isReturn = false;
-  initMaxCount();
   // 判断需要投币的数量
-  while (TaskModule.coinsTask > 0 && !isReturn && state.eCount < 5 && state.num < MAX_COUNT) {
+  while (TaskModule.coinsTask > 0 && !isReturn && state.eCount < 5) {
     isReturn = await coinHandle(state);
   }
   if (state.eCount >= 5) logger.info(`出现异常/错误5次，自动退出投币`);
@@ -120,8 +108,8 @@ async function coinHandle(state: State) {
  * 设置还需要投币的数量
  */
 async function setCoinsTask(num: number) {
-  const coinNum = await getTodayCoinNum(num);
-  const coins = TaskConfig.coin.targetCoins - coinNum;
+  const todayCoinNum = await getTodayCoinNum(num);
+  const coins = TaskConfig.coin.targetCoins - todayCoinNum;
   TaskModule.coinsTask = coins > 0 ? coins : 0;
 }
 
@@ -133,7 +121,7 @@ async function setCoinsTask(num: number) {
 function getCoin(contributionCoin: number, coin: number, copyright?: string) {
   // 先判断一下，防止直接 return 1
   if (contributionCoin >= 2) return 0;
-  if (TaskModule.coinsTask === 1 || MAX_COUNT - coin === 1) return 1;
+  if (TaskModule.coinsTask === 1) return 1;
   if (Number(copyright) === 2) return 1 - contributionCoin;
   return 2 - contributionCoin;
 }
@@ -190,7 +178,6 @@ function coinFilledHandle(id: number, state: State) {
  */
 function coinSuccessHandle(state: State, { author, id, coinType }: IdInfo, coin: number) {
   TaskModule.money -= coin;
-  TaskModule.coinsTask -= coin;
   state.num += coin;
   logger.info(`给${aidFuncName.value}【${author}】的${coinType}：${id} 投币${coin}颗`);
   return false;
