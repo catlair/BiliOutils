@@ -68,10 +68,11 @@ export async function bigPointService() {
     return;
   }
   const isEmpty = await bigPointTask(taskStatus);
-  if (isEmpty && (await printPoint())) return;
+  const todayPoint = await getTodayPonit();
+  if (isEmpty || todayPoint) return;
   await retry(taskStatus);
   // 如果积分不足，那再重试一次
-  return !(await printPoint()) && (await retry(taskStatus));
+  return !(await getTodayPonit()) && (await retry(taskStatus));
 }
 
 async function retry(taskStatus: TaskStatus) {
@@ -92,7 +93,7 @@ async function bigPointTask(taskStatus: TaskStatus) {
   if (signCode === -401) {
     logger.error('出现非法访问异常，可能账号存在异常，放弃大积分任务');
     isError = true;
-    return;
+    return true;
   }
   await apiDelay(100, 200);
   // 判断是否领取了任务
@@ -109,7 +110,7 @@ async function bigPointTask(taskStatus: TaskStatus) {
 async function doDailyTask(taskStatus: TaskStatus | undefined) {
   if (!taskStatus?.task_info?.modules || taskStatus.task_info.modules.length === 0) {
     logger.warn('处理错误：没有需要完成的每日任务');
-    return;
+    return true;
   }
 
   const waitTaskItems =
@@ -334,7 +335,7 @@ async function getPoint() {
   }
 }
 
-async function printPoint() {
+async function getTodayPonit() {
   const todayPoint = await getPoint();
   if (!isDef(todayPoint)) return false;
   if (todayPoint >= FREE_POINT) {
