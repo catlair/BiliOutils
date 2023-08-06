@@ -66,7 +66,6 @@ export function runForkSync(
         __BT_TASKS_STRING__: tasks,
         __BT_CONFIG_ITEM__: index.toString(),
       },
-      detached: true,
     });
 
     // 退出时杀死子进程
