@@ -38,10 +38,6 @@ abstract class TaskModuleTemplate {
   static money = 0;
   /**还需要投币数量,初值BILI_TARGET_COINS */
   static coinsTask = 5;
-  /**今日是否已经分享视频 */
-  static share = false;
-  /**今日是否已经观看视频 */
-  static watch = false;
   /** B币券余额 */
   static couponBalance = 0;
   /** 0为无，1为月度，2为年度 */

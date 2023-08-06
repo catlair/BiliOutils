@@ -351,10 +351,6 @@ export const aidFuncName = new (class {
   next() {
     // 获取下一个
     const index = this.srcs.indexOf(this.value) + 1;
-    // 下一个不存在时，设置为 首页推荐
-    if (index === this.srcs.length) {
-      return (this.value = '首页推荐');
-    }
     return (this.value = this.srcs[index]);
   }
 })();

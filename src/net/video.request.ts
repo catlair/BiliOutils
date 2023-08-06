@@ -19,7 +19,7 @@ export function addShare(aid: number | string): Promise<ShareAddDto> {
     csrf: TaskConfig.BILIJCT,
     aid,
   };
-  return biliApi.post('/x/web-interface/share/add', reqData);
+  return biliApi.post('x/web-interface/share/add', reqData);
 }
 
 /**
@@ -28,7 +28,7 @@ export function addShare(aid: number | string): Promise<ShareAddDto> {
  * @param day 排行方式
  */
 export function getRegionRankingVideos(rid = 1, day = 3): Promise<RegionRankingVideosDto> {
-  return biliApi.get('/x/web-interface/ranking/region', {
+  return biliApi.get('x/web-interface/ranking/region', {
     params: {
       rid,
       day,
@@ -50,7 +50,7 @@ export function getRecommendVideos(ps = 2) {
  * @param aid 视频av号
  */
 export function donatedCoinsForVideo(aid: number): Promise<DonatedCoinsForVideoDto> {
-  return biliApi.get('/x/web-interface/archive/coins', {
+  return biliApi.get('x/web-interface/archive/coins', {
     params: { aid },
   });
 }
@@ -64,9 +64,16 @@ export function uploadVideoHeartbeat(
   aid: number | string,
   playedTime: number,
 ): Promise<HeartbeatDto> {
-  return biliApi.post('/x/click-interface/web/heartbeat', {
+  return biliApi.post('x/click-interface/web/heartbeat', {
     aid,
+    dt: 2,
+    type: 3,
+    sub_type: 0,
+    start_ts: Math.floor(Date.now() / 1000) - playedTime,
     played_time: playedTime,
+    real_played_time: playedTime + 1,
+    refer_url: 'https://www.bilibili.com/',
+    csrf: TaskConfig.BILIJCT,
   });
 }
 
