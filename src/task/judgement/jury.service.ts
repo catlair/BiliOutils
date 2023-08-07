@@ -194,6 +194,9 @@ async function handleJudgeExpired(message: string) {
  * 休眠等待
  */
 async function waitFor() {
+  // 减少一次重试次数
+  TaskConfig.jury.repeat -= 1;
+  // 休眠时间
   const waitTime = TaskConfig.jury.waitTime || 20;
   juryLogger.info(`休眠 ${waitTime} 分钟后继续获取案件！`);
   await apiDelay(waitTime * 60000);
@@ -205,7 +208,7 @@ async function waitFor() {
  */
 async function handleNoNewCase(message: string, errRef?: Ref<number>) {
   juryLogger.info(`${message}`);
-  if (!TaskConfig.jury.once && errRef) {
+  if (TaskConfig.jury.repeat === 0 && errRef) {
     logger.info(`不等待，直接结束任务！`);
     return true;
   }

@@ -252,7 +252,9 @@ export const defaultConfig = {
     } as Record<number, string | string[]>,
   },
   jury: {
-    once: true,
+    once: undefined,
+    // 重复运行次数，小于0为无限制
+    repeat: 999,
     // 默认投票 0-3 好-无法判断，从中随机
     vote: [0, 0, 1],
     // 是否采用参考投票
@@ -477,6 +479,9 @@ function beforeMergeConfig(config: UserConfig) {
   if (jury) {
     if (isNumber(jury.insiders) && isUnDef(jury.insiderWeight)) {
       jury.insiderWeight = jury.insiders;
+    }
+    if (jury.once === false) {
+      jury.repeat = 0;
     }
   }
 
