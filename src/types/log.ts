@@ -1,5 +1,6 @@
 export type MessageType = string | number | boolean | undefined | null;
-export type LevelType = 'error' | 'warn' | 'info' | 'verbose' | 'debug';
+export type LevelType = 'error' | 'warn' | 'info' | 'http' | 'verbose' | 'debug' | 'silly';
+export type LevelConfigType = LevelType | boolean | undefined;
 export interface SimpleLoggerOptions {
   console?: LevelType | boolean;
   file?: LevelType | boolean;

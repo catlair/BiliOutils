@@ -23,6 +23,7 @@ process.env.IS_LOCAL = 'true';
     .helpOption('-h, --help', '输出帮助信息')
     .description('BiliOutils 哔哩哔哩自动化工具箱')
     .option('-c, --config <path>', '配置文件路径')
+    .option('-ld, --log-dir <path>', '日志文件目录')
     .option(
       '-i, --item <item>',
       '多用户配置执行指定的配置，下标 1 开始（倒数 -1 开始），使用英文逗号（,）分隔',
@@ -36,9 +37,24 @@ process.env.IS_LOCAL = 'true';
       '不带单位是延迟 time 分钟后执行，单位可以为 ms（毫秒）、s（秒）、m（分）、h（小时）',
     )
     .option('-l, --login', '扫码登录，可以配合 --config 使用')
+    .option('--detached', '子进程独立运行，不受父进程影响，windows 下无日志打印到控制台')
     .parse(process.argv);
 
-  const opts = program.opts();
+  const opts = program.opts<{
+    config?: string;
+    logDir?: string;
+    item?: string;
+    createCookie?: string;
+    once?: boolean;
+    task?: string;
+    cron?: string;
+    delay?: string;
+    login?: boolean;
+  }>();
+
+  if (opts.logDir) {
+    process.env.BILIOUTILS_LOG_DIR = opts.logDir;
+  }
 
   if (opts.login) {
     if (opts.config) {

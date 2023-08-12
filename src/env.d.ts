@@ -14,6 +14,7 @@ declare global {
       USE_NETWORK_CODE?: string;
       BILITOOLS_IS_ASYNC?: string;
       BILIOUTILS_LOG_CLEAR_DAY?: string;
+      BILIOUTILS_LOG_DIR?: string;
       /** 私有变量 */
       __BT_CONFIG__: string;
       __BT_TASKS_STRING__: string;

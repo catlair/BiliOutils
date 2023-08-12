@@ -1,8 +1,7 @@
 import type { LoggerInitOptions, LoggerOptions, MessageType } from '@/types/log';
 import { TaskConfig, TaskModule } from '@/config';
-import { defLogger, EmptyLogger, SimpleLogger } from './def';
+import { defLogger, EmptyLogger, resolveLogPath, SimpleLogger } from './def';
 import { clearLogs } from '@/utils/log/file';
-import { resolvePwd } from '../path';
 import { getPRCDate } from '../pure';
 
 export { defLogger, clearLogs };
@@ -26,8 +25,12 @@ export class Logger extends SimpleLogger {
   }
 
   protected setFilename(file: string) {
-    this.errorFile = resolvePwd(`./logs/bt_error-${file}.log`);
-    this.logFile = resolvePwd(`./logs/bt_combined-${file}.log`);
+    this.errorFile = resolveLogPath(`./logs/bt_error-${file}.log`);
+    this.logFile = resolveLogPath(`./logs/bt_combined-${file}.log`);
+    this._file
+      .clear()
+      .add(this.getFileLogTransport(this.logFile))
+      .add(this.getFileLogTransport(this.errorFile, 'warn'));
   }
 
   public error(message: MessageType | Error, error?: Error) {
@@ -52,8 +55,10 @@ export class Logger extends SimpleLogger {
       error: '❓',
       warn: '❔',
       info: '👻',
+      http: '🌐',
       verbose: '💬',
       debug: '🐛',
+      silly: '🤪',
     };
   }
 
