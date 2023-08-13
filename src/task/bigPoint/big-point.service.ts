@@ -108,8 +108,15 @@ async function bigPointTask(taskStatus: TaskStatus) {
  * 完成每日任务
  */
 async function doDailyTask(taskStatus: TaskStatus | undefined) {
-  if (!taskStatus?.task_info?.modules || taskStatus.task_info.modules.length === 0) {
-    logger.warn('处理错误：没有需要完成的每日任务');
+  // 优化：之前只是报错，不知道那个地方出的
+  if (!taskStatus?.task_info) {
+    logger.warn('处理错误：task_info 不存在');
+    return true;
+  } else if (!taskStatus.task_info?.modules) {
+    logger.warn('处理错误：task_info.modules 不存在');
+    return true;
+  } else if (!taskStatus.task_info.modules?.length) {
+    logger.warn('处理错误：task_info.modules 为空');
     return true;
   }
 

@@ -71,7 +71,13 @@ async function waitExchangeTime() {
 
 function getStartTime() {
   const { startHour } = TaskConfig.exchangeCoupon;
-  return [0, 10, 12].includes(startHour) ? startHour : 12;
+  // startHour 会是 (0, 10, 12)[] 类型
+  // 当前时间是在哪个之前一点的时候，就取哪个
+  const nowHour = getPRCDate().getHours();
+  if (nowHour < 10 && startHour.includes(10)) return 10;
+  if (nowHour < 12 && startHour.includes(12)) return 12;
+  if (nowHour < 24 && startHour.includes(0)) return 0;
+  return 12;
 }
 
 /**

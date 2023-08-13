@@ -300,7 +300,7 @@ export const defaultConfig = {
     // 保留积分数
     keepAmount: 0,
     // 兑换开始时间，0、10、12
-    startHour: 0,
+    startHour: [0],
   },
   exchangeBigPoint: {
     // 多次尝试间隔时间，单位 ms
@@ -385,6 +385,10 @@ export const defaultConfig = {
   },
   dailyBattery: {
     tasks: ['5弹幕', '20弹幕', '20弹幕30秒观看'] as ('5弹幕' | '20弹幕' | '20弹幕30秒观看')[],
+    // 每次任务间隔时间，单位 s
+    delay: [8, 12],
+    // 当重复获取到同一roomid时，等待时间，单位 s
+    delayByRoomid: [10, 20],
   },
   BILIJCT: '',
   USERID: 0,

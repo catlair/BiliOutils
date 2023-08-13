@@ -161,11 +161,18 @@ async function task20(tasks: Tasklist[]) {
       total = 0,
       prevRoomid = 0;
     while ((result = await runTask20({ num: result, ...runTask20Options }))) {
-      await apiDelay(3000);
-      if (result > 0 && result !== prevRoomid) {
-        prevRoomid = result;
-        count++;
+      const { delay } = TaskConfig.dailyBattery;
+      await apiDelay(delay[0], delay[1]);
+      if (result > 0) {
+        if (result !== prevRoomid) {
+          prevRoomid = result;
+          count++;
+        } else if (result === prevRoomid) {
+          const { delayByRoomid } = TaskConfig.dailyBattery;
+          await apiDelay(delayByRoomid[0], delayByRoomid[1]);
+        }
       }
+
       total++;
       if (count > 40 || total > 100) {
         logger.warn('任务进度未更新，跳过');
@@ -190,11 +197,13 @@ async function runTask20({ task, num, isWatch30s }: RunTask20Params) {
     task = tasks.find(item => item.task_title?.includes(isWatch30s ? '30秒' : '鼓励新主播'));
     if (!task) {
       logger.debug(JSON.stringify(tasks, null, 2));
-      logger.info(`[鼓励新主播（${isWatch30s ? '弹幕/观看' : '弹幕'}）]任务已完成`);
-      return 0;
     }
   }
-  if (!task?.btn_text.includes('去')) {
+  if (!task) {
+    logger.info(`[鼓励新主播（${isWatch30s ? '弹幕/观看' : '弹幕'}）]任务已完成`);
+    return 0;
+  }
+  if (!task.btn_text.includes('去看看')) {
     // 如果不是去观看，那么就等待并重试
     await apiDelay(3000, 5000);
     return -2;
@@ -215,6 +224,12 @@ async function runTask20({ task, num, isWatch30s }: RunTask20Params) {
 
   if (isWatch30s) {
     await watch30s(roominfo, task);
+  }
+
+  await apiDelay(3000);
+
+  if (!isWatch30s && task.btn_text.includes('去发弹幕')) {
+    return -2;
   }
 
   await sendAppMsg(roominfo);

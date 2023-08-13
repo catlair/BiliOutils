@@ -39,6 +39,7 @@ export interface Tasklist {
   /** 0 未开始 1 进行中 2 可领取 3 已领取  */
   status: number;
   schema_dst: number;
+  /** 去发弹幕 去看看 */
   btn_text: string;
   finished_text: string;
   finished_sub_text: string;
