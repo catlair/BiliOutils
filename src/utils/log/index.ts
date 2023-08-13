@@ -78,7 +78,7 @@ export const logger = new Logger({
   console: TaskConfig.log.consoleLevel,
   file: TaskConfig.log.fileLevel,
   push: TaskConfig.log.pushLevel,
-  payload: process.env.BILITOOLS_IS_ASYNC && TaskConfig.USERID,
+  payload: (process.env.BILITOOLS_IS_ASYNC || process.env.BILIOUTILS_ASYNC) && TaskConfig.USERID,
 });
 
 export const _logger = new Logger({

@@ -11,10 +11,18 @@ declare global {
       ALI_SECRET_ID?: string;
       ALI_SECRET_KEY?: string;
       CONFIG_ITEM_INDEX?: string;
+      /**
+       * @deprecated
+       */
       USE_NETWORK_CODE?: string;
+      /**
+       * @deprecated
+       */
       BILITOOLS_IS_ASYNC?: string;
       BILIOUTILS_LOG_CLEAR_DAY?: string;
       BILIOUTILS_LOG_DIR?: string;
+      BILIOUTILS_DETACHED?: string;
+      BILIOUTILS_ASYNC?: string;
       /** 私有变量 */
       __BT_CONFIG__: string;
       __BT_TASKS_STRING__: string;

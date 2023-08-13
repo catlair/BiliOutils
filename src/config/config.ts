@@ -8,7 +8,7 @@ import type {
 import { DAILY_RUN_TIME, LOTTERY_EXCLUDE, LOTTERY_INCLUDE, LOTTERY_UP_BLACKLIST } from '@/constant';
 import { cloneObject, deepMergeObject, arr2numArr } from '@/utils/pure';
 import { getBiliJct, getUserId } from '@/utils/cookie';
-import { isNumber, isString, isUnDef } from '@/utils/is';
+import { isArray, isNumber, isString, isUnDef } from '@/utils/is';
 import { TODAY_MAX_FEED } from '~/liveIntimacy/constant';
 
 type DefaultConfig = typeof defaultConfig;
@@ -470,6 +470,13 @@ function beforeMergeConfig(config: UserConfig) {
     message.api = cloneObject(defaultConfig.message.api, true);
     message.api.url = url;
     message.api.method = 'GET';
+  }
+
+  const { exchangeCoupon } = config;
+  if (exchangeCoupon) {
+    exchangeCoupon.startHour = isArray(exchangeCoupon.startHour)
+      ? exchangeCoupon.startHour
+      : [exchangeCoupon.startHour];
   }
 
   // 处理 redPack

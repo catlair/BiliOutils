@@ -37,7 +37,8 @@ process.env.IS_LOCAL = 'true';
       '不带单位是延迟 time 分钟后执行，单位可以为 ms（毫秒）、s（秒）、m（分）、h（小时）',
     )
     .option('-l, --login', '扫码登录，可以配合 --config 使用')
-    .option('--detached', '子进程独立运行，不受父进程影响，windows 下无日志打印到控制台')
+    .option('--detached', '子进程独立运行，不受父进程影响，windows 下无日志打印到控制台', false)
+    .option('--async', '异步执行，多个账号同时运行', false)
     .parse(process.argv);
 
   const opts = program.opts<{
@@ -50,10 +51,20 @@ process.env.IS_LOCAL = 'true';
     cron?: string;
     delay?: string;
     login?: boolean;
+    detached?: boolean;
+    async?: boolean;
   }>();
 
   if (opts.logDir) {
     process.env.BILIOUTILS_LOG_DIR = opts.logDir;
+  }
+
+  if (opts.detached) {
+    process.env.BILIOUTILS_DETACHED = 'true';
+  }
+
+  if (opts.async) {
+    process.env.BILIOUTILS_ASYNC = 'true';
   }
 
   if (opts.login) {

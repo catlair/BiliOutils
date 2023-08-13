@@ -66,6 +66,7 @@ export function runForkSync(
         __BT_TASKS_STRING__: tasks,
         __BT_CONFIG_ITEM__: index.toString(),
       },
+      detached: process.env.BILIOUTILS_DETACHED ? true : false,
     });
 
     // 退出时杀死子进程
@@ -98,7 +99,7 @@ export async function runTask(configs?: ConfigArray, forkPath = './bin/fork', ta
     configs = getConfig(true);
   }
   const length = configs.length;
-  if (process.env.BILITOOLS_IS_ASYNC) {
+  if (process.env.BILITOOLS_IS_ASYNC || process.env.BILIOUTILS_ASYNC) {
     return await runTaskAsync(
       configs.filter(Boolean).map((config, index) => runForkSync(config!, index, forkPath, tasks)),
     );
