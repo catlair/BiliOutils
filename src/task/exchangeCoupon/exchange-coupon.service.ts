@@ -21,18 +21,21 @@ const exchangeTimeMap = {
   },
 } as const;
 
+type ExchangeTime = keyof typeof exchangeTimeMap;
+
 export async function exchangeCouponService() {
-  const num = await getExchangeNum();
+  const time = getStartTime();
+  const num = await getExchangeNum(time);
   if (!num) return;
-  if (await waitExchangeTime()) return;
+  if (await waitExchangeTime(time)) return;
   const { delay } = TaskConfig.exchangeCoupon;
   // 尝试兑换
-  while (await exchangeCoupon(num)) {
+  while (await exchangeCoupon(num, time)) {
     await apiDelay(delay - 50, delay + 150);
   }
 }
 
-async function getExchangeNum() {
+async function getExchangeNum(time: ExchangeTime) {
   const { num: exchangeCouponNum, keepAmount = 0 } = TaskConfig.exchangeCoupon;
   const { point } = await request(mangaApi.getMangaPoint, { name: '获取积分' });
   const pointNum = parseInt(point, 10) || 0;
@@ -41,7 +44,7 @@ async function getExchangeNum() {
     logger.info(`积分不足，需保留，跳过任务`);
     return 0;
   }
-  const buyCouponNum = Math.floor((pointNum - keepAmount) / 100);
+  const buyCouponNum = Math.floor((pointNum - keepAmount) / exchangeTimeMap[time].cost);
   if (buyCouponNum < 1) {
     logger.info('可兑换的漫读券数量不足 1，跳过任务');
     return 0;
@@ -54,8 +57,8 @@ async function getExchangeNum() {
 /**
  * 等待兑换时间的到来
  */
-async function waitExchangeTime() {
-  const { startTime, endTime } = getWaitTime(getStartTime());
+async function waitExchangeTime(time: ExchangeTime) {
+  const { startTime, endTime } = getWaitTime(time);
   if (endTime === 12) {
     logger.debug('当前目标时间为 12 点，直接开始兑换');
     return false;
@@ -83,9 +86,8 @@ function getStartTime() {
 /**
  * 商城兑换
  */
-async function exchangeCoupon(num: number) {
+async function exchangeCoupon(num: number, startHour: ExchangeTime) {
   try {
-    const startHour = getStartTime();
     const { id, cost } = exchangeTimeMap[startHour];
     const { code, msg = '' } = await mangaApi.exchangeMangaShop(id, num * cost, num);
     // 抢的人太多

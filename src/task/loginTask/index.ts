@@ -43,33 +43,13 @@ function setLevelInfo(data: UserNavData) {
   }
 }
 
-export function setVipStatus(data: { vipType: number; vipStatus: number }) {
-  /** 大会员信息 */
-  let vipTypeMsg = '';
-
+export function setVipStatus(data: UserNavData) {
   TaskModule.vipType = data.vipType;
   TaskModule.vipStatus = data.vipStatus;
 
-  switch (data.vipType) {
-    case 0:
-      vipTypeMsg = '无大会员';
-      break;
-    case 1:
-      vipTypeMsg = '月度大会员';
-      break;
-    case 2:
-      vipTypeMsg = '年度大会员';
-      break;
-    default:
-      break;
+  if (data.vip_label.text) {
+    logger.info(`大会员状态: ${data.vip_label.text}`);
   }
-
-  // 判断是否过期,因为即使大会员过期,下面也会显示
-  if (data.vipStatus === 0) {
-    vipTypeMsg = vipTypeMsg === '无大会员' ? vipTypeMsg : vipTypeMsg + '[已过期]';
-  }
-
-  logger.info(`大会员状态: ${vipTypeMsg}`);
 }
 
 async function setUserInfo(data: UserNavData) {
