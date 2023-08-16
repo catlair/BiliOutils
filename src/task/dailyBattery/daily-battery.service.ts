@@ -115,6 +115,38 @@ async function dailyBattery() {
   } catch (error) {
     logger.exception('5条弹幕', error);
   }
+
+  // TODO: fuck 怎么又有新的，暂时就这样搞了，等已知任务多点再重构
+  try {
+    const task53 = tasks.find(item => item.task_title?.includes('并点赞') || item.task_id === 53);
+    if (task53 && task53.status !== 3) {
+      logger.info(`[${task53.task_id}]${task53.task_title}`);
+      let count = 0;
+      while (task53.total_reward > task53.received_reward) {
+        if (count > 15) {
+          logger.info(`多次尝试无效，跳过任务`);
+          break;
+        }
+        count++;
+        const roomid = await getLandingRoom();
+        if (!roomid) {
+          apiDelay(7000, 10000);
+          continue;
+        }
+
+        const roominfo = await getRoomInfo(roomid);
+        if (!roominfo || roominfo === -1) {
+          continue;
+        }
+
+        logger.debug(`已经获取 ${task53.received_reward}`);
+
+        await watch30s(roominfo, task53);
+      }
+    }
+  } catch (error) {
+    logger.exception('观看10秒并点赞', error);
+  }
 }
 
 async function task20(tasks: Tasklist[]) {
@@ -130,7 +162,6 @@ async function task20(tasks: Tasklist[]) {
   const task2 = tasks.find(item => item.task_title?.includes('30秒'));
 
   if (!task1 && !task2) {
-    logger.info('[鼓励新主播]不存在');
     return true;
   }
 
@@ -263,7 +294,6 @@ async function watch30s(room_info: Roominfo, task: Tasklist) {
 async function task5(tasks: Tasklist[]) {
   let task34 = tasks.find(item => item.task_title?.includes('5条弹幕') || item.task_id === 34);
   if (!task34) {
-    logger.info('34 任务已完成');
     return true;
   }
   const { status } = task34;
