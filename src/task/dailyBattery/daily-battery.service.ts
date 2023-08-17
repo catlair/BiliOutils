@@ -1,10 +1,13 @@
 import * as net from './daily-battery.request';
-import { apiDelay, getRandomItem, logger } from '@/utils';
+import { apiDelay, getRandomItem, logger, sleep } from '@/utils';
 import { generateRandomDm, sendDmMessage } from '@/service/dm.service';
 import { TaskConfig } from '@/config';
 import { getInfoByRoom, sendMessageApp } from '@/net/live.request';
 import type { Tasklist } from './daily-battery.dto';
 import { Roominfo } from '@/dto/live.dto';
+import { JSON5 } from '@/utils/json5';
+import { getRandomOptions } from '../liveIntimacy/intimacy.service';
+import { liveMobileHeartBeat } from '../liveIntimacy/intimacy.request';
 
 /**
  * 获取任务进度
@@ -48,9 +51,9 @@ async function getUnfinishedTask() {
 /**
  * 领取任务奖励
  */
-async function receiveTaskReward() {
+async function receiveTaskReward(taskId: number = 34) {
   try {
-    const { code, message, data } = await net.receiveTaskReward(6, 34);
+    const { code, message, data } = await net.receiveTaskReward(6, taskId);
     switch (code) {
       case 0: {
         if (data?.num === 1) {
@@ -102,46 +105,84 @@ async function dailyBattery() {
   if (!tasks) return;
 
   const tasksConfig = TaskConfig.dailyBattery.tasks;
-  try {
-    await task20(tasks);
-  } catch (error) {
-    logger.exception('鼓励新主播', error);
-  }
 
-  try {
-    if (tasksConfig.includes('5弹幕')) {
-      await task5(tasks);
+  for (const task of tasks) {
+    const { task_title: title, task_id: id } = task;
+    if (!title) continue;
+    if (task.total_reward === task.received_reward || task.status === 3) {
+      logger.info(`${title}任务已完成`);
+      continue;
     }
-  } catch (error) {
-    logger.exception('5条弹幕', error);
+    const ti = (str: string) => title.includes(str);
+    try {
+      if (ti('5条弹幕') || id === 34) {
+        if (tasksConfig.includes('5弹幕')) {
+          await task5(tasks);
+        }
+      } else if (ti('鼓励新主播')) {
+        await task20(tasks);
+      } else if (ti('30秒')) {
+        await task20(tasks);
+      } else if (ti('并点赞') || id === 53) {
+        await runTask53(task);
+      } else if (ti('观看直播领奖励') || id === 57) {
+        // 观看直播
+        const room = await getRoomInfo(getRandomItem([21144080, 7734200, 46936]));
+        if (!room || room === -1) {
+          continue;
+        }
+        await watchLive(room, 10);
+        await sleep(1000);
+        // 领取奖励
+        await receiveTaskReward(id);
+      } else {
+        logger.info(`[未知任务] ${title} ${id} ${task.rules} ${task.total_reward}`);
+        logger.debug(JSON5.stringify(task, null, 2));
+      }
+    } catch (error) {
+      logger.exception(`每日电池${id}${title}`, error);
+    }
   }
+}
 
+async function runTask53(task: Tasklist | undefined) {
   // TODO: fuck 怎么又有新的，暂时就这样搞了，等已知任务多点再重构
   try {
-    const task53 = tasks.find(item => item.task_title?.includes('并点赞') || item.task_id === 53);
-    if (task53 && task53.status !== 3) {
-      logger.info(`[${task53.task_id}]${task53.task_title}`);
-      let count = 0;
-      while (task53.total_reward > task53.received_reward) {
-        if (count > 15) {
-          logger.info(`多次尝试无效，跳过任务`);
-          break;
-        }
-        count++;
-        const roomid = await getLandingRoom();
-        if (!roomid) {
-          apiDelay(7000, 10000);
-          continue;
-        }
+    if (!task) {
+      return;
+    }
+    logger.info(`[${task.task_id}]${task.task_title}`);
+    let count = 0;
+    while (task.total_reward > task.received_reward) {
+      if (count > 15) {
+        logger.info(`多次尝试无效，跳过任务`);
+        break;
+      }
+      count++;
+      const roomid = await getLandingRoom();
+      if (!roomid) {
+        apiDelay(7000, 10000);
+        continue;
+      }
 
-        const roominfo = await getRoomInfo(roomid);
-        if (!roominfo || roominfo === -1) {
-          continue;
-        }
+      const roominfo = await getRoomInfo(roomid);
+      if (!roominfo || roominfo === -1) {
+        continue;
+      }
 
-        logger.debug(`已经获取 ${task53.received_reward}`);
+      logger.debug(`已经获取 ${task.received_reward}`);
 
-        await watch30s(roominfo, task53);
+      await watch30s(roominfo, task);
+
+      await sleep(2000, 3000);
+
+      const tasks = await getUnfinishedTask();
+
+      task = tasks?.find(item => item.task_title?.includes('并点赞') || item.task_id === 53);
+
+      if (!task) {
+        logger.info(`观看10秒并点赞任务已完成`);
+        break;
       }
     }
   } catch (error) {
@@ -291,6 +332,21 @@ async function watch30s(room_info: Roominfo, task: Tasklist) {
   }
 }
 
+async function watchLive(room: Roominfo, time: number) {
+  const options = {
+    ...getRandomOptions(),
+    room_id: room.room_id,
+    up_id: room.uid,
+    up_session: room.up_session,
+    area_id: room.parent_area_id,
+    parent_id: room.area_id,
+    watch_time: String(time),
+  };
+  await liveMobileHeartBeat(options);
+  await apiDelay(time * 1000 + 200);
+  await liveMobileHeartBeat(options);
+}
+
 async function task5(tasks: Tasklist[]) {
   let task34 = tasks.find(item => item.task_title?.includes('5条弹幕') || item.task_id === 34);
   if (!task34) {
@@ -298,7 +354,7 @@ async function task5(tasks: Tasklist[]) {
   }
   const { status } = task34;
   if (status === 2) {
-    await receiveTaskReward();
+    await receiveTaskReward(task34.task_id);
     return true;
   }
   // 如果先完成了 39 任务，那么可能不需要发送弹幕了
@@ -315,7 +371,7 @@ async function task5(tasks: Tasklist[]) {
   if (times) {
     await sendLiveDm(times);
   }
-  await receiveTaskReward();
+  await receiveTaskReward(task34.task_id);
 }
 
 async function sendLiveDm(times: number) {
