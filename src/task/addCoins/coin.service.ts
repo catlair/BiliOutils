@@ -285,48 +285,63 @@ async function getRandomInfo(mid: number, data: Defined<ReturnType<typeof getRan
 
 let countVideo = 0;
 async function getVideoByRandom(mid: number, page: number, index: number, total: number) {
-  if (countVideo >= 5)
-    return {
-      message: '获取 upperAccMatch 视频失败',
-    };
+  try {
+    if (countVideo >= 5)
+      return {
+        message: '获取 upperAccMatch 视频失败',
+      };
 
-  const { code, data, message } = await searchVideosByUpId(mid, 30, page);
-  if (code) return { message: `获取指定up主视频 [${code}] ${message}` };
-  countVideo++;
+    const { code, data, message } = await searchVideosByUpId(mid, 30, page);
+    if (code) return { message: `获取指定up主视频 [${code}] ${message}` };
+    countVideo++;
 
-  const { aid, title, author, copyright, mid: upperMid } = data.list.vlist[index];
+    const { aid, title, author, copyright, mid: upperMid } = data.list.vlist[index];
 
-  if (upperMid !== mid && TaskConfig.coin.upperAccMatch) {
-    const { page, index } = getRandmonNum([total, 0, 0]) || { page: 1, index: 0 };
-    return await getVideoByRandom(mid, page, index, total);
+    if (upperMid !== mid && TaskConfig.coin.upperAccMatch) {
+      const { page, index } = getRandmonNum([total, 0, 0]) || { page: 1, index: 0 };
+      return await getVideoByRandom(mid, page, index, total);
+    }
+
+    countVideo = 0;
+    return { coinType: TypeEnum.video, id: aid, title, author, copyright };
+  } catch (error) {
+    logger.error(`获取随机视频`, error);
+    return { message: `获取随机视频失败` };
   }
-
-  countVideo = 0;
-  return { coinType: TypeEnum.video, id: aid, title, author, copyright };
 }
 
 async function getAudioByRandom(mid: number, page: number, index: number) {
-  const { code, data, msg } = await searchAudiosByUpId(mid, 30, page);
-  if (code) {
-    return { message: `获取指定up主音频 [${code}] ${msg}` };
+  try {
+    const { code, data, msg } = await searchAudiosByUpId(mid, 30, page);
+    if (code) {
+      return { message: `获取指定up主音频 [${code}] ${msg}` };
+    }
+    const { data: list } = data;
+    const { id, uname, title } = list[index];
+    return { coinType: TypeEnum.audio, id, title, author: uname };
+  } catch (error) {
+    logger.error(`获取随机音频`, error);
+    return { message: `获取随机音频失败` };
   }
-  const { data: list } = data;
-  const { id, uname, title } = list[index];
-  return { coinType: TypeEnum.audio, id, title, author: uname };
 }
 
 async function getArticleByRandom(mid: number, page: number, index: number) {
-  const { code, data, message } = await searchArticlesByUpId(mid, 12, page);
-  if (code) {
-    return { message: `获取指定up主专栏 [${code}] ${message}` };
+  try {
+    const { code, data, message } = await searchArticlesByUpId(mid, 12, page);
+    if (code) {
+      return { message: `获取指定up主专栏 [${code}] ${message}` };
+    }
+    const { articles } = data;
+    const {
+      id,
+      title,
+      author: { name },
+    } = articles[index];
+    return { coinType: TypeEnum.article, id, title, author: name, mid };
+  } catch (error) {
+    logger.error(`获取随机专栏`, error);
+    return { message: `获取随机专栏失败` };
   }
-  const { articles } = data;
-  const {
-    id,
-    title,
-    author: { name },
-  } = articles[index];
-  return { coinType: TypeEnum.article, id, title, author: name, mid };
 }
 
 function getAidBySpecialFollowing(types?: string[]) {
@@ -501,13 +516,13 @@ export async function getContributionCoin(coinType: ValueOf<typeof TypeEnum>, id
  */
 export async function checkCoin() {
   const coinNum = await getTodayCoinNum();
-  /** 剩余硬币数量 */
-  const targetCoinsDiff = TaskModule.money - TaskConfig.coin.stayCoins;
+  /** 剩余可用硬币数量 */
+  const targetCoinsDiff = Math.floor(TaskModule.money - TaskConfig.coin.stayCoins);
   let coins = 0;
   if (TaskModule.coinsTask === 0) {
     // 根据经验设置的目标
     logger.info(`今日投币数量：${coinNum}，还需投币0颗，经验够了，不想投了`);
-  } else if (targetCoinsDiff <= 0) {
+  } else if (targetCoinsDiff < 1) {
     // 剩余硬币比需要保留的少
     logger.info(`今日投币数量：${coinNum}，还需投币0颗，硬币不够了，不投币了`);
   } else if (targetCoinsDiff < TaskModule.coinsTask) {

@@ -8,8 +8,8 @@ export default async function matchGame() {
   logger.info('----【赛事硬币竞猜】----');
   const { match } = TaskConfig;
 
-  if (match.coins <= 0) {
-    logger.info('硬币数量不能小于 0');
+  if (match.coins < 1) {
+    logger.info('硬币数量不能小于 1');
     return;
   }
 

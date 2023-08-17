@@ -124,7 +124,7 @@ async function buyOneEpManga(ep_id: number, countRef: Ref<number>) {
       return false;
     }
     // 购买成功，则减少漫读券数量
-    if (--expireCouponNum <= 0) {
+    if (--expireCouponNum < 1) {
       logger.verbose('即将过期的漫读券已经用完');
       return true;
     }
@@ -249,7 +249,7 @@ export async function buyMangaService() {
   if (isUnDef(num)) {
     return false;
   }
-  if (num <= 0) {
+  if (num < 1) {
     logger.info('没有即将过期的漫读券，跳过任务');
     return false;
   }
@@ -257,7 +257,7 @@ export async function buyMangaService() {
   expireCouponNum = num;
   // 依次购买
   for (const buy of [buyMangaByMc, buyMangaByName, buyMangaByLove]) {
-    if (expireCouponNum <= 0) return true;
+    if (expireCouponNum < 1) return true;
     logger.debug(`开始购买漫画：${buy.name}`);
     if (await buy()) return true;
   }

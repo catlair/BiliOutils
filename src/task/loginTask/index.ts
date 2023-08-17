@@ -9,7 +9,7 @@ type UserNavData = UserInfoNavDto['data'];
 
 function estimatedDays(upLevelExp: number): number {
   const { targetCoins } = TaskConfig.coin;
-  if (targetCoins <= 0) return upLevelExp / 15;
+  if (targetCoins < 1) return upLevelExp / 15;
   const dailyExp = targetCoins * 10 + 15;
   const idealDays = upLevelExp / dailyExp;
   const coinSupportDays = TaskModule.money / (targetCoins - 1);
