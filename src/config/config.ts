@@ -113,6 +113,8 @@ export const defaultConfig = {
     level6: true,
     // 投币限制为 5 颗
     coins5: true,
+    // 仅在漫画即将过期前购买漫画
+    buyMangaOnlyBeforeExpire: true,
   },
   /** 调用api时的延迟(单位s),默认2s至6s */
   apiDelay: [2, 6],
@@ -277,6 +279,8 @@ export const defaultConfig = {
     async: false,
   },
   manga: {
+    // 购买漫画的数量，小于 1 为自动。仅在 buyMangaOnlyBeforeExpire 为 false 时有效
+    buyNum: 1,
     // 签到
     sign: true,
     // 购买漫画

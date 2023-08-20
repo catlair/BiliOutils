@@ -223,7 +223,6 @@ async function task20(tasks: Tasklist[]) {
     }
     const runTask20Options = info === '弹幕' ? {} : { isWatch30s: true };
     const first = await runTask20({
-      task,
       ...runTask20Options,
     });
     if (first === 0) return true;
@@ -232,7 +231,7 @@ async function task20(tasks: Tasklist[]) {
       count = 0,
       total = 0,
       prevRoomid = 0;
-    while ((result = await runTask20({ num: result, ...runTask20Options }))) {
+    while ((result = await runTask20({ ...runTask20Options }))) {
       const { delay } = TaskConfig.dailyBattery;
       await apiDelay(delay[0], delay[1]);
       if (result > 0) {
@@ -256,21 +255,14 @@ async function task20(tasks: Tasklist[]) {
 }
 
 type RunTask20Params = {
-  task?: Tasklist;
-  num?: number;
   isWatch30s?: boolean;
 };
 
-async function runTask20({ task, num, isWatch30s }: RunTask20Params) {
-  if (num && num !== -1) {
-    const tasks = await getUnfinishedTask();
-    if (!tasks) return 0;
-    if (tasks.length === 0) return 0;
-    task = tasks.find(item => item.task_title?.includes(isWatch30s ? '30秒' : '鼓励新主播'));
-    if (!task) {
-      logger.debug(JSON.stringify(tasks, null, 2));
-    }
-  }
+async function runTask20({ isWatch30s }: RunTask20Params) {
+  const tasks = await getUnfinishedTask();
+  if (!tasks) return 0;
+  if (tasks.length === 0) return 0;
+  const task = tasks.find(item => item.task_title?.includes(isWatch30s ? '30秒' : '鼓励新主播'));
   if (!task) {
     logger.info(`[鼓励新主播（${isWatch30s ? '弹幕/观看' : '弹幕'}）]任务已完成`);
     return 0;
@@ -298,7 +290,7 @@ async function runTask20({ task, num, isWatch30s }: RunTask20Params) {
     await watch30s(roominfo, task);
   }
 
-  await apiDelay(3000);
+  await apiDelay(3000, 4000);
 
   if (!isWatch30s && task.btn_text.includes('去发弹幕')) {
     return -2;

@@ -125,7 +125,11 @@ async function buyOneEpManga(ep_id: number, countRef: Ref<number>) {
     }
     // 购买成功，则减少漫读券数量
     if (--expireCouponNum < 1) {
-      logger.verbose('即将过期的漫读券已经用完');
+      if (TaskConfig.limit.buyMangaOnlyBeforeExpire) {
+        logger.verbose('即将过期的漫读券已经用完');
+      } else {
+        logger.verbose('已经使用掉设置的漫读券数量');
+      }
       return true;
     }
   } catch (error) {
@@ -240,21 +244,42 @@ async function buyMangaByLove() {
   }
 }
 
+async function getBuyNum() {
+  const { buyMangaOnlyBeforeExpire } = TaskConfig.limit;
+  const { buyNum } = TaskConfig.manga;
+
+  if (buyNum < 1) {
+    return 9999;
+  }
+
+  const expireNum = await getExpireCouponNum();
+  if (isUnDef(expireNum)) {
+    return 0;
+  }
+  if (buyMangaOnlyBeforeExpire) {
+    if (expireNum < 1) {
+      logger.info('没有即将过期的漫读券，跳过任务');
+      return 0;
+    }
+    logger.info(`即将过期的漫读券数量：${expireNum}`);
+    return expireNum;
+  }
+  if (buyNum >= expireNum) {
+    return buyNum;
+  }
+  return expireNum;
+}
+
 export async function buyMangaService() {
-  const { buy } = TaskConfig.manga;
-  if (!buy) {
+  if (!TaskConfig.manga.buy) {
     return false;
   }
-  const num = await getExpireCouponNum();
-  if (isUnDef(num)) {
+
+  const expireCouponNum = await getBuyNum();
+  if (expireCouponNum < 1) {
     return false;
   }
-  if (num < 1) {
-    logger.info('没有即将过期的漫读券，跳过任务');
-    return false;
-  }
-  logger.info(`即将过期的漫读券数量：${num}`);
-  expireCouponNum = num;
+
   // 依次购买
   for (const buy of [buyMangaByMc, buyMangaByName, buyMangaByLove]) {
     if (expireCouponNum < 1) return true;

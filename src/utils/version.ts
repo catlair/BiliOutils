@@ -5,10 +5,24 @@ import { ENV } from './env';
 
 type VersionInfo = {
   tag_name: string;
-  notice: {
-    common: string[];
-    [key: string]: string[];
+};
+
+type Notice = {
+  content: string;
+  config?: {
+    key: string[];
+    value: any;
+  }[];
+  version?: string;
+  time: {
+    start: string;
+    end: string;
   };
+};
+
+type NoticeResponse = {
+  common: Notice[];
+  [key: string]: Notice[];
 };
 
 /**
@@ -27,11 +41,50 @@ async function getLatestVersion() {
   }
 }
 
-async function printNotice(notices: VersionInfo['notice']) {
+/**
+ * 获取公告
+ */
+async function getNotice() {
+  const options = {
+    timeout: 10000,
+  };
+  try {
+    return await Promise.any([
+      biliHttp.get<NoticeResponse>(`https://b.2024666.xyz/json/notices.json`, options),
+    ]);
+  } catch {
+    return {} as NoticeResponse;
+  }
+}
+
+async function printNotice(notices: NoticeResponse, runVersion: string) {
+  if (!notices) return;
   const { logger } = await import('./log');
-  if (notices) {
-    notices.common.forEach(notice => logger.verbose(notice));
-    notices[ENV.type]?.forEach(notice => logger.verbose(notice));
+  const { TaskConfig } = await import('../config');
+
+  notices.common.forEach(forEachNotice);
+  notices[ENV.type]?.forEach(forEachNotice);
+
+  function forEachNotice({ content, config, version, time }: Notice) {
+    if (version && !checkVersion(runVersion, version)) {
+      return;
+    }
+    if (time) {
+      const { start, end } = time;
+      const now = new Date().getTime();
+      if (start && now < new Date(start).getTime()) {
+        return;
+      }
+      if (end && now > new Date(end).getTime()) {
+        return;
+      }
+    }
+    if (
+      !config?.every(({ key, value }) => key.reduce((prev, cur) => prev[cur], TaskConfig) === value)
+    ) {
+      return;
+    }
+    logger.verbose(content);
   }
 }
 
@@ -75,11 +128,12 @@ export async function printVersion() {
     if (!version) {
       return;
     }
-    const { tag_name, notice } = await getLatestVersion();
+    const { tag_name } = await getLatestVersion(),
+      notice = await getNotice();
     if (tag_name && checkVersion(version, tag_name)) {
       logger.info(`可更新：最新版本【${tag_name}】`);
     }
-    await printNotice(notice);
+    await printNotice(notice, version);
   } catch {}
 }
 
