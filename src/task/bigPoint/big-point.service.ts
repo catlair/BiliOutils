@@ -25,6 +25,7 @@ import {
 } from '@/utils';
 import { TaskConfig, TaskModule } from '@/config';
 import { FREE_POINT } from './constant';
+import { JSON5 } from '@/utils/json5';
 
 const bigLogger = new Logger({ console: 'debug', file: 'debug', push: 'warn' }, 'big-point');
 
@@ -109,15 +110,10 @@ async function bigPointTask(taskStatus: TaskStatus) {
  */
 async function doDailyTask(taskStatus: TaskStatus | undefined) {
   // 优化：之前只是报错，不知道那个地方出的
-  if (!taskStatus?.task_info) {
-    logger.warn('处理错误：task_info 不存在');
-    return true;
-  } else if (!taskStatus.task_info?.modules) {
-    logger.warn('处理错误：task_info.modules 不存在');
-    return true;
-  } else if (!taskStatus.task_info.modules?.length) {
-    logger.warn('处理错误：task_info.modules 为空');
-    return true;
+  if (!taskStatus?.task_info?.modules?.length) {
+    logger.error('获取任务列表失败，列表为空');
+    logger.debug(JSON5.stringify(taskStatus));
+    return false;
   }
 
   const waitTaskItems =
