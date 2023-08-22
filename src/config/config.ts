@@ -305,6 +305,8 @@ export const defaultConfig = {
     keepAmount: 0,
     // 兑换开始时间，0、10、12
     startHour: [0],
+    // 分多次兑换，小于 1 或者大于 num 则配置无效，不分多次
+    multiNum: 0,
   },
   exchangeBigPoint: {
     // 多次尝试间隔时间，单位 ms
