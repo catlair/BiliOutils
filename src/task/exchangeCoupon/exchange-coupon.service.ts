@@ -27,12 +27,12 @@ export async function exchangeCouponService() {
   const time = getStartTime();
   const num = await getExchangeNum(time);
   if (!num) return;
+  const { multiNum } = TaskConfig.exchangeCoupon;
   if (await waitExchangeTime(time)) return;
-  const { delay } = TaskConfig.exchangeCoupon;
-  // 尝试兑换
-  while (await exchangeCoupon(num, time)) {
-    await apiDelay(delay - 50, delay + 150);
+  if (multiNum > 0) {
+    return await multiExchange(num, time);
   }
+  return await singleExchange(num, time);
 }
 
 async function getExchangeNum(time: ExchangeTime) {
@@ -92,29 +92,52 @@ async function exchangeCoupon(num: number, startHour: ExchangeTime) {
     const { code, msg = '' } = await mangaApi.exchangeMangaShop(id, num * cost, num);
     // 抢的人太多
     if (code === 4) {
-      return true;
+      return 0;
     }
     if (code === 0) {
       logger.info(`兑换商品成功，兑换数量：${num}`);
-      return false;
+      return num;
     }
     // 太快
     if (code === 1 && msg.includes('快')) {
       logger.debug(msg);
-      return true;
+      return 0;
     }
-    // 库存不足，且时间是 xx:02 之前
+    // 库存不足，且时间是 xx:01 之前
     if (
       code === 2 &&
       msg.includes('库存') &&
       getPRCDate().getHours() === startHour &&
-      getPRCDate().getMinutes() < 2
+      getPRCDate().getMinutes() < 1
     ) {
-      logger.debug(`库存不足，但时间是 ${startHour}:02 之前，尝试重新兑换`);
-      return true;
+      logger.debug(`库存不足，但时间是 ${startHour}:01 之前，尝试重新兑换`);
+      return 0;
     }
     logger.fatal('商城兑换', code, msg);
   } catch (error) {
     logger.exception('商城兑换', error);
+  }
+  return -1;
+}
+
+/**
+ * 处理分多次兑换
+ */
+async function multiExchange(num: number, startHour: ExchangeTime) {
+  const { delay, multiNum } = TaskConfig.exchangeCoupon;
+  for (let count = num; count < 1; ) {
+    const n = Math.min(multiNum, count);
+    logger.debug(`开始兑换漫读券，兑换数量：${n}`);
+    const r = await exchangeCoupon(n, startHour);
+    if (r > 0) count -= r;
+    await apiDelay(delay);
+  }
+}
+
+async function singleExchange(num: number, time: ExchangeTime) {
+  const { delay } = TaskConfig.exchangeCoupon;
+  // 尝试兑换
+  while ((await exchangeCoupon(num, time)) === 0) {
+    await apiDelay(delay - 50, delay + 150);
   }
 }
