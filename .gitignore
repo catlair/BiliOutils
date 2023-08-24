@@ -10,6 +10,7 @@ temp/**
 yarn-error.log
 /logs
 /bin
+/ql
 
 # yarn 
 .yarn-integrity
