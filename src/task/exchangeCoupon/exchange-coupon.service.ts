@@ -3,7 +3,7 @@ import { apiDelay, getPRCDate, logger } from '@/utils';
 import { request } from '@/utils/request';
 import * as mangaApi from './exchange-coupon.request';
 import { getWaitTime, isInExchangeTime } from './utils';
-import { waitForTime } from '@/utils/time';
+import { getServerDate, waitForTime } from '@/utils/time';
 
 // 兑换时间与兑换 id 对应关系
 const exchangeTimeMap = {
@@ -24,7 +24,8 @@ const exchangeTimeMap = {
 type ExchangeTime = keyof typeof exchangeTimeMap;
 
 export async function exchangeCouponService() {
-  const time = getStartTime();
+  const time = await getStartTime();
+  logger.debug(`兑换时间：${time}`);
   const num = await getExchangeNum(time);
   if (!num) return;
   const { multiNum } = TaskConfig.exchangeCoupon;
@@ -72,11 +73,12 @@ async function waitExchangeTime(time: ExchangeTime) {
   return false;
 }
 
-function getStartTime() {
+async function getStartTime() {
   const { startHour } = TaskConfig.exchangeCoupon;
   // startHour 会是 (0, 10, 12)[] 类型
   // 当前时间是在哪个之前一点的时候，就取哪个
-  const nowHour = getPRCDate().getHours();
+  const nowHour = (await getServerDate()).getHours();
+  logger.info(`当前时间：${nowHour} 点, 兑换时间：${JSON.stringify(startHour)} 点`);
   if (nowHour < 10 && startHour.includes(10)) return 10;
   if (nowHour < 12 && startHour.includes(12)) return 12;
   if (nowHour < 24 && startHour.includes(0)) return 0;

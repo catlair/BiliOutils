@@ -48,15 +48,15 @@ export function getMonthHasDays(now?: Date) {
 /**
  * 不同时区获取北京时间
  */
-export function getPRCTime() {
-  return dayjs().add(new Date().getTimezoneOffset() / 60 + 8, 'hour');
+export function getPRCTime(data?: Date) {
+  return dayjs().add((data || new Date()).getTimezoneOffset() / 60 + 8, 'hour');
 }
 
 /**
  * 不同时区获取北京时间
  */
-export function getPRCDate(): Date {
-  return getPRCTime().toDate();
+export function getPRCDate(data?: Date): Date {
+  return getPRCTime(data).toDate();
 }
 
 /**
@@ -89,4 +89,26 @@ export function isToday(date: Date | number, isUnix = true): boolean {
  */
 export function getUnixTime() {
   return dayjs().unix();
+}
+
+/**
+ * 获取服务器时间
+ */
+export async function getServerTime(): Promise<number> {
+  try {
+    const { getNow } = await import('../net/utils.request');
+    const { data, code } = await getNow();
+    if (code !== 0) {
+      return getUnixTime();
+    }
+    return data.now;
+  } catch {}
+  return getUnixTime();
+}
+
+/**
+ * 获取服务器时间的日期，且转换为北京时间
+ */
+export async function getServerDate(): Promise<Date> {
+  return getPRCDate(new Date((await getServerTime()) * 1000));
 }

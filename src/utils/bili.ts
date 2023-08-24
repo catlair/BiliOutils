@@ -141,3 +141,30 @@ export function encWbi(params: Params, imgKey: string, subKey: string) {
   const queryString = getSortQuery({ ...params, wts: getUnixTime() });
   return `${queryString}&w_rid=${md5(queryString + getMixinKey(imgKey + subKey))}`;
 }
+
+/**
+ * 校验本地时间是否正确
+ */
+export async function checkLocalTime() {
+  const { logger } = await import('@/utils');
+  try {
+    const { getNow } = await import('@/net/utils.request');
+    const { data, code, message } = await getNow();
+    if (code !== 0) {
+      logger.debug(`获取网络时间失败：${code} ${message}`);
+      return true;
+    }
+    const localTime = new Date().getTime();
+    const serverTime = data.now * 1000;
+    const diff = Math.abs(localTime - serverTime);
+    // 误差超过 20 秒
+    if (diff > 20 * 1000) {
+      logger.debug(`本地时间校验失败：${diff}ms`);
+      return false;
+    }
+  } catch (error) {
+    logger.debug('校验本地时间失败');
+    logger.error(error.message);
+  }
+  return true;
+}
