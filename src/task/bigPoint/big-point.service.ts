@@ -58,13 +58,13 @@ export async function bigPointService() {
   const {
     vip_info: { status, type },
     point_info: { point, expire_point, expire_days },
-    task_info,
+    task_info: { score_limit, score_month },
   } = taskStatus;
   if (expire_point > 0) {
     logger.warn(`${expire_point}积分即将过期，剩余${expire_days}天`);
   }
   if (!baseInfo(status, type, point)) return;
-  if (task_info.score_month >= task_info.score_limit) {
+  if (score_limit !== 0 && score_month >= score_limit) {
     logger.info('本月积分已领取完');
     return;
   }
