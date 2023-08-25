@@ -10,7 +10,7 @@
   },
   "scripts": {
     "prebuild": "rm -rf dist/",
-    "build": "npm run prebuild && babel ./src --out-dir ./dist --extensions \".ts\" && npm run postbuild",
+    "build": "npm run prebuild && babel --config-file ./babel.config.mjs ./src --out-dir ./dist --extensions \".ts\" && npm run postbuild",
     "postbuild": "cp src/main.d.ts dist/main.d.ts && rm -rf dist/dto/ dist/types/ dist/__test__ && find dist -name \"*.dto.js\" -delete && find dist -name \"*.d.js\" -delete && cp LICENSE README.md package.json ./dist",
     "build:baidu": "babel --config-file ./build/.baidu.babelrc.mjs ./src --out-dir ./dist --extensions \".ts\" && npm run postbuild:baidu",
     "postbuild:baidu": "npm run postbuild && sed -i '6a global.BILITOOLS_CONFIG = null;' dist/index.cfc.js && sed -i '1a global.IS_CFC = true;' dist/index.cfc.js",

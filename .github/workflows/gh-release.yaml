@@ -37,10 +37,10 @@ jobs:
           jq '( .optionalDependencies )' package.json > optionalDependencies.json
           cat package.json | jq "del( .optionalDependencies ) | .version = \"${{ env.BILI_VERSION }}\"" > temp.json
           mv temp.json package.json
-          yarn install
+          npm install
       - name: Build Babel
         run: |
-          yarn build
+          npm run build
           echo ${{ env.BILI_VERSION }} >> dist/version.txt
           cp config/config.single.json5 dist/config/config.json5
           cd dist
@@ -51,18 +51,18 @@ jobs:
           cp -rf ./tools/ ./package*.json yarn.lock ./build/.yarnclean ./node_modules/ ./dist/
           mv ./index.scf.js ./dist/index.js
           cd dist
-          yarn add tencentcloud-sdk-nodejs
+          npm install tencentcloud-sdk-nodejs
           npm prune --production
           yarn autoclear
-          rm -rf tools package*.json yarn.lock .yarnclean
+          rm -rf tools package*.json yarn.lock .yarnclean package-lock.json
           zip -r -q ../tencent_scf.zip *
           rm -rf node_modules
       - name: Build Rollup
         run: |
           cat package.json | jq .optionalDependencies="$(cat optionalDependencies.json)" > demo.json
           mv demo.json package.json
-          yarn
-          yarn build:rollup
+          npm install
+          npm run build:rollup
       - name: Pre Commit
         run: |
           rm dist/rollup/index.agc.js
