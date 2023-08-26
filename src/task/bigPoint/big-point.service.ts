@@ -42,6 +42,11 @@ async function getTaskStatus() {
       logger.error(`查看当前状态失败: ${code} ${message}`);
       return;
     }
+    if (!data.task_info?.modules?.length) {
+      logger.error('获取任务列表失败，列表为空');
+      logger.debug(JSON5.stringify(data));
+      return;
+    }
     return data;
   } catch (error) {
     logger.error(error);
@@ -109,10 +114,7 @@ async function bigPointTask(taskStatus: TaskStatus) {
  * 完成每日任务
  */
 async function doDailyTask(taskStatus: TaskStatus | undefined) {
-  // 优化：之前只是报错，不知道那个地方出的
-  if (!taskStatus?.task_info?.modules?.length) {
-    logger.error('获取任务列表失败，列表为空');
-    logger.debug(JSON5.stringify(taskStatus));
+  if (!taskStatus) {
     return false;
   }
 
