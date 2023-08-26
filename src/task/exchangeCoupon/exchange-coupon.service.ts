@@ -78,7 +78,6 @@ async function getStartTime() {
   // startHour 会是 (0, 10, 12)[] 类型
   // 当前时间是在哪个之前一点的时候，就取哪个
   const nowHour = (await getServerDate()).getHours();
-  logger.info(`当前时间：${nowHour} 点, 兑换时间：${JSON.stringify(startHour)} 点`);
   if (nowHour < 10 && startHour.includes(10)) return 10;
   if (nowHour < 12 && startHour.includes(12)) return 12;
   if (nowHour < 24 && startHour.includes(0)) return 0;

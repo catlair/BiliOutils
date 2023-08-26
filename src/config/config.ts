@@ -480,9 +480,11 @@ function beforeMergeConfig(config: UserConfig) {
 
   const { exchangeCoupon } = config;
   if (exchangeCoupon) {
-    exchangeCoupon.startHour = isArray(exchangeCoupon.startHour)
-      ? exchangeCoupon.startHour
-      : [exchangeCoupon.startHour];
+    if (exchangeCoupon.startHour) {
+      exchangeCoupon.startHour = isArray(exchangeCoupon.startHour)
+        ? exchangeCoupon.startHour
+        : [exchangeCoupon.startHour];
+    }
   }
 
   // 处理 redPack
