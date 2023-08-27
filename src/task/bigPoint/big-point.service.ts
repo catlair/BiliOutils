@@ -348,10 +348,10 @@ async function getTodayPonit() {
     return true;
   }
   if (todayPoint === 0 && !isError && isRetry) {
-    logger.warn(`今日获取积分【${todayPoint}】, 部分任务未成功 ×`);
+    logger.error(`今日获取积分【${todayPoint}】, 部分任务未成功 ×`);
     logger.info('可能是完成获取，但是接口数据延迟。');
     return false;
   }
-  logger.warn(`今日获取积分【${todayPoint}】, 未达到预期 ×`);
+  logger.error(`今日获取积分【${todayPoint}】, 未达到预期 ×`);
   return false;
 }

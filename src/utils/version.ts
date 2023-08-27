@@ -1,7 +1,8 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import { biliHttp } from './http';
-import { ENV } from './env';
+import { ENV, isQingLongPanel } from './env';
+import { dayjs } from './time';
 
 type VersionInfo = {
   tag_name: string;
@@ -13,10 +14,13 @@ type Notice = {
     key: string[];
     value: any;
   }[];
-  version?: string;
-  time: {
-    start: string;
-    end: string;
+  version?: {
+    start?: string;
+    end?: string;
+  };
+  time?: {
+    start?: string;
+    end?: string;
   };
 };
 
@@ -66,16 +70,16 @@ async function printNotice(notices: NoticeResponse, runVersion: string) {
   notices[ENV.type]?.forEach(forEachNotice);
 
   function forEachNotice({ content, config, version, time }: Notice) {
-    if (version && !checkVersion(runVersion, version)) {
-      return;
-    }
-    if (time) {
-      const { start, end } = time;
-      const now = new Date().getTime();
-      if (start && now < new Date(start).getTime()) {
+    if (version) {
+      const { start = '0.0.1', end = '9999.0.0' } = version;
+      if (checkVersion(runVersion, start) || checkVersion(end, runVersion)) {
         return;
       }
-      if (end && now > new Date(end).getTime()) {
+    }
+    if (time) {
+      const { start = '2022-02-02', end = '2222-02-02' } = time;
+      const now = dayjs();
+      if (now.isBefore(start) || now.isAfter(end)) {
         return;
       }
     }
@@ -107,7 +111,7 @@ async function patchEnv(version: string | undefined) {
 export async function printVersion() {
   const { logger } = await import('./log');
   // fuck you qinglong
-  if (process.env.NODE_ENV === 'development' && !process.env.IS_QING_LONG) {
+  if (process.env.NODE_ENV === 'development' && !isQingLongPanel()) {
     logger.info(`开发版`);
     return;
   }

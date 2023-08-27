@@ -10,8 +10,10 @@ export async function exchangeBigPointService() {
     logger.info('没有需要兑换的商品');
     return;
   }
-  await waitForTime({ hour: 12 });
-  await apiDelay(TaskConfig.exchangeBigPoint.startDelay);
+  await waitForTime({
+    hour: 12,
+    millisecond: TaskConfig.exchangeBigPoint.startDelay,
+  });
   await Promise.all(tokenList.map(token => exchangeBigPointRetry(token)));
 }
 

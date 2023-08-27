@@ -5,11 +5,16 @@ import { isNumber } from './is';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
+dayjs.tz.setDefault('Asia/Shanghai');
+dayjs.locale('zh-cn');
+
+export { dayjs };
 
 interface WaitOptions {
   hour: number;
   minute?: number;
   second?: number;
+  millisecond?: number;
   timezone?: string;
 }
 
@@ -17,7 +22,7 @@ interface WaitOptions {
  * 等待指定时间
  */
 export function waitForTime(options: WaitOptions) {
-  const { hour, minute = 0, second = 0, timezone = 'Asia/Shanghai' } = options;
+  const { hour, minute = 0, second = 0, timezone = 'Asia/Shanghai', millisecond = 0 } = options;
   return new Promise<void>(resolve => {
     const now = dayjs().tz(timezone);
     const targetTime = now
@@ -26,7 +31,8 @@ export function waitForTime(options: WaitOptions) {
       // 在使用时不应该使用 0 作为 hour，因为谁都不可能等待今天的 0 点到来，你能回到昨天吗？
       .add(hour === 0 ? 24 : hour, 'hours')
       .add(minute, 'minutes')
-      .add(second, 'seconds');
+      .add(second, 'seconds')
+      .add(millisecond, 'milliseconds');
     const timeToWait = targetTime.diff(now);
     if (timeToWait > 0) {
       setTimeout(() => {
