@@ -8,7 +8,7 @@ import type {
 import { DAILY_RUN_TIME, LOTTERY_EXCLUDE, LOTTERY_INCLUDE, LOTTERY_UP_BLACKLIST } from '@/constant';
 import { cloneObject, deepMergeObject, arr2numArr } from '@/utils/pure';
 import { getBiliJct, getUserId } from '@/utils/cookie';
-import { isArray, isNumber, isString, isUnDef } from '@/utils/is';
+import { isArray, isDef, isNumber, isString, isUnDef } from '@/utils/is';
 import { TODAY_MAX_FEED } from '~/liveIntimacy/constant';
 
 type DefaultConfig = typeof defaultConfig;
@@ -480,7 +480,7 @@ function beforeMergeConfig(config: UserConfig) {
 
   const { exchangeCoupon } = config;
   if (exchangeCoupon) {
-    if (exchangeCoupon.startHour) {
+    if (isDef(exchangeCoupon.startHour)) {
       exchangeCoupon.startHour = isArray(exchangeCoupon.startHour)
         ? exchangeCoupon.startHour
         : [exchangeCoupon.startHour];
