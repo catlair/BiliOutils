@@ -8,11 +8,12 @@ export type TaskCombineDto = ApiBaseProp<{
   point_info: Pointinfo;
   task_info: Taskinfo;
   current_ts: number;
+  integration_task: boolean;
 }>;
 
 export interface Taskinfo {
-  modules: Module[];
-  sing_task_item: SingTaskItem;
+  modules?: Module[];
+  sing_task_item?: SingTaskItem;
   score_month: number;
   score_limit: number;
 }

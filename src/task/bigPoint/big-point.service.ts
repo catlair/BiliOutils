@@ -25,7 +25,6 @@ import {
 } from '@/utils';
 import { TaskConfig, TaskModule } from '@/config';
 import { FREE_POINT } from './constant';
-import { JSON5 } from '@/utils/json5';
 
 const bigLogger = new Logger({ console: 'debug', file: 'debug', push: 'warn' }, 'big-point');
 
@@ -36,20 +35,37 @@ let isError = false;
  * 查看当前状态
  */
 async function getTaskStatus() {
-  try {
-    const { code, data, message } = await getTaskCombine();
-    if (code !== 0) {
-      logger.error(`查看当前状态失败: ${code} ${message}`);
-      return;
+  const data = await getTaskStatusByWhile();
+
+  if (data) return data;
+
+  const { defStatus } = await import('./data');
+
+  return defStatus;
+
+  async function getTaskStatusByWhile(times = 5) {
+    for (let count = 0; count < times; count++) {
+      const data = await getTaskStatus();
+      if (!data) return;
+      if (!data.task_info?.modules?.length) {
+        logger.error('获取任务列表失败，列表为空');
+        continue;
+      }
+      return data;
     }
-    if (!data.task_info?.modules?.length) {
-      logger.error('获取任务列表失败，列表为空');
-      logger.debug(JSON5.stringify(data));
-      return;
+  }
+
+  async function getTaskStatus() {
+    try {
+      const { code, data, message } = await getTaskCombine();
+      if (code !== 0) {
+        logger.error(`查看当前状态失败: ${code} ${message}`);
+        return;
+      }
+      return data;
+    } catch (error) {
+      logger.error(error);
     }
-    return data;
-  } catch (error) {
-    logger.error(error);
   }
 }
 
@@ -94,7 +110,7 @@ type TaskStatus = Defined<UnPromisify<ReturnType<typeof getTaskStatus>>>;
 
 async function bigPointTask(taskStatus: TaskStatus) {
   const { task_info } = taskStatus;
-  const signCode = await sign(task_info.sing_task_item?.histories);
+  const signCode = await bigPointSign(task_info.sing_task_item?.histories);
   if (signCode === -401) {
     logger.error('出现非法访问异常，可能账号存在异常，放弃大积分任务');
     isError = true;
@@ -118,7 +134,7 @@ async function doDailyTask(taskStatus: TaskStatus | undefined) {
   }
 
   const waitTaskItems =
-    taskStatus.task_info.modules.at(-1)?.common_task_item?.filter(taskItem => {
+    taskStatus.task_info.modules?.at(-1)?.common_task_item?.filter(taskItem => {
       return (
         taskItem.vip_limit <= TaskModule.vipType &&
         taskItem.complete_times < taskItem.max_times &&
@@ -236,18 +252,19 @@ async function vipMallView() {
 /**
  * 签到
  */
-async function sign(histories: SingTaskHistory[]) {
+async function bigPointSign(histories?: SingTaskHistory[]) {
   if (!histories || !histories.length) {
-    return;
+    return sign();
   }
   const today = histories.find(history => history.is_today);
-  if (!today) {
-    return;
-  }
-  if (today.signed) {
+  if (today?.signed) {
     !isRetry && bigLogger.debug('今日已签到 ✓');
     return;
   }
+  return sign();
+}
+
+async function sign() {
   try {
     const { code, message } = await signIn();
     if (code === 0) {
@@ -273,7 +290,7 @@ async function getTask(taskinfo: Taskinfo) {
     if (taskItem.vip_limit > TaskModule.vipType) return false;
     if (taskItem.state === 0) return true;
   }
-  const taskItems = taskinfo.modules.at(-1)?.common_task_item?.filter(filterTask);
+  const taskItems = taskinfo.modules?.at(-1)?.common_task_item?.filter(filterTask);
   if (!taskItems || !taskItems.length) {
     return false;
   }
