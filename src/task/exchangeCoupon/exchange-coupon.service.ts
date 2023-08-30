@@ -126,7 +126,7 @@ async function exchangeCoupon(num: number, startHour: ExchangeTime) {
  */
 async function multiExchange(num: number, startHour: ExchangeTime) {
   const { delay, multiNum } = TaskConfig.exchangeCoupon;
-  for (let count = num; count < 1; ) {
+  for (let count = num; count > 0; ) {
     const n = Math.min(multiNum, count);
     logger.debug(`开始兑换漫读券，兑换数量：${n}`);
     const r = await exchangeCoupon(n, startHour);
