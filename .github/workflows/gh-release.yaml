@@ -48,13 +48,13 @@ jobs:
           rm main.js
       - name: ZIP SCF
         run: |
-          cp -rf ./tools/ ./package*.json yarn.lock ./build/.yarnclean ./node_modules/ ./dist/
+          cp -rf ./tools/ ./package*.json ./build/.yarnclean ./node_modules/ ./dist/
           mv ./index.scf.js ./dist/index.js
           cd dist
           npm install tencentcloud-sdk-nodejs
           npm prune --production
           yarn autoclear
-          rm -rf tools package*.json yarn.lock .yarnclean package-lock.json
+          rm -rf tools package*.json .yarnclean package-lock.json
           zip -r -q ../tencent_scf.zip *
           rm -rf node_modules
       - name: Build Rollup
