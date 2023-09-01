@@ -3,7 +3,6 @@ import { TaskConfig } from '@/config';
 import * as mangaApi from './manga.request';
 import { apiDelay, isBoolean, isUnDef, logger, random } from '@/utils';
 import { Bilicomic } from '@catlair/bilicomic-dataflow';
-import { wd40Activity } from './manga.request';
 
 let expireCouponNum: number;
 
@@ -15,7 +14,7 @@ async function getExpireCouponNum() {
   try {
     const { code, msg, data } = await mangaApi.getCoupons();
     if (code !== 0) {
-      logger.error(`获取漫读券失败：${code} ${msg}`);
+      logger.fatal(`获取漫读券`, code, msg);
       return;
     }
     const { user_coupons } = data;
@@ -27,7 +26,7 @@ async function getExpireCouponNum() {
       .filter(coupon => coupon.will_expire !== 0)
       .reduce((acc, coupon) => acc + coupon.remain_amount, 0);
   } catch (error) {
-    logger.error(`获取漫读券异常: ${error}`);
+    logger.exception(`获取漫读券`, error);
   }
 }
 
@@ -40,9 +39,9 @@ async function getFavoriteList() {
     if (code === 0) {
       return data;
     }
-    logger.error(`获取追漫列表失败：${code} ${msg}`);
+    logger.fatal(`获取追漫列表`, code, msg);
   } catch (error) {
-    logger.error(`获取追漫列表异常: ${error}`);
+    logger.exception(`获取追漫列表`, error);
   }
 }
 
@@ -53,7 +52,7 @@ async function getMangaEpList(comic_id: number) {
   try {
     const { code, msg, data } = await mangaApi.getMangaDetail(comic_id);
     if (code !== 0) {
-      logger.error(`获取漫画详情失败：${code} ${msg}`);
+      logger.fatal(`获取漫画详情`, code, msg);
       return;
     }
     if (!data || !data.ep_list) {
@@ -67,7 +66,7 @@ async function getMangaEpList(comic_id: number) {
       ep_list: disable_coupon_amount ? ep_list.slice(disable_coupon_amount) : ep_list,
     };
   } catch (error) {
-    logger.error(`获取漫画详情异常: ${error}`);
+    logger.exception(`获取漫画详情`, error);
   }
 }
 
@@ -79,7 +78,7 @@ async function getBuyCoupon(ep_id: number) {
   try {
     const { code, msg, data } = await mangaApi.getBuyInfo(ep_id);
     if (code !== 0) {
-      logger.error(`获取购买信息失败：${code} ${msg}`);
+      logger.fatal(`获取购买信息`, code, msg);
       return -1;
     }
     if (!data) {
@@ -101,7 +100,7 @@ async function getBuyCoupon(ep_id: number) {
     }
     return data.recommend_coupon_id;
   } catch (error) {
-    logger.error(`获取购买信息异常: ${error}`);
+    logger.exception(`获取购买信息`, error);
   }
   return -99;
 }
@@ -120,7 +119,7 @@ async function buyOneEpManga(ep_id: number, countRef: Ref<number>) {
     }
     const { code, msg } = await mangaApi.buyManga(ep_id, couponId);
     if (code !== 0) {
-      logger.error(`购买漫画 ${ep_id} 失败：${code} ${msg}`);
+      logger.fatal(`购买漫画 ${ep_id}`, code, msg);
       return false;
     }
     // 购买成功，则减少漫读券数量
@@ -133,7 +132,7 @@ async function buyOneEpManga(ep_id: number, countRef: Ref<number>) {
       return true;
     }
   } catch (error) {
-    logger.error(`购买漫画异常：`, error);
+    logger.exception(`购买漫画`, error);
   }
   return false;
 }
@@ -147,9 +146,9 @@ async function searchManga(keyword: string) {
     if (code === 0) {
       return data;
     }
-    logger.error(`搜索漫画失败：${code} ${msg}`);
+    logger.fatal(`搜索漫画`, code, msg);
   } catch (error) {
-    logger.error(`搜索漫画异常: ${error}`);
+    logger.exception(`搜索漫画`, error);
   }
 }
 
@@ -275,7 +274,7 @@ export async function buyMangaService() {
     return false;
   }
 
-  const expireCouponNum = await getBuyNum();
+  expireCouponNum = await getBuyNum();
   if (expireCouponNum < 1) {
     return false;
   }
@@ -424,106 +423,5 @@ export async function readMangaService(isNoLogin?: boolean) {
     logger.info('每日阅读结束');
   } catch (error) {
     logger.exception(`每日漫画阅读任务`, error);
-  }
-}
-
-/**
- * 充值活动
- */
-export async function mangaSummerActivity() {
-  if (!TaskConfig.manga.summer) return;
-  //2023 9 月 1 日 0 点之前
-  if (Date.now() > 1693497600000) {
-    logger.warn('夏日活动已经结束');
-    return;
-  }
-  // 获取当前金币数
-  const balance = await getRechargeBalance();
-  logger.info(`夏日活动金币数：${balance || 0}`);
-
-  // 获取任务
-  const tasks = await getRechargeTask();
-  // 没有任务
-  if (!tasks || tasks.length === 0) {
-    logger.info('夏日活动任务已经完成');
-    return;
-  }
-  // 有任务 270032，今日访问
-  const visitTask = tasks.find(task => task.id === 270032);
-  if (visitTask) {
-    logger.debug(`开始访问夏日活动主页`);
-    try {
-      await wd40Activity.doMannerMain();
-    } catch (error) {
-      logger.exception(`访问夏日活动主页`, error);
-    }
-  }
-  // 有任务 270033，每日阅读
-  const readTask = tasks.find(task => task.id === 270033);
-  if (readTask) {
-    TaskConfig.manga.read = true;
-    await readMangaService();
-  }
-  // 有任务 300052，访问会场
-  const visitHallTask = tasks.find(task => task.id === 300052);
-  if (visitHallTask) {
-    logger.debug(`开始访问夏日活动会场`);
-    try {
-      await wd40Activity.doMannerVenue();
-    } catch (error) {
-      logger.exception(`访问夏日活动会场`, error);
-    }
-  }
-  // 获取任务列表
-  const taskList = await getRechargeTask();
-  if (taskList?.length) {
-    // 领取任务奖励
-    await takeRechargeTask(taskList);
-  }
-}
-
-async function getRechargeBalance() {
-  try {
-    const { data, errors } = await wd40Activity.tokenInfos();
-    if (errors) {
-      logger.warn(`获取充值活动失败：${errors[0].message}`);
-      return;
-    }
-    const {
-      activity: {
-        common: { tokens },
-      },
-    } = data;
-    const token = tokens[0];
-    return token.balance || 0;
-  } catch (error) {
-    logger.exception(`获取充值活动`, error);
-  }
-}
-
-async function getRechargeTask() {
-  try {
-    const { data, errors } = await wd40Activity.tasks();
-    if (errors) {
-      logger.warn(`获取充值活动失败：${errors[0].message}`);
-      return;
-    }
-
-    const {
-      activity: {
-        common: { tasks },
-      },
-    } = data;
-    return tasks.filter(task => task.status !== 2);
-  } catch (error) {
-    logger.exception(`获取充值活动`, error);
-  }
-}
-
-async function takeRechargeTask(taskList: any[]) {
-  try {
-    taskList.forEach(task => wd40Activity.takeTask(task.id));
-  } catch (error) {
-    logger.exception(`领取充值活动`, error);
   }
 }
