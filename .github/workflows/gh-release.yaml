@@ -54,7 +54,7 @@ jobs:
           npm install tencentcloud-sdk-nodejs
           npm prune --production
           yarn autoclear
-          rm -rf tools package*.json .yarnclean package-lock.json
+          rm -rf tools package*.json .yarnclean
           zip -r -q ../tencent_scf.zip *
           rm -rf node_modules
       - name: Build Rollup

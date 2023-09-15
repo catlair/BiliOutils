@@ -30,7 +30,7 @@ jobs:
       - name: Build and Handle
         run: |
           npm run build
-          rm -rf node_modules package-lock.json
+          rm -rf node_modules
       - run: |
           cd dist
           npm publish ${{ env.IS_RC == 'true' && '--tag beta' || '' }}

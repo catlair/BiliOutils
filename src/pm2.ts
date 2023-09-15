@@ -6,7 +6,7 @@ const NAME = 'bt_daily';
 /**
  * @type {import('pm2').StartOptions}
  */
-const options = {
+const options: import('pm2').StartOptions = {
   script: path.resolve(__dirname, './index' + path.extname(__filename)),
   name: NAME,
   cron: process.env.BILITOOLS_CRON || '6 */12 * * *',
