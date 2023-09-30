@@ -311,7 +311,7 @@ export const defaultConfig = {
     delay: 200,
     // 重试次数
     retry: 3,
-    // 启动延时 ms
+    // 启动延时 ms（12点开始计算）
     startDelay: 30,
     // 兑换商品名称，与 token 二选一
     name: [] as string[],
