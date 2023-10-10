@@ -21,6 +21,7 @@ export const biliTaskArray = [
   ['liveLottery', () => import('./liveLottery')],
   ['liveRedPack', () => import('./liveRedPack')],
   ['dailyBattery', () => import('./dailyBattery')],
+  ['addExp', () => import('./addExp')],
   ['activityLottery', () => import('./activityLottery')],
   ['LiveReservation', () => import('./liveReservation')],
   ['judgement', () => import('./judgement')],

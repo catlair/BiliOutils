@@ -100,6 +100,8 @@ export const defaultConfig = {
     watchLink: false,
     // 直播弹幕
     liveDm: false,
+    // 大会员领取经验
+    addExp: true,
   },
   log: {
     pushLevel: 'verbose' as LevelType | boolean,
