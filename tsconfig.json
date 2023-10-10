@@ -1,10 +1,4 @@
 {
-  "ts-node": {
-    "files": true,
-    "compilerOptions": {
-      "module": "commonjs"
-    }
-  },
   "compilerOptions": {
     "module": "esnext",
     "removeComments": true,

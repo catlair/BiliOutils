@@ -1,8 +1,7 @@
 module.exports = {
   rootDir: 'src/',
   transform: {
-    '^.+\\.js?$': 'babel-jest',
-    '^.+\\.(ts|tsx)$': 'ts-jest',
+    '^.+\\.(t|j)sx?$': '@swc/jest',
   },
   moduleNameMapper: {
     '@/(.*)$': '<rootDir>/$1',
