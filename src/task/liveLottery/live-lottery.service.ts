@@ -1,4 +1,5 @@
 import type {
+  LiveAreaDto,
   LiveCheckLotteryDto,
   LiveCheckLotteryRes,
   LiveFollowDto,
@@ -159,19 +160,45 @@ async function doLotteryArea(areaId: string, parentId: string, num = 2) {
 }
 
 /**
+ * 通过配置过滤分区
+ */
+function filterArea(data: LiveAreaDto['data']['data'], useArea: boolean, config: string[]) {
+  const areaList = data.map(({ list }) => list);
+  if (!useArea) return areaList;
+  const parentNames: string[] = [];
+  // 父分区
+  const res = areaList.filter(([{ parent_name }]) => {
+    const r = config.includes(parent_name);
+    r && parentNames.push(parent_name);
+    return r;
+  });
+  // 子分区
+  const res1 = areaList
+    .filter(([{ parent_name }]) => !parentNames.includes(parent_name))
+    .flat()
+    .filter(({ name }) => config.includes(name));
+  res1.length && res.push(res1);
+  return res;
+}
+
+/**
  * 进行天选
  */
 export async function liveLotteryService() {
   newFollowUp = [];
   const { pageNum } = TaskConfig.lottery;
   // 获取直播分区
-  const areaList = await getLiveArea();
+  const areaList = filterArea(
+    await getLiveArea(),
+    TaskConfig.lottery.useArea,
+    TaskConfig.lottery.area,
+  );
   try {
     // 遍历大区
     for (const areas of areaList) {
       // 遍历小区
-      for (const { areaId, parentId } of areas) {
-        await doLotteryArea(areaId, parentId, pageNum);
+      for (const { id, parent_id } of areas) {
+        await doLotteryArea(id, parent_id, pageNum);
       }
     }
   } catch {}

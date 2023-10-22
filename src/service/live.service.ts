@@ -4,9 +4,11 @@ import { PendentID } from '@/enums/live.enum';
 import { getArea, getLiveInfo, getLiveRoom } from '@/net/live.request';
 import { sleep, logger } from '@/utils';
 
-interface LiveAreaType {
+export interface LiveAreaType {
   areaId: string;
   parentId: string;
+  name: string;
+  parentName: string;
 }
 
 /**
@@ -31,17 +33,14 @@ function pendentLottery(list: LiveRoomList[]) {
 
 /**
  * 获取直播分区
- * @description 之所以是二维数组，是为了方便后面的递归，如果全部数据整合到一个数组中，会导致数据量过大，天选超时了可能都没请求完
  */
-export async function getLiveArea(): Promise<LiveAreaType[][]> {
+export async function getLiveArea() {
   try {
     const { data, code, message } = await getArea();
     if (code !== 0) {
       logger.info(`获取直播分区失败: ${code}-${message}`);
     }
-    return data.data
-      .map(item => item.list)
-      .map(item => item.map(area => ({ areaId: area.id, parentId: area.parent_id })));
+    return data.data;
   } catch (error) {
     logger.error(`获取直播分区异常：`, error);
     throw error;
