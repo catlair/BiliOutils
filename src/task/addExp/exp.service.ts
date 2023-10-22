@@ -9,6 +9,11 @@ export async function addExpService() {
   }
   try {
     const { code, message } = await add(TaskConfig.BILIJCT);
+    if (code === 69198) {
+      // 已经完成
+      logger.info(message);
+      return;
+    }
     if (code === 0) {
       logger.info(`执行成功`);
       return;
