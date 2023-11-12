@@ -344,7 +344,7 @@ export const defaultConfig = {
     // 关注？
     follow: false,
     // 请求 GitHub 使用的代理前缀
-    proxyPrefix: 'https://ghproxy.com/',
+    proxyPrefix: '',
     // 自定义活动列表链接
     customUrl: '',
   },

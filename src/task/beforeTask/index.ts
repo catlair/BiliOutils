@@ -1,5 +1,5 @@
-import getNewCookie from '../getNewCookie';
+// import getNewCookie from '../getNewCookie';
 
 export default async function beforeTask() {
-  await getNewCookie();
+  // await getNewCookie();
 }
