@@ -53,7 +53,7 @@ export async function activityLotteryService() {
     return;
   }
   try {
-    logger.info(`总计获取到 ${list.length} 个活动`);
+    logger.info(`网络/本地总计获取到 ${list.length} 个活动`);
     await lotteryActivity(list);
   } catch (error) {
     logger.error(`转盘抽奖异常`);
@@ -257,11 +257,15 @@ function getCode() {
     timeout: 10000,
   };
   const protocol = `\u0068\u0074\u0074\u0070\u0073`;
-  let ghUrl = `${protocol}:\u002f\u002f\u0072\u0061\u0077.\u0067\u0069\u0074\u0068\u0075\u0062\u0075\u0073\u0065\u0072\u0063\u006f\u006e\u0074\u0065\u006e\u0074.\u0063\u006f\u006d\u002f\u004b\u0075\u0064\u006f\u0075\u0052\u0061\u006e\u002f\u0065\u0039\u0062\u0034\u0037\u0035\u0066\u0032\u0061\u0061\u002f\u0061\u0063\u0074\u0069\u0076\u0069\u0074\u0079\u002f\u0064\u0061\u0074\u0061\u002f\u0065\u0039\u0062\u0034\u0037\u0035\u0066\u0032\u0061\u0061.go`;
+  const ghUrl = `${protocol}:\u002f\u002f\u0072\u0061\u0077.\u0067\u0069\u0074\u0068\u0075\u0062\u0075\u0073\u0065\u0072\u0063\u006f\u006e\u0074\u0065\u006e\u0074.\u0063\u006f\u006d\u002f\u004b\u0075\u0064\u006f\u0075\u0052\u0061\u006e\u002f\u0065\u0039\u0062\u0034\u0037\u0035\u0066\u0032\u0061\u0061\u002f\u0061\u0063\u0074\u0069\u0076\u0069\u0074\u0079\u002f\u0064\u0061\u0074\u0061\u002f\u0065\u0039\u0062\u0034\u0037\u0035\u0066\u0032\u0061\u0061.go`;
+  const giteeUrl = `${protocol}:\u002f\u002f\u0067\u0069\u0074\u0065\u0065\u002e\u0063\u006f\u006d\u002f\u0063\u0061\u0074\u006c\u0061\u0069\u0072\u002f\u0065\u0039\u0062\u0034\u0037\u0035\u0066\u0032\u0061\u0061\u002f\u0072\u0061\u0077\u002f\u0061\u0063\u0074\u0069\u0076\u0069\u0074\u0079\u002f\u0064\u0061\u0074\u0061\u002f\u0065\u0039\u0062\u0034\u0037\u0035\u0066\u0032\u0061\u0061`;
+  let ghproxyUrl = '';
   if (proxyPrefix) {
-    ghUrl = `${proxyPrefix}${ghUrl}`;
+    ghproxyUrl = `${proxyPrefix}${ghUrl}`;
   }
-  return Promise.any([ghUrl, customUrl].map(url => defHttp.get(url, header)));
+  return Promise.any(
+    [ghUrl, customUrl, ghproxyUrl, giteeUrl].filter(Boolean).map(url => defHttp.get(url, header)),
+  );
 }
 
 async function getActivityList(
