@@ -157,9 +157,9 @@ export async function checkLocalTime() {
     const localTime = new Date().getTime();
     const serverTime = data.now * 1000;
     const diff = Math.abs(localTime - serverTime);
-    // 误差超过 20 秒
-    if (diff > 20 * 1000) {
-      logger.debug(`本地时间校验失败：${diff}ms`);
+    // 误差超过 60 秒
+    if (diff > 60 * 1000) {
+      logger.debug(`本地时间校验失败：diff: ${diff}ms`);
       return false;
     }
   } catch (error) {
