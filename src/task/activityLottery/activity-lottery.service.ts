@@ -249,6 +249,9 @@ export async function doLotteryContinue(num: number, item: ActivityLotteryIdType
 
 function getCode() {
   const { customUrl, proxyPrefix } = TaskConfig.activityLottery;
+  if (customUrl) {
+    return defHttp.get(customUrl, { timeout: 10000 });
+  }
   const header = {
     headers: {
       'Accept-Encoding': 'gzip, deflate, br',
@@ -258,13 +261,22 @@ function getCode() {
   };
   const protocol = `\u0068\u0074\u0074\u0070\u0073`;
   const ghUrl = `${protocol}:\u002f\u002f\u0072\u0061\u0077.\u0067\u0069\u0074\u0068\u0075\u0062\u0075\u0073\u0065\u0072\u0063\u006f\u006e\u0074\u0065\u006e\u0074.\u0063\u006f\u006d\u002f\u004b\u0075\u0064\u006f\u0075\u0052\u0061\u006e\u002f\u0065\u0039\u0062\u0034\u0037\u0035\u0066\u0032\u0061\u0061\u002f\u0061\u0063\u0074\u0069\u0076\u0069\u0074\u0079\u002f\u0064\u0061\u0074\u0061\u002f\u0065\u0039\u0062\u0034\u0037\u0035\u0066\u0032\u0061\u0061.go`;
-  const giteeUrl = `${protocol}:\u002f\u002f\u0067\u0069\u0074\u0065\u0065\u002e\u0063\u006f\u006d\u002f\u0063\u0061\u0074\u006c\u0061\u0069\u0072\u002f\u0065\u0039\u0062\u0034\u0037\u0035\u0066\u0032\u0061\u0061\u002f\u0072\u0061\u0077\u002f\u0061\u0063\u0074\u0069\u0076\u0069\u0074\u0079\u002f\u0064\u0061\u0074\u0061\u002f\u0065\u0039\u0062\u0034\u0037\u0035\u0066\u0032\u0061\u0061`;
+  const giteeUrl = `${protocol}:\u002f\u002f\u0067\u0069\u0074\u0065\u0065\u002e\u0063\u006f\u006d\u002f\u0063\u0061\u0074\u006c\u0061\u0069\u0072\u002f\u0065\u0039\u0062\u0034\u0037\u0035\u0066\u0032\u0061\u0061\u002f\u0072\u0061\u0077\u002f\u0061\u0063\u0074\u0069\u0076\u0069\u0074\u0079\u002f\u0064\u0061\u0074\u0061\u002f\u0065\u0039\u0062\u0034\u0037\u0035\u0066\u0032\u0061\u0061.go`;
   let ghproxyUrl = '';
   if (proxyPrefix) {
     ghproxyUrl = `${proxyPrefix}${ghUrl}`;
   }
   return Promise.any(
-    [ghUrl, customUrl, ghproxyUrl, giteeUrl].filter(Boolean).map(url => defHttp.get(url, header)),
+    [ghUrl, ghproxyUrl, giteeUrl].filter(Boolean).map(async url => {
+      try {
+        const resp = await defHttp.get(url, header);
+        if (!resp?.value || !resp?.timestamp) {
+          return Promise.reject('数据无效');
+        }
+        return resp;
+      } catch {}
+      return Promise.reject('请求失败');
+    }),
   );
 }
 
@@ -276,19 +288,20 @@ async function getActivityList(
     logger.info(`用户想要自己管理活动，不需要请求活动列表`);
     return;
   }
-  logger.verbose(`通过网络获取活动列表`);
+  logger.debug(`通过网络获取活动列表`);
   try {
     const res = await getCode();
     const reslut: ActivityLotteryIdType[] = JSON.parse(gzipDecode(base64Decode(res.value)));
     if (!isArray(reslut)) {
       return;
     }
+    logger.debug(`通过网络获取活动列表成功！`);
     if (localStatus && localStatus.expired_list) {
       return reslut.filter(item => expiredIdsFilter(item, localStatus));
     }
     return reslut;
   } catch (error) {
-    logger.error(error);
+    logger.error(`通过网络获取活动失败`, error);
   }
   return;
 }
