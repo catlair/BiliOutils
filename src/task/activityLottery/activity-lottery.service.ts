@@ -291,6 +291,10 @@ async function getActivityList(
   logger.debug(`通过网络获取活动列表`);
   try {
     const res = await getCode();
+    if (!res.value) {
+      logger.error(`通过网络获取活动失败，未知错误`, res);
+      return;
+    }
     const reslut: ActivityLotteryIdType[] = JSON.parse(gzipDecode(base64Decode(res.value)));
     if (!isArray(reslut)) {
       return;
