@@ -148,7 +148,9 @@ async function doDailyTask(taskStatus: TaskStatus | undefined) {
   }
 
   const taskFunctions = {
-    ogvwatch: watchTask,
+    ogvwatch: TaskConfig.bigPoint.isWatch
+      ? async (n: number) => (await apiDelay(TaskConfig.bigPoint.watchDelay * 1000)) && watchTask(n)
+      : () => void 0,
     filmtab: () => completeTask('tv_channel', '浏览影视频道'),
     animatetab: () => completeTask('jp_channel', '浏览追番频道'),
     vipmallview: vipMallView,
@@ -166,12 +168,7 @@ async function doDailyTask(taskStatus: TaskStatus | undefined) {
 /**
  * 观看视频任务
  */
-async function watchTask(completeTimes: number) {
-  if (!TaskConfig.bigPoint.isWatch) {
-    return;
-  }
-  const { watchDelay = 40 } = TaskConfig.bigPoint;
-  await apiDelay(watchDelay * 1000);
+export async function watchTask(completeTimes = 1) {
   try {
     const { id, name, title, md, aid, cid, season } = await getRandomEpid();
     bigLogger.debug(`观看《${name}·${title}》`);
