@@ -10,9 +10,9 @@ export interface ReceiveVipMyDto extends ApiBaseProp {
   data: {
     /** type 1-5 除了 type 和 state 都是固定的 */
     list: {
-      type: number;
-      /** 1 已经领取 */
-      state: 0 | 1;
+      type: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+      /** 1 已经领取 0 待领取 2 未完成（如有需要完成） */
+      state: 0 | 1 | 2;
       // 过期时间
       expire_time: 1656604799;
       // vip_type

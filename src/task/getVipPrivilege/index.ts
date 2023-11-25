@@ -25,8 +25,16 @@ async function getPrivilegeStatus() {
 }
 
 function getPrivilegeName(type: number): string {
-  if (type > 5 || type < 1) return `未知权益 ${type}`;
-  return ['B 币券', '会员购优惠券', '漫画福利券', '会员购包邮券', '漫画商城优惠券'][type - 1];
+  if (type > 7 || type < 1) return `未知权益 ${type}`;
+  return [
+    'B 币券',
+    '会员购优惠券',
+    '漫画福利券',
+    '会员购包邮券',
+    '漫画商城优惠券',
+    '装扮体验卡',
+    '课堂优惠券',
+  ][type - 1];
 }
 
 async function getOnePrivilege(type: number): Promise<boolean> {
