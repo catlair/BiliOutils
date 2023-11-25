@@ -295,15 +295,15 @@ async function getActivityList(
       logger.error(`通过网络获取活动失败，未知错误`, res);
       return;
     }
-    const reslut: ActivityLotteryIdType[] = JSON.parse(gzipDecode(base64Decode(res.value)));
-    if (!isArray(reslut)) {
+    const result: ActivityLotteryIdType[] = JSON.parse(gzipDecode(base64Decode(res.value)));
+    if (!isArray(result)) {
       return;
     }
     logger.debug(`通过网络获取活动列表成功！`);
     if (localStatus && localStatus.expired_list) {
-      return reslut.filter(item => expiredIdsFilter(item, localStatus));
+      return result.filter(item => expiredIdsFilter(item, localStatus));
     }
-    return reslut;
+    return result;
   } catch (error) {
     logger.error(`通过网络获取活动失败`, error);
   }
