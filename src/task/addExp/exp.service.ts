@@ -1,10 +1,15 @@
-import { logger } from '@/utils';
+import { logger, sleep } from '@/utils';
 import { add } from './exp.request';
 import { TaskConfig } from '@/config';
 import { receiveVipMy } from '../getVipPrivilege/vip.request';
-import { watchTask } from '../bigPoint/big-point.service';
+import { watchVideoOfRandom } from '@/service/video.service';
 
 export async function addExpService() {
+  return await execute({ value: 0 });
+}
+
+async function execute(counter: Ref<number>) {
+  if (counter.value++ > 3) return false;
   const expStatus = await getExpStatus();
   if (!expStatus) return true;
   // 无权限 next_receive_days 为 1
@@ -12,18 +17,19 @@ export async function addExpService() {
     logger.info('大会员不存在或已过期');
     return true;
   }
-  return match(expStatus.state);
+  return match(expStatus.state, counter);
 }
 
-async function match(state: number) {
+async function match(state: number, counter: Ref<number>) {
   switch (state) {
     case 0:
       return await addExp();
     case 1:
       logger.info(`今日已经领取过经验了哦`);
       return true;
-    case 2:
-      return await watchVideo();
+    case 2: {
+      return await watchTask(counter);
+    }
     default:
       logger.warn(`未知状态${state}`);
       return false;
@@ -67,12 +73,8 @@ async function getExpStatus() {
   }
 }
 
-async function watchVideo() {
-  let counter = 0;
-  await watchTask();
-  let success = await addExpService();
-  while (!success && counter < 3) {
-    counter++;
-    success = await addExpService();
-  }
+async function watchTask(counter: Ref<number>) {
+  await watchVideoOfRandom();
+  await sleep(1000);
+  return await execute(counter);
 }

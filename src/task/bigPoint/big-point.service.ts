@@ -10,21 +10,11 @@ import {
   signIn,
   susWin,
 } from './big-point.request';
-import { videoHeartbeat } from '@/net/video.request';
 import { TaskCode } from './big-point.emum';
-import {
-  apiDelay,
-  getRandomItem,
-  getUnixTime,
-  isBoolean,
-  isDef,
-  isToday,
-  Logger,
-  logger,
-  random,
-} from '@/utils';
+import { apiDelay, isBoolean, isDef, isToday, Logger, logger, random } from '@/utils';
 import { TaskConfig, TaskModule } from '@/config';
 import { FREE_POINT } from './constant';
+import { getRandomEp, watchVideo } from '@/service/video.service';
 
 const bigLogger = new Logger({ console: 'debug', file: 'debug', push: 'warn' }, 'big-point');
 
@@ -168,41 +158,17 @@ async function doDailyTask(taskStatus: TaskStatus | undefined) {
 /**
  * 观看视频任务
  */
-export async function watchTask(completeTimes = 1) {
+async function watchTask(completeTimes = 1) {
   try {
-    const { id, name, title, md, aid, cid, season } = await getRandomEpid();
-    bigLogger.debug(`观看《${name}·${title}》`);
-    const watchTime = completeTimes === 1 ? random(905, 1800) : random(1805, 2000);
-    // 播放西游记
-    await videoHeartbeat({
-      start_ts: getUnixTime() - watchTime,
-      realtime: watchTime,
-      played_time: random(watchTime, watchTime + 1000),
-      real_played_time: watchTime,
-      refer_url: `https://www.bilibili.com/bangumi/media/md${md}/`,
-      epid: id,
-      aid,
-      cid,
-      sid: season,
+    const ep = await getRandomEp();
+    bigLogger.debug(`观看《${ep.name}·${ep.title}》`);
+    return await watchVideo({
+      ...ep,
+      time: completeTimes === 1 ? random(905, 1800) : random(1805, 2000),
     });
   } catch (error) {
     logger.error(`观看视频任务出现异常：`, error);
   }
-}
-
-/**
- * 获取随机视频
- */
-async function getRandomEpid() {
-  const { bangumiList } = await import('@/constant/bangumi');
-  // 随机获取一个番剧
-  const bangumi = getRandomItem(bangumiList);
-  return {
-    name: bangumi.name,
-    md: bangumi.md,
-    season: bangumi.season,
-    ...getRandomItem(bangumi.section),
-  };
 }
 
 /**

@@ -14,9 +14,9 @@ export interface ReceiveVipMyDto extends ApiBaseProp {
       /** 1 已经领取 0 待领取 2 未完成（如有需要完成） */
       state: 0 | 1 | 2;
       // 过期时间
-      expire_time: 1656604799;
+      expire_time: number;
       // vip_type
-      vip_type: 2;
+      vip_type: number;
       // 距离下次领取时间 单位天
       next_receive_days: number;
       /** 下次领取时间，eg. 1656777600 **/
