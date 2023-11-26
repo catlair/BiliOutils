@@ -24,5 +24,9 @@ export interface ReceiveVipMyDto extends ApiBaseProp {
     }[];
     is_short_vip: boolean;
     is_freight_open: boolean;
+    level: number;
+    cur_exp: number;
+    next_exp: number;
+    is_vip: boolean;
   };
 }

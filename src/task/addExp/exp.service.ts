@@ -12,8 +12,7 @@ async function execute(counter: Ref<number>) {
   if (counter.value++ > 3) return false;
   const expStatus = await getExpStatus();
   if (!expStatus) return true;
-  // 无权限 next_receive_days 为 1
-  if (expStatus.next_receive_days < 10000) {
+  if (!expStatus.isVip) {
     logger.info('大会员不存在或已过期');
     return true;
   }
@@ -67,7 +66,10 @@ async function getExpStatus() {
       logger.warn(`没有获取经验的任务？`);
       return;
     }
-    return expStatus;
+    return {
+      ...expStatus,
+      isVip: data.is_vip,
+    };
   } catch (error) {
     logger.error(`获取领取状态出现异常：${error.message}`);
   }
