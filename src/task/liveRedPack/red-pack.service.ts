@@ -215,7 +215,7 @@ function sendDm(room_id: number, wsTime: number) {
   const [dm1, dm2] = TaskConfig.redPack.dmNum,
     danmuNum = dm2 ? random(dm1, dm2) : dm1,
     times = Math.min(10, Math.ceil(wsTime / 5), danmuNum);
-  const timers: NodeJS.Timer[] = [];
+  const timers: (string | number | NodeJS.Timeout | undefined)[] = [];
   for (let i = 0; i < times; i++) {
     timers.push(
       setTimeout(() => {
@@ -330,9 +330,11 @@ async function runByScanArea() {
   // 遍历大区
   for (const areas of areaList) {
     await sleep(3000);
+    logger.debug(`遍历分区：${areas.name}`);
     // 遍历小区
-    for (const area of areas) {
-      const status = await waitForStatus(await doRedPackArea(area.areaId, area.parentId));
+    for (const area of areas.list) {
+      logger.debug(`遍历分区：${area.name}`);
+      const status = await waitForStatus(await doRedPackArea(area.id, area.parent_id));
       if (status === undefined) continue;
       if (status === ReturnStatus.退出) return;
     }
