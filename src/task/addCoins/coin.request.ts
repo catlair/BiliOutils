@@ -136,12 +136,12 @@ export function getVideoStatus({ aid, bvid }: VideoId): Promise<VideoStatusDto> 
 export function addCoinForVideo(
   aid: number | string,
   multiply: 1 | 2,
-  selectLike: 1 | 2 = 1,
+  selectLike: 0 | 1 = 0,
 ): Promise<AddCoinDto> {
   return biliApi.post('x/web-interface/coin/add', {
     aid,
     multiply,
-    selectLike,
+    select_like: selectLike,
     csrf: TaskConfig.BILIJCT,
     // cross_domain: true,
   });
