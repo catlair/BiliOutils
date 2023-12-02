@@ -400,6 +400,10 @@ export const defaultConfig = {
     // 当重复获取到同一roomid时，等待时间，单位 s
     delayByRoomid: [10, 20],
   },
+  addExp: {
+    needVip: true,
+    watchVideo: true,
+  },
   BILIJCT: '',
   USERID: 0,
 };
