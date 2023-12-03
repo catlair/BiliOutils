@@ -10,7 +10,7 @@
 
 支持功能和使用方法请查看文档：
 
-**[详细文档查看（可能需要科技）](https://btdocs.vercel.app/)**
+**[详细文档查看（可能需要科技）](https://bo.js.cool/)**
 
 **[详细文档查看（github page 镜像）](https://bilioutils.js.org)**
 
