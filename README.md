@@ -10,11 +10,9 @@
 
 支持功能和使用方法请查看文档：
 
-**[详细文档查看](https://btdocs.vercel.app/)**
+**[详细文档查看（可能需要科技）](https://btdocs.vercel.app/)**
 
-**[详细文档查看（解析加速）](https://b.2024666.xyz/)** （推荐使用，与上面只是域名不同，本质是一个站点）
-
-**[备用文档](https://catlair.github.io/BiliOutils/)**  （非前者无法访问尽量别用）
+**[详细文档查看（github page 镜像）](https://bilioutils.js.org)**
 
 ## 说明
 
