@@ -16,7 +16,6 @@ import type { VideoByUpDto } from '@/dto/video.dto';
 import { biliApi, accountApi, liveApi } from './api';
 import { OriginURLs } from '@/constant/biliUri';
 import { TaskConfig } from '@/config';
-import { getWbiQuery } from '@/service/sgin.service';
 
 /**
  * 账号基本信息
@@ -138,8 +137,8 @@ export function getVideosByUpId(upId: number, pageSize = 50): Promise<VideoByUpD
  * 获取用户信息（主要是直播）
  * @param mid 用户 id
  */
-export async function getUser(mid: IdType): Promise<OtherUserDto> {
-  return biliApi.get(`x/space/wbi/acc/info?${await getWbiQuery({ mid, jsonp: 'jsonp' })}`);
+export function getUser(mid: IdType): Promise<OtherUserDto> {
+  return biliApi.get(`x/space/wbi/acc/info?mid=${mid}&jsonp=jsonp`);
 }
 
 /**

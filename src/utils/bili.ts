@@ -19,12 +19,14 @@ export function appSign(params: Params, appkey?: string, appsec?: string) {
   return getAppSign(params, appkey, appsec).sign;
 }
 
-function sortParams(params: Params) {
-  return Object.entries(params).sort((a, b) => a[0].localeCompare(b[0]));
-}
-
-function getSortQuery(params: Params) {
-  return stringify(sortParams(params));
+function getSortQuery<T extends Params | URLSearchParams>(
+  params: T,
+): T extends URLSearchParams ? URLSearchParams : string {
+  if (params instanceof URLSearchParams) {
+    params.sort();
+    return params as any;
+  }
+  return stringify(Object.entries(params).sort((a, b) => a[0].localeCompare(b[0]))) as any;
 }
 
 export function getSign(params: Params, appsec: string, noSign = false) {
@@ -137,9 +139,19 @@ export function getImgKeyAndSubKey({ img_url, sub_url }: { img_url: string; sub_
 }
 
 // 为请求参数进行 wbi 签名
-export function encWbi(params: Params, imgKey: string, subKey: string) {
+export function encWbi<T extends Params | URLSearchParams>(
+  params: T,
+  imgKey: string,
+  subKey: string,
+): T extends URLSearchParams ? URLSearchParams : string {
+  if (params instanceof URLSearchParams) {
+    params.append('wts', getUnixTime().toString());
+    const sp = getSortQuery(params);
+    sp.append('w_rid', md5(sp.toString() + getMixinKey(imgKey + subKey)));
+    return sp;
+  }
   const queryString = getSortQuery({ ...params, wts: getUnixTime() });
-  return `${queryString}&w_rid=${md5(queryString + getMixinKey(imgKey + subKey))}`;
+  return `${queryString}&w_rid=${md5(queryString + getMixinKey(imgKey + subKey))}` as any;
 }
 
 /**

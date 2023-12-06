@@ -14,6 +14,7 @@ import type { IdType } from '@/types';
 import type { UserNavNumDto } from './coin.dto';
 import { biliApi, biliHttp } from '@/net/api';
 import { TaskConfig } from '@/config';
+import { stringify } from '@/utils';
 
 /**
  * 获取用户导航数量（视频，音频，相册...）
@@ -30,15 +31,14 @@ export function getUserNavNum(mid: IdType): Promise<UserNavNumDto> {
  * @param pn 页数
  * @param keyword 搜索关键词
  */
-export async function searchVideosByUpId(
+export function searchVideosByUpId(
   mid: number,
   ps = 30,
   pn = 1,
   keyword = '',
 ): Promise<VideoSearchDto> {
-  const { getWbiQuery } = await import('@/service/sgin.service');
   return biliApi.get(
-    `x/space/wbi/arc/search?${await getWbiQuery({
+    `x/space/wbi/arc/search?${stringify({
       jsonp: 'jsonp',
       order: 'pubdate',
       keyword,

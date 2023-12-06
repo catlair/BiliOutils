@@ -20,5 +20,27 @@ export function getOptions(): VGotOptions {
       withBiliCookie: true,
     },
     throwHttpErrors: false,
+    hooks: {
+      beforeRequest: [
+        async options => {
+          const { TaskConfig } = await import('@/config');
+          const { getWbiQuery } = await import('@/service/sgin.service');
+          const searchParams = new URLSearchParams(options.url.search);
+          searchParams.set('csrf', TaskConfig.BILIJCT);
+          if (['x/space/wbi/arc/search'].includes(options.url.pathname)) {
+            searchParams.set('dm_img_list', '[]');
+            searchParams.set('dm_img_str', 'V2ViR0wgMS4wIChPcGVuR0wgRVMgMi4wIENocm9taXVtKQ');
+            searchParams.set(
+              'dm_cover_img_str',
+              'QU5HTEUgKEludGVsLCBJbnRlbChSKSBVSEQgR3JhcGhpY3MgNjMwICgweDAwMDAzRTkyKSBEaXJlY3QzRDExIHZzXzVfMCBwc181XzAsIEQzRDExKUdvb2dsZSBJbmMuIChJbnRlbC',
+            );
+          }
+          if (options.url.pathname.includes('/wbi')) {
+            await getWbiQuery(searchParams);
+          }
+          options.url.search = searchParams.toString();
+        },
+      ],
+    },
   };
 }

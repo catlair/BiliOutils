@@ -11,6 +11,7 @@ export async function addExpService() {
 enum AddExpError {
   成功 = 0,
   请求频繁 = 6034007,
+  前置任务未完成 = 6034005,
   已领取 = 69198,
   未知 = -1,
 }
