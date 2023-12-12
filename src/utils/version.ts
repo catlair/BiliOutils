@@ -10,7 +10,7 @@ type VersionInfo = {
 
 type Notice = {
   content: string;
-  config?: {
+  rule?: {
     key: string[];
     value: any;
   }[];
@@ -68,7 +68,7 @@ async function printNotice(notices: NoticeResponse, runVersion: string) {
   notices.common.forEach(forEachNotice);
   notices[ENV.type]?.forEach(forEachNotice);
 
-  function forEachNotice({ content, config, version, time }: Notice) {
+  function forEachNotice({ content, rule, version, time }: Notice) {
     if (version) {
       const { start = '0.0.1', end = '9999.0.0' } = version;
       if (checkVersion(runVersion, start) || checkVersion(end, runVersion)) {
@@ -83,7 +83,14 @@ async function printNotice(notices: NoticeResponse, runVersion: string) {
       }
     }
     if (
-      !config?.every(({ key, value }) => key.reduce((prev, cur) => prev[cur], TaskConfig) === value)
+      rule &&
+      !rule.every(
+        ({ key, value }) =>
+          key.reduce(
+            (prev: { [x: string]: any }, cur: string | number) => prev[cur],
+            TaskConfig,
+          ) === value,
+      )
     ) {
       return;
     }
