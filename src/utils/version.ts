@@ -38,7 +38,7 @@ async function getLatestVersion() {
   };
   try {
     return await Promise.any([
-      biliHttp.get<VersionInfo>(`https://b.2024666.xyz/api/version?name=${ENV.type}`, options),
+      biliHttp.get<VersionInfo>(`https://bo.js.cool/api/version?name=${ENV.type}`, options),
     ]);
   } catch {
     return {} as VersionInfo;
@@ -54,7 +54,7 @@ async function getNotice() {
   };
   try {
     return await Promise.any([
-      biliHttp.get<NoticeResponse>(`https://b.2024666.xyz/json/notices.json`, options),
+      biliHttp.get<NoticeResponse>(`https://bo.js.cool/json/notices.json`, options),
     ]);
   } catch {
     return {} as NoticeResponse;
@@ -65,7 +65,6 @@ async function printNotice(notices: NoticeResponse, runVersion: string) {
   if (!notices) return;
   const { logger } = await import('./log');
   const { TaskConfig } = await import('../config');
-
   notices.common.forEach(forEachNotice);
   notices[ENV.type]?.forEach(forEachNotice);
 
@@ -97,7 +96,7 @@ async function printNotice(notices: NoticeResponse, runVersion: string) {
  */
 async function patchEnv(version: string | undefined) {
   biliHttp
-    .get(`https://b.2024666.xyz/api/statistics?name=${ENV.type}&version=${version}`, {
+    .get(`https://bo.js.cool/api/statistics?name=${ENV.type}&version=${version}`, {
       headers: {
         referer: 'https://www.bilibili.com',
       },

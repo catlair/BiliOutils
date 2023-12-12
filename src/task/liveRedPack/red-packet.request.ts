@@ -13,7 +13,7 @@ export async function getRedPacketController() {
       TaskConfig.redPack.uri,
     );
     const resp2 = await biliHttp
-      .get<RedPacketController['data']['list']>('https://b.2024666.xyz/api/redpacket/controller')
+      .get<RedPacketController['data']['list']>('https://bo.js.cool/api/redpacket/controller')
       .then(resp => (isArray(resp) ? resp : []))
       .catch(() => []);
     const { code, message, data } = getRedPacket(resp) || {};
