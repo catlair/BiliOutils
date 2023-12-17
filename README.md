@@ -60,7 +60,6 @@ yarn build
 
 ## 参考项目
 
-- [SocialSisterYi/bilibili-API-collect](https://github.com/SocialSisterYi/bilibili-API-collect)
 - [catlair/bili-task-puppeteer](https://github.com/catlair/bili-task-puppeteer)
 - [lzghzr/TampermonkeyJS](https://github.com/lzghzr/TampermonkeyJS)
 - [whyour/qinglong](https://github.com/whyour/qinglong)
