@@ -1,4 +1,10 @@
 const random = (a, b) => Math.floor(Math.random() * b + a)
+const getCookieItem = (cookie, key) => {
+  if (!cookie) return null;
+  const reg = `(?:^| )${key}=([^;]*)(?:;|$)`;
+  const r = cookie.match(reg);
+  return r ? r[1] : null;
+}
 
 const clockInUrl = 'https://manga.bilibili.com/twirp/activity.v1.Activity/ClockIn?platform=android',
   shareComicUrl = 'https://manga.bilibili.com/twirp/activity.v1.Activity/ShareComic?platform=android&channel=bilicomic&mobi_app=android_comic&is_teenager=0',
@@ -8,8 +14,8 @@ mangaDetailUrl = 'https://manga.bilibili.com/twirp/comic.v1.Comic/ComicDetail?de
 function run(row) {
   const getValue = (str) => Application.Range(str + row).Text
   const cookie = getValue("A"),
-    mid = getValue("B"),
-    userAgent = getValue("C"),
+    userAgent = getValue("B") || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0',
+    mid = getValue("C") || getCookieItem(cookie, 'DedeUserID'),
     isSign = getValue("D"),
     isShare = getValue('E'),
     isRead = getValue('F')
@@ -51,16 +57,7 @@ function run(row) {
           return console.log(`漫画签到失败：${code}-${msg}`);
       }
     } catch (error) {
-      /**
-       * 这是axios报的错误,重复签到后返回的状态码是400
-       * 所以将签到成功的情况忽略掉
-       */
-      const { status, statusCode } = error.response || {};
-      if (status === 400 || statusCode === 400) {
-        console.log('已经签到过了');
-      } else {
-        console.log(`漫画签到`, error);
-      }
+      console.error(`漫画签到`, error.message);
     }
   }
 
@@ -77,7 +74,7 @@ function run(row) {
       }
       console.log(`每日分享失败：${code} ${msg}`);
     } catch (error) {
-      console.log(`每日分享异常：`, error);
+      console.log(`每日分享异常：`, error.message);
     }
   }
 
@@ -85,7 +82,7 @@ function run(row) {
     try {
       return seasonInfoApi().json().data.day_task.book_task.filter(task => task.user_read_min < 5)
     } catch (e) {
-      console.error(e)
+      console.error(e.message)
     }
     return []
   }
@@ -94,7 +91,7 @@ function run(row) {
     try {
       return mangaDetailApi(id).json().data.ep_list
     } catch (e) {
-      console.error(e)
+      console.error(e.message)
     }
     return []
   }
@@ -114,10 +111,10 @@ function run(row) {
       console.log(`开始阅读漫画：${id}[${title}]`);
       const epid = (getRandomMangaEp(id) || {}).id || random(1, 1000)
       try {
-        const res = request(`https://bo.js.cool/api/read_manga?mid=${mid}&comic=${id}&ep=${epid}&time=${read_min - user_read_min}`)
+        const res = HTTP.get(`https://bo.js.cool/api/read_manga?mid=${mid}&comic=${id}&ep=${epid}&time=${read_min - user_read_min}`)
         console.log(res.json())
       } catch (e) {
-        console.error(e)
+        console.error(e.message)
       }
     }
   }
@@ -142,7 +139,7 @@ const rowsWithValues = []
 // 遍历A列，记录有值的所有行号
 for (let i = 2; i <= usedRange.Row + usedRange.Rows.Count - 1; i++) {
   const cell = columnA.Rows(i)
-  if (cell.Text) {
+  if (cell.Text && getCookieItem(cell.Text, 'SESSDATA')) {
     console.log(`执行第 ${i} 行`)
     run(i)
   }
