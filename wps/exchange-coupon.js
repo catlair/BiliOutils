@@ -5,6 +5,16 @@ const getCookieItem = (cookie, key) => {
   const r = cookie.match(reg);
   return r ? r[1] : null;
 }
+const syncWait = (ms) => {
+  const startTime = Date.now();
+  while (Date.now() - startTime < ms) {
+    // 空循环等待指定时间
+  }
+}
+const getTimeToNextHour = () => {
+  const now = new Date();
+  return ((60 - now.getMinutes()) * 60000) + ((60 - now.getSeconds()) * 1000) - now.getMilliseconds();
+}
 
 const mangaPointUrl = 'https://manga.bilibili.com/twirp/pointshop.v1.Pointshop/GetUserPoint',
   exchangeMangaShopUrl = 'https://manga.bilibili.com/twirp/pointshop.v1.Pointshop/Exchange'
@@ -31,6 +41,9 @@ function run(row) {
     exchangeCouponNum = Number(getValue("C")) || 10,
     keepAmount = Number(getValue("D")) || 0,
     exchangeTime = Number(getValue("E")) || 12
+
+  const { id, cost } = exchangeTimeMap[exchangeTime];
+
 
   const request = (path, options = {}) => {
     return HTTP.fetch(path, {
@@ -85,7 +98,6 @@ function run(row) {
 
   function exchange(num) {
     try {
-      const { id, cost } = exchangeTimeMap[exchangeTime];
       const { code, msg = '' } = exchangeMangaShopApi(id, num * cost, num).json();
       console.log(msg)
       // 抢的人太多
@@ -127,29 +139,33 @@ function run(row) {
     const num = getExchangeNum()
     if (!num) return;
     console.log(`需要兑换的数量${num}`)
+    console.log(`等待 29 分钟`)
+    Time.sleep(1790000)
+    const time = getTimeToNextHour()
+    console.log(`等待${time}ms`)
+    syncWait(time + 23)
     return singleExchange(num)
   }
 
   exchangeCoupon()
 }
 
-
-
-// 获取当前活动表格
-const activeSheet = ActiveSheet
+// 切换表
+Application.Sheets.Item('兑换').Activate()
 // 获取A列
-const columnA = activeSheet.Columns("A")
+const columnA = ActiveSheet.Columns("A")
 // 获取当前工作表的使用范围
-const usedRange = activeSheet.UsedRange
+const usedRange = ActiveSheet.UsedRange
 
 // 存储有值的所有行号
 const rowsWithValues = []
 
 // 遍历A列，记录有值的所有行号
-for (let i = 2; i <= usedRange.Row + usedRange.Rows.Count - 1; i++) {
+for (let i = usedRange.Row; i <= usedRange.Row + usedRange.Rows.Count - 1; i++) {
   const cell = columnA.Rows(i)
   if (cell.Text && getCookieItem(cell.Text, 'SESSDATA')) {
     console.log(`执行第 ${i} 行`)
     run(i)
+    break
   }
 }

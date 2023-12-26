@@ -4,5 +4,5 @@ https://www.kdocs.cn/
 
 ## 格式参考
 
-【金山文档】 Cookie
-https://kdocs.cn/l/ctuXwHiNSYuH
+【金山文档】 漫画签到-模板
+https://kdocs.cn/l/cuQrjaKqKg87

@@ -126,18 +126,18 @@ function run(row) {
 
 }
 
-// 获取当前活动表格
-const activeSheet = ActiveSheet
+// 切换表
+Application.Sheets.Item('签到').Activate()
 // 获取A列
-const columnA = activeSheet.Columns("A")
+const columnA = ActiveSheet.Columns("A")
 // 获取当前工作表的使用范围
-const usedRange = activeSheet.UsedRange
+const usedRange = ActiveSheet.UsedRange
 
 // 存储有值的所有行号
 const rowsWithValues = []
 
 // 遍历A列，记录有值的所有行号
-for (let i = 2; i <= usedRange.Row + usedRange.Rows.Count - 1; i++) {
+for (let i = usedRange.Row; i <= usedRange.Row + usedRange.Rows.Count - 1; i++) {
   const cell = columnA.Rows(i)
   if (cell.Text && getCookieItem(cell.Text, 'SESSDATA')) {
     console.log(`执行第 ${i} 行`)
