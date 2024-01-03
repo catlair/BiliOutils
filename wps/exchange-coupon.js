@@ -5,16 +5,6 @@ const getCookieItem = (cookie, key) => {
   const r = cookie.match(reg);
   return r ? r[1] : null;
 }
-const syncWait = (ms) => {
-  const startTime = Date.now();
-  while (Date.now() - startTime < ms) {
-    // 空循环等待指定时间
-  }
-}
-const getTimeToNextHour = () => {
-  const now = new Date();
-  return ((60 - now.getMinutes()) * 60000) + ((60 - now.getSeconds()) * 1000) - now.getMilliseconds();
-}
 
 const mangaPointUrl = 'https://manga.bilibili.com/twirp/pointshop.v1.Pointshop/GetUserPoint',
   exchangeMangaShopUrl = 'https://manga.bilibili.com/twirp/pointshop.v1.Pointshop/Exchange'
@@ -139,11 +129,6 @@ function run(row) {
     const num = getExchangeNum()
     if (!num) return;
     console.log(`需要兑换的数量${num}`)
-    console.log(`等待 29 分钟`)
-    Time.sleep(1790000)
-    const time = getTimeToNextHour()
-    console.log(`等待${time}ms`)
-    syncWait(time + 23)
     return singleExchange(num)
   }
 
