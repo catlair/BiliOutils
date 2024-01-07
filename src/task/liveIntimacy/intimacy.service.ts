@@ -197,13 +197,15 @@ type LiveHeartRunOptions = {
   options: Record<string, string>;
   countRef: Ref<number>;
   needTime: NeedTimeType;
-  timerRef?: Ref<NodeJS.Timer>;
+  timerRef?: Ref<NodeJS.Timeout | string | number>;
 };
 
 async function liveHeartPromise(resolve: (value: unknown) => void, roomList: FansMedalDto[]) {
   const retryLiveHeartOnce = await getOnceFunc(retryLiveHeart);
   for (const fansMedal of roomList) {
-    const timerRef: Ref<NodeJS.Timer> = { value: undefined as unknown as NodeJS.Timer };
+    const timerRef: LiveHeartRunOptions['timerRef'] = {
+      value: undefined as unknown as NodeJS.Timeout,
+    };
     const runOptions = {
       fansMedal,
       options: getRandomOptions(),
