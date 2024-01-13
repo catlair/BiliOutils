@@ -9,6 +9,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     environment: Build
+    permissions:
+      id-token: write
     env:
       IS_RC: ${{ contains(github.ref, '-rc') }}
     steps:
@@ -33,7 +35,7 @@ jobs:
           rm -rf node_modules
       - run: |
           cd dist
-          npm publish ${{ env.IS_RC == 'true' && '--tag beta' || '' }}
+          npm publish ${{ env.IS_RC == 'true' && '--tag beta' || '' }} --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
   build-docker:
