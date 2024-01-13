@@ -247,11 +247,8 @@ export async function doLotteryContinue(num: number, item: ActivityLotteryIdType
   }
 }
 
-function getCode() {
-  const { customUrl, proxyPrefix } = TaskConfig.activityLottery;
-  if (customUrl) {
-    return defHttp.get(customUrl, { timeout: 10000 });
-  }
+async function getDefaultCode() {
+  const { proxyPrefix } = TaskConfig.activityLottery;
   const header = {
     headers: {
       'Accept-Encoding': 'gzip, deflate, br',
@@ -280,6 +277,33 @@ function getCode() {
   );
 }
 
+async function fetchUrls(urls: string[]) {
+  try {
+    const res = await Promise.allSettled(urls.map(url => defHttp.get(url, { timeout: 10000 })));
+    return res
+      .map((r, i) =>
+        r.status === 'fulfilled' ? r.value : logger.warn(`${urls[i]}请求失败，${r.reason}`),
+      )
+      .filter(Boolean)
+      .flat();
+  } catch (err) {
+    return logger.error(err);
+  }
+}
+
+async function getCode() {
+  const { customUrl } = TaskConfig.activityLottery;
+  if (customUrl.length > 0) {
+    return await fetchUrls(customUrl);
+  }
+  const res = await getDefaultCode();
+  if (!res.value) {
+    logger.error(`通过网络获取活动失败（默认途经），未知错误`, res);
+    return;
+  }
+  return JSON.parse(gzipDecode(base64Decode(res.value)));
+}
+
 async function getActivityList(
   localStatus?: LocalStatusDto,
 ): Promise<ActivityLotteryIdType[] | undefined> {
@@ -290,12 +314,7 @@ async function getActivityList(
   }
   logger.debug(`通过网络获取活动列表`);
   try {
-    const res = await getCode();
-    if (!res.value) {
-      logger.error(`通过网络获取活动失败，未知错误`, res);
-      return;
-    }
-    const result: ActivityLotteryIdType[] = JSON.parse(gzipDecode(base64Decode(res.value)));
+    const result: ActivityLotteryIdType[] = await getCode();
     if (!isArray(result)) {
       return;
     }

@@ -346,7 +346,7 @@ export const defaultConfig = {
     // 请求 GitHub 使用的代理前缀
     proxyPrefix: '',
     // 自定义活动列表链接
-    customUrl: '',
+    customUrl: [] as string[],
   },
   watchLink: {
     // 用户 uid，非直播间 id
@@ -517,6 +517,13 @@ function beforeMergeConfig(config: UserConfig) {
   if (watchLink) {
     if (isNumber(watchLink.areaId) && isNumber(watchLink.parentId) && !watchLink.area) {
       watchLink.area = [[watchLink.parentId, watchLink.areaId]];
+    }
+  }
+
+  const { activityLottery } = config;
+  if (activityLottery) {
+    if (isString(activityLottery.customUrl)) {
+      activityLottery.customUrl = [activityLottery.customUrl];
     }
   }
 

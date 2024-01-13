@@ -223,7 +223,7 @@ const theConfig = {
     bangumi: false,
     follow: false,
     proxyPrefix: 'https://ghproxy.com/',
-    customUrl: '',
+    customUrl: [],
   },
   watchLink: {
     area: [
