@@ -33,8 +33,10 @@ jobs:
         run: |
           npm run build
           rm -rf node_modules
-      - run: |
+      - name: Pushing
+        run: |
           cd dist
+          npm pkg fix
           npm publish ${{ env.IS_RC == 'true' && '--tag beta' || '' }} --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

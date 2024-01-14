@@ -31,7 +31,9 @@
     "pm2s": "npm run tsx ./src/task/lotteryScan",
     "pm2r": "npm run tsx ./src/task/liveReservation/reservation.service"
   },
-  "repository": "catlair/BiliOutils",
+  "repository": {
+    "url": "git+https://github.com/catlair/BiliOutils.git"
+  },
   "keywords": [
     "BiliTools",
     "bilibili",
@@ -43,7 +45,7 @@
   "engines": {
     "node": ">= 14.12.1"
   },
-  "homepage": "https://btdocs.vercel.app/",
+  "homepage": "https://bilioutils.js.org/",
   "author": "catlair",
   "license": "MIT",
   "devDependencies": {
