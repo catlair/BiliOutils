@@ -8,6 +8,7 @@ import { isArray } from '@/utils/is';
 import { isBiliCookie } from '@/utils/cookie';
 import { deepSetObject } from '@/utils/pure';
 import { ENV, setConfigFileName } from '@/utils/env';
+import { envToConfig } from './config';
 
 const resolveCWD = (str: string) => path.resolve(process.cwd(), str);
 const resolveDir = (str: string) => path.resolve(__dirname, '../', str);
@@ -73,6 +74,10 @@ export function getConfigPathFile(filepath: string): ConfigArray {
  * 从配置文件或环境变量中读取配置
  */
 export function readConfig() {
+  if (process.env.BOC_cookie) {
+    return envToConfig();
+  }
+
   if (globalThis.BILITOOLS_CONFIG) {
     return globalThis.BILITOOLS_CONFIG;
   }

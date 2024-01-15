@@ -1,4 +1,5 @@
 import type { LevelType } from '@/types/log';
+import { env } from 'node:process';
 import type {
   ActivityLotteryIdType,
   CouponBalanceUseType,
@@ -527,5 +528,45 @@ function beforeMergeConfig(config: UserConfig) {
     }
   }
 
+  return config;
+}
+
+function getValueOfType(val: string, type: string) {
+  switch (type) {
+    case 'string':
+      return String(val);
+    case 'number':
+      return Number(val);
+    case 'boolean':
+      return val === 'false' ? false : Boolean(val);
+    default:
+      try {
+        return JSON.parse(val);
+      } catch {
+        return val;
+      }
+  }
+}
+
+export function envToConfig() {
+  const config = {} as TheConfig;
+
+  Object.entries(env).forEach(([envKey, envValue]) => {
+    if (!envKey.startsWith('BOC_') || !envValue) return;
+    envKey
+      .substring(4)
+      .split('_')
+      .reduce((obj, key, curIndex, envKeys) => {
+        if (curIndex === envKeys.length - 1) {
+          obj[key] = getValueOfType(
+            envValue,
+            typeof envKeys.reduce((pre, cur) => pre[cur], defaultConfig),
+          );
+          return config;
+        }
+        obj[key] ??= {};
+        return obj[key];
+      }, config);
+  });
   return config;
 }
