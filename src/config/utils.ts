@@ -5,10 +5,9 @@ import { gzipDecode } from '@/utils/gzip';
 import { readJsonFile } from '@/utils/file';
 import { JSON5 } from '@/utils/json5';
 import { isArray } from '@/utils/is';
-import { isBiliCookie } from '@/utils/cookie';
+import getCookie, { isBiliCookie } from '@/utils/cookie';
 import { deepSetObject } from '@/utils/pure';
 import { ENV, setConfigFileName } from '@/utils/env';
-import { envToConfig } from './config';
 
 const resolveCWD = (str: string) => path.resolve(process.cwd(), str);
 const resolveDir = (str: string) => path.resolve(__dirname, '../', str);
@@ -74,9 +73,9 @@ export function getConfigPathFile(filepath: string): ConfigArray {
  * 从配置文件或环境变量中读取配置
  */
 export function readConfig() {
-  if (process.env.BOC_cookie) {
-    return envToConfig();
-  }
+  // if (process.env.BOC_cookie) {
+  //   return envToConfig();
+  // }
 
   if (globalThis.BILITOOLS_CONFIG) {
     return globalThis.BILITOOLS_CONFIG;
@@ -99,7 +98,19 @@ export function readConfig() {
 }
 
 export function getConfig<T extends boolean>(more?: T): T extends false ? UserConfig : ConfigArray {
-  const config = checkConfig(readConfig(), more);
+  const userConfig = readConfig() || [{}];
+  if (process.env.BO_COOKIE && isArray(userConfig)) {
+    const _userConfig = userConfig.filter(conf => !Reflect.has(conf, '__common__'));
+    process.env.BO_COOKIE.split('&').forEach((cookie: string, i: number) => {
+      if (!cookie) return;
+      if (_userConfig[i]) {
+        _userConfig[i].cookie = getCookie(_userConfig[i].cookie, cookie);
+        return;
+      }
+      userConfig.push({ cookie });
+    });
+  }
+  const config = checkConfig(userConfig, more);
   if (isArray(config) && config.length === 0) {
     logger.error('配置文件为空，或配置的cookie缺少三要素（bili_jct, SESSDATA, DedeUserID）！');
   }
