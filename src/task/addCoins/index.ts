@@ -66,7 +66,7 @@ async function coinHandle(state: State) {
     return true;
   }
   // 这个函数不会报错的
-  const { data, code, msg } = await getAidByByPriority();
+  const { data, code, msg } = await getAidByByPriority(TaskConfig.coin.types);
 
   if (code === 2) {
     logger.info(`已经没有需要投币的稿件了`);
