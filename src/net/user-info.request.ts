@@ -168,12 +168,28 @@ export function createTag(name: string): Promise<CreateTagDto> {
 
 /**
  * 操作用户关系
- * @param mid 用户 id
- * @param action 动作 1 关注 2 取关
+ * @param fid 用户 id
+ * @param action 动作 1/2 关注/取关 3/4 悄悄关注/取消 5/6 拉黑/取消 7 踢出粉丝
  */
-export function modeRelation(mid: IdType, action = 1) {
+export function modeRelation(fid: IdType, action = 1) {
   return biliApi.post<ApiBaseProp>('x/relation/modify', {
-    fid: mid,
+    fid,
+    act: action,
+    re_src: 11,
+    spmid: '333.999.0.0',
+    jsonp: 'jsonp',
+    csrf: TaskConfig.BILIJCT,
+  });
+}
+
+/**
+ * 操作用户关系批量（此接口只支持关注和拉黑操作）
+ * @param fids 用户 id
+ * @param action 动作 1 关注 5 拉黑
+ */
+export function modeRelationBatch(fids: IdType[], action = 1) {
+  return biliApi.post<ApiBaseProp>('x/relation/batch/modify', {
+    fids,
     act: action,
     re_src: 11,
     spmid: '333.999.0.0',

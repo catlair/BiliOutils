@@ -103,6 +103,8 @@ export const defaultConfig = {
     liveDm: false,
     // 大会员领取经验
     addExp: true,
+    // 黑名单
+    removeBlacks: false,
   },
   log: {
     pushLevel: 'verbose' as LevelType | boolean,
@@ -167,6 +169,8 @@ export const defaultConfig = {
     upperAccMatch: false,
     /** 获取稿件的来源（排序），留空则来自 首页推荐 */
     src: ['自定义UP', '特别关注', '关注', '首页推荐', '分区排行'],
+    /** 获取的稿件类型 视频 音乐 专栏 */
+    types: ['视频', '音乐', '专栏'],
   },
   lottery: {
     /** 天选屏蔽奖品 */
