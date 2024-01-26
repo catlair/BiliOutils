@@ -68,7 +68,7 @@
     "@types/node": "^20.0.0",
     "@types/node-schedule": "^2.1.0",
     "@types/nodemailer": "^6.4.8",
-    "@types/tunnel": "^0.0.6",
+    "@types/tunnel": "^0.0.7",
     "@types/ws": "^8.5.5",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
@@ -99,7 +99,7 @@
   },
   "optionalDependencies": {
     "@alicloud/fc2": "^2.6.3",
-    "@catlair/blogin": "^0.1.0",
+    "@catlair/blogin": "^0.2.0",
     "dotenv": "^16.3.1",
     "pm2": "^5.3.0",
     "tencentcloud-sdk-nodejs": "^4.0.634"
