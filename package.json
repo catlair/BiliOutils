@@ -45,7 +45,7 @@
   "engines": {
     "node": ">= 14.12.1"
   },
-  "homepage": "https://bilioutils.js.org/",
+  "homepage": "https://bilioutils.js.org",
   "author": "catlair",
   "license": "MIT",
   "devDependencies": {
@@ -86,20 +86,20 @@
   },
   "dependencies": {
     "@catlair/bilicomic-dataflow": "^0.0.4",
+    "@catlair/blogin": "^0.2.3",
     "@catlair/node-got": "^0.0.10",
-    "commander": "^11.0.0",
-    "core-js": "^3.31.0",
-    "dayjs": "^1.11.9",
+    "commander": "^11.1.0",
+    "core-js": "^3.35.1",
+    "dayjs": "^1.11.10",
     "json5": "^2.2.3",
     "node-schedule": "^2.1.1",
-    "nodemailer": "^6.9.3",
+    "nodemailer": "^6.9.8",
     "tunnel": "^0.0.6",
-    "winston": "^3.10.0",
-    "ws": "^8.13.0"
+    "winston": "^3.11.0",
+    "ws": "^8.16.0"
   },
   "optionalDependencies": {
     "@alicloud/fc2": "^2.6.3",
-    "@catlair/blogin": "^0.2.0",
     "dotenv": "^16.3.1",
     "pm2": "^5.3.0",
     "tencentcloud-sdk-nodejs": "^4.0.634"
