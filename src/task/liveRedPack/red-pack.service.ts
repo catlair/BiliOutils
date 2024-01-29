@@ -310,21 +310,22 @@ export async function liveRedPackService(lastFollow?: TagsFollowingsDto['data'][
 }
 
 async function run() {
-  const { source } = TaskConfig.redPack;
+  const { source, scanAreaTimes } = TaskConfig.redPack;
   switch (source) {
     case 1:
       return await runByActivity();
     case 2:
-      return await runByScanArea();
+      return await runByScanArea(scanAreaTimes);
     default: {
       if ((await runByActivity()) === ReturnStatus.未获取到房间) {
-        return await runByScanArea();
+        return await runByScanArea(scanAreaTimes);
       }
     }
   }
 }
 
-async function runByScanArea() {
+async function runByScanArea(scanAreaTimes: number) {
+  if (scanAreaTimes <= 0) return;
   // 获取直播分区
   const areaList = await getLiveArea();
   // 遍历大区
@@ -339,7 +340,7 @@ async function runByScanArea() {
       if (status === ReturnStatus.退出) return;
     }
   }
-  return await runByScanArea();
+  return await runByScanArea(scanAreaTimes--);
 }
 
 async function runByActivity() {

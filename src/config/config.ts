@@ -230,6 +230,8 @@ export const defaultConfig = {
     noWinNum: 10, // 避免一直运行
     // 连续疑似触发风控多少次，直接结束，小于1为不限制
     riskNum: 5, // 避免一直运行
+    // 扫描分区循环次数
+    scanAreaTimes: 3,
   },
   unFollow: {
     // 单个取消的时间间隔（秒）
