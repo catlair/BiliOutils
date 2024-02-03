@@ -530,7 +530,7 @@ function beforeMergeConfig(config: UserConfig) {
   const { activityLottery } = config;
   if (activityLottery) {
     if (isString(activityLottery.customUrl)) {
-      activityLottery.customUrl = [activityLottery.customUrl];
+      activityLottery.customUrl = [activityLottery.customUrl].filter(Boolean);
     }
   }
 
