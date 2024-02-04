@@ -232,6 +232,12 @@ export const defaultConfig = {
     riskNum: 5, // 避免一直运行
     // 扫描分区循环次数
     scanAreaTimes: 3,
+    // 扫描分区
+    area: [] as string[],
+    // 开启扫描分区
+    useArea: false,
+    // 扫描每个分区的前几页
+    areaPages: 3,
   },
   unFollow: {
     // 单个取消的时间间隔（秒）

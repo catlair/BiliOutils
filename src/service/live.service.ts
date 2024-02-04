@@ -1,5 +1,5 @@
 import { TaskModule } from '@/config';
-import type { LiveRoomList } from '@/dto/live.dto';
+import type { LiveAreaDto, LiveRoomList } from '@/dto/live.dto';
 import { PendentID } from '@/enums/live.enum';
 import { getArea, getLiveInfo, getLiveRoom } from '@/net/live.request';
 import { sleep, logger } from '@/utils';
@@ -59,18 +59,30 @@ export async function getLotteryRoomList(
   page = 1,
   lotType: 'lottery' | 'redPack' = 'lottery',
 ): Promise<LiveRoomList[]> {
-  try {
-    await sleep(100);
-    const { data, code, message } = await getLiveRoom(parentId, areaId, page);
-    if (code !== 0) {
-      logger.warn(`获取直播间列表失败: ${code} ${message}`);
-      throw new Error(`获取直播间列表失败: ${code} ${message}`);
+  async function getList(page: number) {
+    try {
+      await sleep(100);
+      const { data, code, message } = await getLiveRoom(parentId, areaId, page);
+      if (code !== 0) {
+        logger.warn(`获取直播间列表失败: ${code} ${message}`);
+        throw new Error(`获取直播间列表失败: ${code} ${message}`);
+      }
+      return data.list || [];
+    } catch (error) {
+      logger.error(`获取直播间列表异常：`, error);
+      throw error;
     }
-    return pendentLottery(data.list)[lotType === 'lottery' ? 'lotteryTime' : 'lotteryPacket'];
-  } catch (error) {
-    logger.error(`获取直播间列表异常：`, error);
-    throw error;
   }
+
+  const list: LiveRoomList[] = [];
+
+  for (let i = 0; i < 3; i++) {
+    const l = await getList(page);
+    if (l.length) list.push(...l);
+    else break;
+  }
+
+  return pendentLottery(list)[lotType === 'lottery' ? 'lotteryTime' : 'lotteryPacket'];
 }
 
 export async function getRoomid() {
@@ -99,4 +111,26 @@ export async function requestRoomid() {
   } catch (error) {
     logger.exception('获取直播间 id', error);
   }
+}
+
+/**
+ * 通过配置过滤分区
+ */
+export function filterArea(data: LiveAreaDto['data']['data'], useArea: boolean, config: string[]) {
+  const areaList = data.map(({ list }) => list);
+  if (!useArea) return areaList;
+  const parentNames: string[] = [];
+  // 父分区
+  const res = areaList.filter(([{ parent_name }]) => {
+    const r = config.includes(parent_name);
+    r && parentNames.push(parent_name);
+    return r;
+  });
+  // 子分区
+  const res1 = areaList
+    .filter(([{ parent_name }]) => !parentNames.includes(parent_name))
+    .flat()
+    .filter(({ name }) => config.includes(name));
+  res1.length && res.push(res1);
+  return res;
 }

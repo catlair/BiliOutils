@@ -268,6 +268,7 @@ export function joinRedPacket(params: { room_id: IdType; ruid: IdType; lot_id: I
       session_id: '',
       csrf_token: TaskConfig.BILIJCT,
       csrf: TaskConfig.BILIJCT,
+      build: TaskConfig.app.http.build,
       visit_id: '',
     },
     {

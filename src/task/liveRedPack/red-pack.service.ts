@@ -21,7 +21,7 @@ import {
   wsMap,
 } from '@/service/ws.service';
 import { DMEmoji } from '@/constant/dm';
-import { getLiveArea, getLotteryRoomList } from '@/service/live.service';
+import { filterArea, getLiveArea, getLotteryRoomList } from '@/service/live.service';
 import { request } from '@/utils/request';
 import { handleFollowUps } from '@/service/tags.service';
 import { getRedPacketController } from './red-packet.request';
@@ -235,8 +235,7 @@ function sendDm(room_id: number, wsTime: number) {
  */
 async function doRedPackArea(areaId: string, parentId: string) {
   const linkRoomNum = TaskConfig.redPack.linkRoomNum;
-  const rooms = await getLotteryRoomList(areaId, parentId, 2, 'redPack');
-
+  const rooms = await getLotteryRoomList(areaId, parentId, TaskConfig.redPack.areaPages, 'redPack');
   await waitForWebSocket(linkRoomNum);
 
   for (const room of rooms) {
@@ -327,13 +326,16 @@ async function run() {
 async function runByScanArea(scanAreaTimes: number) {
   if (scanAreaTimes <= 0) return;
   // 获取直播分区
-  const areaList = await getLiveArea();
+  const areaList = filterArea(
+    await getLiveArea(),
+    TaskConfig.redPack.useArea,
+    TaskConfig.redPack.area,
+  );
   // 遍历大区
   for (const areas of areaList) {
     await sleep(3000);
-    logger.debug(`遍历父分区：${areas.name}`);
     // 遍历小区
-    for (const area of areas.list) {
+    for (const area of areas) {
       logger.debug(`遍历分区：${area.name}`);
       const status = await waitForStatus(await doRedPackArea(area.id, area.parent_id));
       if (status === undefined) continue;

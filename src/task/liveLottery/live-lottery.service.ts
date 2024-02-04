@@ -1,5 +1,4 @@
 import type {
-  LiveAreaDto,
   LiveCheckLotteryDto,
   LiveCheckLotteryRes,
   LiveFollowDto,
@@ -9,7 +8,7 @@ import { sleep, logger, pushIfNotExist } from '@/utils';
 import { checkLottery, joinLottery, getFollowLiveRoomList } from '@/net/live.request';
 import { RequireType, TianXuanStatus } from '@/enums/live.enum';
 import { TaskConfig, TaskModule } from '@/config';
-import { getLiveArea, getLotteryRoomList } from '@/service/live.service';
+import { filterArea, getLiveArea, getLotteryRoomList } from '@/service/live.service';
 import { addWs, biliDmWs, bindMessageForLottery } from '@/service/ws.service';
 
 type CheckedLottery = LiveCheckLotteryDto & { uid: number; uname: string };
@@ -157,28 +156,6 @@ async function doLotteryArea(areaId: string, parentId: string, num = 2) {
     }
     await sleep(2000);
   }
-}
-
-/**
- * 通过配置过滤分区
- */
-function filterArea(data: LiveAreaDto['data']['data'], useArea: boolean, config: string[]) {
-  const areaList = data.map(({ list }) => list);
-  if (!useArea) return areaList;
-  const parentNames: string[] = [];
-  // 父分区
-  const res = areaList.filter(([{ parent_name }]) => {
-    const r = config.includes(parent_name);
-    r && parentNames.push(parent_name);
-    return r;
-  });
-  // 子分区
-  const res1 = areaList
-    .filter(([{ parent_name }]) => !parentNames.includes(parent_name))
-    .flat()
-    .filter(({ name }) => config.includes(name));
-  res1.length && res.push(res1);
-  return res;
 }
 
 /**
