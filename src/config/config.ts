@@ -397,8 +397,8 @@ export const defaultConfig = {
   },
   app: {
     http: {
-      build: 7370300,
-    } as Record<string, string | number | boolean>,
+      build: 7650400,
+    },
   },
   dailyBattery: {
     tasks: ['5弹幕', '20弹幕', '20弹幕30秒观看'] as ('5弹幕' | '20弹幕' | '20弹幕30秒观看')[],
