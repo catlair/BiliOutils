@@ -331,7 +331,7 @@ async function runByScanArea(scanAreaTimes: number) {
   // 遍历大区
   for (const areas of areaList) {
     await sleep(3000);
-    logger.debug(`遍历分区：${areas.name}`);
+    logger.debug(`遍历父分区：${areas.name}`);
     // 遍历小区
     for (const area of areas.list) {
       logger.debug(`遍历分区：${area.name}`);
@@ -340,7 +340,7 @@ async function runByScanArea(scanAreaTimes: number) {
       if (status === ReturnStatus.退出) return;
     }
   }
-  return await runByScanArea(scanAreaTimes--);
+  return await runByScanArea(--scanAreaTimes);
 }
 
 async function runByActivity() {
