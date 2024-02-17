@@ -132,18 +132,24 @@ export function getVideoStatus({ aid, bvid }: VideoId): Promise<VideoStatusDto> 
  * @param aid av号
  * @param multiply 硬币数
  * @param selectLike 是否点赞
+ * @param ramval 真实播放时间
  */
 export function addCoinForVideo(
   aid: number | string,
   multiply: 1 | 2,
   selectLike: 0 | 1 = 0,
+  ramval = 9,
 ): Promise<AddCoinDto> {
   return biliApi.post('x/web-interface/coin/add', {
     aid,
     multiply,
     select_like: selectLike,
     csrf: TaskConfig.BILIJCT,
-    // cross_domain: true,
+    cross_domain: true,
+    eab_x: 1, // 1 播放 2 暂停
+    source: 'web_normal',
+    ramval,
+    ga: 1,
   });
 }
 

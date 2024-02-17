@@ -9,17 +9,22 @@ import type {
 import { biliApi } from './api';
 import { TaskConfig } from '../config';
 import { isString } from '@/utils/is';
+import { appSignString } from '@/utils/bili';
 
 /**
  * 分享视频
- * @param aid 分享的视频av号
+ * @param oid 分享的视频av号
  */
-export function addShare(aid: number | string): Promise<ShareAddDto> {
+export function addShare(oid: number | string): Promise<ShareAddDto> {
   const reqData = {
     csrf: TaskConfig.BILIJCT,
-    aid,
+    oid,
+    platform: 'android',
+    share_channel: 'QQ',
+    share_id: 'main.ugc-video-detail.0.0.pv',
+    share_origin: 'vinfo_share',
   };
-  return biliApi.post('x/web-interface/share/add', reqData);
+  return biliApi.post('x/share/finish', appSignString(reqData));
 }
 
 /**

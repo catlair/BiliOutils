@@ -25,6 +25,22 @@ export async function checkShareAndWatch(): Promise<{
   return {} as any;
 }
 
+async function shareVideo(aid: number) {
+  try {
+    const { code, message, data } = await addShare(aid);
+    if (code === 0) {
+      if (data.toast) {
+        logger.info(data.toast);
+        return true;
+      }
+      return false;
+    }
+    logger.fatal(`分享视频`, code, message);
+  } catch (error) {
+    logger.error(`分享视频出现异常：`, error);
+  }
+}
+
 export async function shareAndWatchService(share: boolean, watch: boolean) {
   const aid = TaskModule.videoAid || (await getVideoAid());
   if (!aid) {
@@ -34,7 +50,7 @@ export async function shareAndWatchService(share: boolean, watch: boolean) {
   //分享
   if (!share) {
     await apiDelay();
-    await request(addShare, { name: '分享视频', okMsg: '分享视频成功！' }, aid);
+    await shareVideo(aid);
   }
 
   //播放视频

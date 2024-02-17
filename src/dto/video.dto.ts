@@ -7,7 +7,10 @@ export interface HeartbeatDto extends ApiBaseProp {
 
 /** 分享 */
 export interface ShareAddDto extends ApiBaseProp {
-  data: number | null;
+  data: {
+    toast?: string;
+    count: number;
+  };
 }
 
 /** 投币 */
