@@ -9,14 +9,14 @@ export const RequireType = {
   Captain: 3,
   // 主站等级要求
   Level: 5,
-};
+} as const;
 
 export const TianXuanStatus = {
   // 开启
   Enabled: 1,
   // 未开启
   Disabled: 2,
-};
+} as const;
 
 export const PendentID = {
   // 天选时刻
@@ -35,4 +35,4 @@ export const PendentID = {
   Birthday: 863,
   // Major解说团
   Major: 1152,
-};
+} as const;

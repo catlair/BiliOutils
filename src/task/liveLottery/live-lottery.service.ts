@@ -1,15 +1,11 @@
-import type {
-  LiveCheckLotteryDto,
-  LiveCheckLotteryRes,
-  LiveFollowDto,
-  LiveRoomList,
-} from '@/dto/live.dto';
+import type { LiveCheckLotteryDto, LiveCheckLotteryRes, LiveFollowDto } from '@/dto/live.dto';
 import { sleep, logger, pushIfNotExist } from '@/utils';
 import { checkLottery, joinLottery, getFollowLiveRoomList } from '@/net/live.request';
 import { RequireType, TianXuanStatus } from '@/enums/live.enum';
 import { TaskConfig, TaskModule } from '@/config';
-import { filterArea, getLiveArea, getLotteryRoomList } from '@/service/live.service';
+import { getLotteryRoomList } from '@/service/live.service';
 import { addWs, biliDmWs, bindMessageForLottery } from '@/service/ws.service';
+import type { LiveIndexRoomItem } from '@/dto/live-index.dto';
 
 type CheckedLottery = LiveCheckLotteryDto & { uid: number; uname: string };
 
@@ -22,10 +18,9 @@ let newFollowUp: (number | string)[];
  * @param parentId
  * @param page
  */
-async function checkLotteryRoomList(areaId: string, parentId: string, page = 1) {
-  const roomList = await getLotteryRoomList(areaId, parentId, page);
+async function checkLotteryRoomList() {
   const checkedRoomList: CheckedLottery[] = [];
-  for (const room of roomList) {
+  for (const room of await getLotteryRoomList()) {
     const data = await checkLotteryRoom(room);
     if (data) {
       checkedRoomList.push({
@@ -39,7 +34,7 @@ async function checkLotteryRoomList(areaId: string, parentId: string, page = 1) 
   return checkedRoomList;
 }
 
-async function checkLotteryRoom(room: LiveRoomList) {
+async function checkLotteryRoom(room: LiveIndexRoomItem) {
   const { blackUid } = TaskConfig.lottery;
   if (blackUid.includes(room.uid)) {
     logger.debug(`跳过黑名单用户: ${room.uname}`);
@@ -114,6 +109,7 @@ function getRequireUp(requireText: string) {
 async function doLottery(lottery: CheckedLottery, rememberUp = true) {
   const { award_name, room_id, uname, time = 66 } = lottery;
   try {
+    logger.debug(`${room_id}需要等待${time}秒`);
     const ws = await biliDmWs(room_id, time * 1000);
     if (!ws) return;
     addWs(room_id, ws);
@@ -142,19 +138,12 @@ function saveRequireUp({ uid, require_text, require_type }: CheckedLottery) {
 }
 
 /**
- * 对一个分区进行天选
- * @param areaId
- * @param parentId
- * @param num 天选的页数
+ * 对主页推荐进行天选
  */
-async function doLotteryArea(areaId: string, parentId: string, num = 2) {
-  for (let page = 1; page <= num; page++) {
-    const rooms = await checkLotteryRoomList(areaId, parentId, page);
-    for (const room of rooms) {
-      await doLottery(room);
-      await sleep(300);
-    }
-    await sleep(2000);
+async function doIndexLottery() {
+  for (const room of await checkLotteryRoomList()) {
+    await doLottery(room);
+    await sleep(300);
   }
 }
 
@@ -163,22 +152,17 @@ async function doLotteryArea(areaId: string, parentId: string, num = 2) {
  */
 export async function liveLotteryService() {
   newFollowUp = [];
-  const { pageNum } = TaskConfig.lottery;
-  // 获取直播分区
-  const areaList = filterArea(
-    await getLiveArea(),
-    TaskConfig.lottery.useArea,
-    TaskConfig.lottery.area,
-  );
-  try {
-    // 遍历大区
-    for (const areas of areaList) {
-      // 遍历小区
-      for (const { id, parent_id } of areas) {
-        await doLotteryArea(id, parent_id, pageNum);
-      }
+  let count = TaskConfig.lottery.scanIndexTimes;
+  while (count > 0) {
+    count--;
+    logger.debug(`剩余刷新次数${count}`);
+    try {
+      await doIndexLottery();
+      await sleep(5000, 15000);
+    } catch (err) {
+      logger.exception(`扫描首页`, err);
     }
-  } catch {}
+  }
   return newFollowUp;
 }
 

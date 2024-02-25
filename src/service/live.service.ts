@@ -1,8 +1,9 @@
 import { TaskModule } from '@/config';
-import type { LiveAreaDto, LiveRoomList } from '@/dto/live.dto';
+import type { LiveIndexRoomItem } from '@/dto/live-index.dto';
+import type { LiveAreaDto } from '@/dto/live.dto';
 import { PendentID } from '@/enums/live.enum';
-import { getArea, getLiveInfo, getLiveRoom } from '@/net/live.request';
-import { sleep, logger } from '@/utils';
+import { getArea, getLiveIndex, getLiveInfo } from '@/net/live.request';
+import { logger } from '@/utils';
 
 export interface LiveAreaType {
   areaId: string;
@@ -14,17 +15,15 @@ export interface LiveAreaType {
 /**
  * 分类检测
  */
-function pendentLottery(list: LiveRoomList[]) {
-  const lotteryTime: LiveRoomList[] = [],
-    lotteryPacket: LiveRoomList[] = [];
+function pendentLottery(list: LiveIndexRoomItem[]) {
+  const lotteryTime: LiveIndexRoomItem[] = [],
+    lotteryPacket: LiveIndexRoomItem[] = [];
   list.forEach(item => {
-    const num2 = item.pendant_info['2'];
-    if (!num2) {
-      return;
-    }
-    if (num2.pendent_id === PendentID.Time) {
+    const pendant = item.pendant_Info[2];
+    if (!pendant) return;
+    if (pendant.pendant_id === PendentID.Time) {
       lotteryTime.push(item);
-    } else if (num2.pendent_id === PendentID.RedPacket) {
+    } else if (pendant.pendant_id === PendentID.RedPacket) {
       lotteryPacket.push(item);
     }
   });
@@ -48,41 +47,34 @@ export async function getLiveArea() {
 }
 
 /**
+ * 获取直播间首页
+ */
+export async function getLiveIndexData() {
+  try {
+    const { code, data, message } = await getLiveIndex();
+    if (code === 0) {
+      return data;
+    }
+    logger.fatal(`获取直播间首页`, code, message);
+  } catch (error) {
+    logger.exception(`获取直播间首页`, error);
+  }
+}
+
+/**
  * 获取直播间列表
  * @param areaId
  * @param parentId
  * @param page
  */
-export async function getLotteryRoomList(
-  areaId: string,
-  parentId: string,
-  page = 1,
-  lotType: 'lottery' | 'redPack' = 'lottery',
-): Promise<LiveRoomList[]> {
-  async function getList(page: number) {
-    try {
-      await sleep(100);
-      const { data, code, message } = await getLiveRoom(parentId, areaId, page);
-      if (code !== 0) {
-        logger.warn(`获取直播间列表失败: ${code} ${message}`);
-        throw new Error(`获取直播间列表失败: ${code} ${message}`);
-      }
-      return data.list || [];
-    } catch (error) {
-      logger.error(`获取直播间列表异常：`, error);
-      throw error;
-    }
+export async function getLotteryRoomList(lotType: 'lottery' | 'redPack' = 'lottery') {
+  async function getList() {
+    const data = await getLiveIndexData();
+    if (!data) throw Error('获取直播间首页失败');
+    return data.room_list.map(({ list }) => list).flat();
   }
 
-  const list: LiveRoomList[] = [];
-
-  for (let i = 0; i < 3; i++) {
-    const l = await getList(page);
-    if (l.length) list.push(...l);
-    else break;
-  }
-
-  return pendentLottery(list)[lotType === 'lottery' ? 'lotteryTime' : 'lotteryPacket'];
+  return pendentLottery(await getList())[lotType === 'lottery' ? 'lotteryTime' : 'lotteryPacket'];
 }
 
 export async function getRoomid() {

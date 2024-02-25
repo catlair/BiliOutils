@@ -21,7 +21,7 @@ import {
   wsMap,
 } from '@/service/ws.service';
 import { DMEmoji } from '@/constant/dm';
-import { filterArea, getLiveArea, getLotteryRoomList } from '@/service/live.service';
+import { getLotteryRoomList } from '@/service/live.service';
 import { request } from '@/utils/request';
 import { handleFollowUps } from '@/service/tags.service';
 import { getRedPacketController } from './red-packet.request';
@@ -229,13 +229,11 @@ function sendDm(room_id: number, wsTime: number) {
 }
 
 /**
- * 对一个分区进行天选
- * @param areaId
- * @param parentId
+ * 对主页推荐进行天选
  */
-async function doRedPackArea(areaId: string, parentId: string) {
+async function doIndexLottery() {
   const linkRoomNum = TaskConfig.redPack.linkRoomNum;
-  const rooms = await getLotteryRoomList(areaId, parentId, TaskConfig.redPack.areaPages, 'redPack');
+  const rooms = await getLotteryRoomList('redPack');
   await waitForWebSocket(linkRoomNum);
 
   for (const room of rooms) {
@@ -309,40 +307,33 @@ export async function liveRedPackService(lastFollow?: TagsFollowingsDto['data'][
 }
 
 async function run() {
-  const { source, scanAreaTimes } = TaskConfig.redPack;
+  const { source } = TaskConfig.redPack;
   switch (source) {
     case 1:
       return await runByActivity();
     case 2:
-      return await runByScanArea(scanAreaTimes);
+      return await runByScanArea();
     default: {
       if ((await runByActivity()) === ReturnStatus.未获取到房间) {
-        return await runByScanArea(scanAreaTimes);
+        return await runByScanArea();
       }
     }
   }
 }
 
-async function runByScanArea(scanAreaTimes: number) {
-  if (scanAreaTimes <= 0) return;
-  // 获取直播分区
-  const areaList = filterArea(
-    await getLiveArea(),
-    TaskConfig.redPack.useArea,
-    TaskConfig.redPack.area,
-  );
-  // 遍历大区
-  for (const areas of areaList) {
-    await sleep(3000);
-    // 遍历小区
-    for (const area of areas) {
-      logger.debug(`遍历分区：${area.name}`);
-      const status = await waitForStatus(await doRedPackArea(area.id, area.parent_id));
+async function runByScanArea() {
+  let count = TaskConfig.redPack.scanIndexTimes;
+  while (count > 0) {
+    count--;
+    logger.debug(`剩余刷新次数${count}`);
+    try {
+      const status = await waitForStatus(await doIndexLottery());
       if (status === undefined) continue;
-      if (status === ReturnStatus.退出) return;
+      if (status === ReturnStatus.退出) return status;
+    } catch (err) {
+      logger.exception(`扫描首页`, err);
     }
   }
-  return await runByScanArea(--scanAreaTimes);
 }
 
 async function runByActivity() {

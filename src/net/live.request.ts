@@ -21,6 +21,7 @@ import { TaskConfig } from '../config';
 import { createVisitId, getUnixTime, random } from '../utils';
 import { OriginURLs } from '../constant/biliUri';
 import { appSignString } from '@/utils/bili';
+import type { LiveIndexList } from '@/dto/live-index.dto';
 
 /**
  * b币兑换电池
@@ -309,4 +310,11 @@ export function getOnlineGoldRank(ruid: number, room_id: number) {
  */
 export function getLiveInfo() {
   return liveApi.get<ApiBaseProp<{ room_id: number }>>(`xlive/web-ucenter/user/live_info`);
+}
+
+/**
+ * 直播首页列表
+ */
+export function getLiveIndex() {
+  return liveApi.get<LiveIndexList>(`xlive/web-interface/v1/index/getList?platform=web`);
 }

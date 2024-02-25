@@ -181,8 +181,6 @@ export const defaultConfig = {
     blackUid: LOTTERY_UP_BLACKLIST,
     /** 天选时刻关注 UP 移动到分组 */
     moveTag: '天选时刻',
-    /** 天选获取的直播页数 */
-    pageNum: 2,
     /** 关注回复处理方式  */
     actFollowMsg: 'read' as SessionHandleType,
     /** 扫描关注的用户 */
@@ -191,10 +189,8 @@ export const defaultConfig = {
     skipNeedFollow: false,
     // 打印可能中奖的消息
     mayBeWinMsg: true,
-    // 扫描分区
-    area: [] as string[],
-    // 开启扫描分区
-    useArea: false,
+    // 扫描主页循环次数
+    scanIndexTimes: 5,
   },
   redPack: {
     /**
@@ -230,14 +226,8 @@ export const defaultConfig = {
     noWinNum: 10, // 避免一直运行
     // 连续疑似触发风控多少次，直接结束，小于1为不限制
     riskNum: 5, // 避免一直运行
-    // 扫描分区循环次数
-    scanAreaTimes: 3,
-    // 扫描分区
-    area: [] as string[],
-    // 开启扫描分区
-    useArea: false,
-    // 扫描每个分区的前几页
-    areaPages: 3,
+    // 扫描主页循环次数
+    scanIndexTimes: 5,
   },
   unFollow: {
     // 单个取消的时间间隔（秒）

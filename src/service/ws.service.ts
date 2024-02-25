@@ -46,7 +46,10 @@ export function addWs(room_id: number, ws: WebSocket) {
 
 function closeWsByAll(ws: WebSocket | undefined, roomid: number) {
   if (ws) {
-    ws.close();
+    if (ws.readyState === 1) {
+      logger.debug(`尝试关闭${roomid}的ws连接`);
+      ws.close();
+    }
     ws.removeAllListeners();
   }
   clearWsTimer(roomid);
@@ -78,7 +81,7 @@ async function getWsLink(room_id: number) {
   }
 }
 
-export async function biliDmWs(roomid: number, time = 0) {
+export async function biliDmWs(roomid: number, time = 100) {
   const wsLink = await getWsLink(roomid);
   if (!wsLink) return;
   const json = {
@@ -95,12 +98,12 @@ export async function biliDmWs(roomid: number, time = 0) {
     // 认证
     ws.send(getCertification(JSON.stringify(json)));
     timerMap.set(roomid, sendInterval());
-    logger.debug(`wss 发起认证消息`);
+    logger.debug(`${roomid} wss 发起认证消息`);
   });
 
   ws.addEventListener('close', () => {
     closeWs(roomid);
-    wsLogger.debug(`wss 关闭连接`);
+    wsLogger.debug(`${roomid} wss 关闭连接`);
   });
 
   ws.addEventListener('error', () => {

@@ -79,3 +79,7 @@ yarn build
 <a href="https://www.jetbrains.com/zh-cn/community/opensource" target="_blank">
 <img src="https://tva1.sinaimg.cn/large/008eGmZEly1gov9g3tzrnj30u00wj0tn.jpg" width="150" alt="jetbrains"/>
 </a>
+
+## 友链
+
+- 欢迎使用另一个萝卜坑阿里云盘/移动云盘签到 https://github.com/asunajs/asign
