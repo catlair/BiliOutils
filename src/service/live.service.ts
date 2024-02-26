@@ -71,7 +71,11 @@ export async function getLotteryRoomList(lotType: 'lottery' | 'redPack' = 'lotte
   async function getList() {
     const data = await getLiveIndexData();
     if (!data) throw Error('获取直播间首页失败');
-    return data.room_list.map(({ list }) => list).flat();
+    const list = data.room_list.map(({ list }) => list).flat();
+    if (list.includes(null as any)) {
+      logger.debug(JSON.stringify(list));
+    }
+    return list.filter(Boolean);
   }
 
   return pendentLottery(await getList())[lotType === 'lottery' ? 'lotteryTime' : 'lotteryPacket'];

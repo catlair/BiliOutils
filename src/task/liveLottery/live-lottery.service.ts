@@ -1,5 +1,5 @@
 import type { LiveCheckLotteryDto, LiveCheckLotteryRes, LiveFollowDto } from '@/dto/live.dto';
-import { sleep, logger, pushIfNotExist } from '@/utils';
+import { sleep, logger, pushIfNotExist, getRandomItem } from '@/utils';
 import { checkLottery, joinLottery, getFollowLiveRoomList } from '@/net/live.request';
 import { RequireType, TianXuanStatus } from '@/enums/live.enum';
 import { TaskConfig, TaskModule } from '@/config';
@@ -141,6 +141,11 @@ function saveRequireUp({ uid, require_text, require_type }: CheckedLottery) {
  * 对主页推荐进行天选
  */
 async function doIndexLottery() {
+  if (TaskConfig.lottery.sync) {
+    const room = getRandomItem(await checkLotteryRoomList());
+    await doLottery(room);
+    return await sleep(room.time * 1000);
+  }
   for (const room of await checkLotteryRoomList()) {
     await doLottery(room);
     await sleep(300);
@@ -250,7 +255,7 @@ export async function liveFollowLotteryService() {
     const lotteryRoomList = await checkLotteryFollowRoomList();
     for (const room of lotteryRoomList) {
       await doLottery(room, false);
-      await sleep(300);
+      await sleep(TaskConfig.lottery.sync ? room.time * 1000 : 300);
     }
     logger.info(`关注的主播天选完成`);
   } catch (error) {

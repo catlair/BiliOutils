@@ -39,6 +39,7 @@ async function shareVideo(aid: number) {
   } catch (error) {
     logger.error(`分享视频出现异常：`, error);
   }
+  return false;
 }
 
 export async function shareAndWatchService(share: boolean, watch: boolean) {
@@ -47,10 +48,12 @@ export async function shareAndWatchService(share: boolean, watch: boolean) {
     return;
   }
 
+  let shared = false;
+
   //分享
   if (!share) {
     await apiDelay();
-    await shareVideo(aid);
+    shared = await shareVideo(aid);
   }
 
   //播放视频
@@ -64,6 +67,8 @@ export async function shareAndWatchService(share: boolean, watch: boolean) {
       random(4, 60),
     );
   }
+
+  return { shared };
 }
 
 async function getVideoAid() {
@@ -100,17 +105,11 @@ export async function getVideo() {
   return await getAidByRecommend();
 }
 
-export async function retry() {
+export async function retry({ shared }: { shared?: boolean } = {}) {
   const { share, watch } = await checkShareAndWatch();
-  if (share && watch) {
+  if ((share || shared) && watch) {
     return true;
   }
   await apiDelay();
-  if (!share) {
-    logger.debug('分享失败，重试');
-  }
-  if (!watch) {
-    logger.debug('播放失败，重试');
-  }
-  await shareAndWatchService(share, watch);
+  await shareAndWatchService(shared || share, watch);
 }

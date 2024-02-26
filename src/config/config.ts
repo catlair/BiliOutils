@@ -191,6 +191,8 @@ export const defaultConfig = {
     mayBeWinMsg: true,
     // 扫描主页循环次数
     scanIndexTimes: 5,
+    // 同步执行
+    sync: false,
   },
   redPack: {
     /**

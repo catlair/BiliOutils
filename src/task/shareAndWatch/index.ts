@@ -18,7 +18,5 @@ export default async function shareAndWatch() {
     return;
   }
 
-  await shareAndWatchService(share, watch);
-
-  await retry();
+  await retry(await shareAndWatchService(share, watch));
 }
