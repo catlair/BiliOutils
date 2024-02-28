@@ -166,7 +166,10 @@ async function joinRedPacketHandle(redPacket: RedPacket, wsTime: number) {
 }
 
 async function createRedPacketDmWs({ room_id, wait_num, uid, uname }: RedPacket, wsTime: number) {
-  const ws = await biliDmWs(room_id, (wsTime + 20) * 1000);
+  const time = wsTime + 20;
+  logger.debug(`红包时间${time}秒`);
+  if (time < 25) return logger.debug(`时间太短，放弃执行`);
+  const ws = await biliDmWs(room_id, time * 1000);
   if (!ws) return;
   bindMessageForRedPacket(ws, room_id, async (body, room_id) => {
     checkRiskWs(body);
@@ -215,6 +218,7 @@ function sendDm(room_id: number, wsTime: number) {
   const [dm1, dm2] = TaskConfig.redPack.dmNum,
     danmuNum = dm2 ? random(dm1, dm2) : dm1,
     times = Math.min(10, Math.ceil(wsTime / 5), danmuNum);
+  logger.debug(`需要弹幕次数${times}`);
   const timers: (string | number | NodeJS.Timeout | undefined)[] = [];
   for (let i = 0; i < times; i++) {
     timers.push(
@@ -406,12 +410,14 @@ function checkRiskWs(body: number | PacketBody<any>) {
  */
 function checkRedPacketWs(body: number | PacketBody<any>, room_id: number) {
   if (!isRedPackWs(body)) return;
-  closeWs(room_id);
   const my = body.data.winner_info.find(item => item[0] === TaskConfig.USERID);
   if (my) {
-    logger.debug(`直播间${room_id}，恭喜您获得${body.data.awards[my[3]].award_name}`);
+    logger.info(`直播间${room_id}，恭喜您获得${body.data.awards[my[3]].award_name}`);
     noWinRef.value = 0;
+  } else {
+    logger.debug(`直播间${room_id}，您没有中奖`);
   }
+  closeWs(room_id);
 }
 
 function isRedPackWs(body: number | PacketBody): body is PacketBody<RedPackListDto> {

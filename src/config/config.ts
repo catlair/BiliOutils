@@ -504,6 +504,10 @@ function beforeMergeConfig(config: UserConfig) {
   const { redPack } = config;
   if (redPack && Reflect.has(redPack, 'riskSleepTime') && !Reflect.has(redPack, 'riskTime')) {
     redPack.riskTime = [1, redPack.riskSleepTime];
+    const [dm1, dm2] = redPack.dmNum || [];
+    if (dm1 && !dm2) {
+      redPack.dmNum = [dm1, dm1];
+    }
   }
 
   // 处理 jury
