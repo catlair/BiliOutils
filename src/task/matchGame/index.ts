@@ -91,7 +91,7 @@ async function guessOne(list: GuessCollectionDto['data']['list']) {
         continue;
       }
       count++;
-      TaskModule.money -= coins;
+      TaskModule.money = TaskModule.money.minus(coins);
     }
   } catch (error) {
     logger.error('赛事硬币竞猜出错了', error);
@@ -118,7 +118,7 @@ function selectOdd(title: string, [team1, team2]: GuessDetails[]) {
 
 function isLackOfCoin() {
   const { coin, match } = TaskConfig;
-  if (TaskModule.money - match.coins < coin.stayCoins) {
+  if (TaskModule.money.minus(match.coins).lt(coin.stayCoins)) {
     logger.verbose(`需要保留${coin.stayCoins}个硬币，任务结束`);
     return true;
   }

@@ -4,6 +4,7 @@ import { apiDelay } from '@/utils';
 import type { UserInfoNavDto } from '@/dto/user-info.dto';
 import { logger } from '@/utils/log';
 import { request } from '@/utils/request';
+import Big from 'big.js';
 
 type UserNavData = UserInfoNavDto['data'];
 
@@ -12,7 +13,7 @@ function estimatedDays(upLevelExp: number): number {
   if (targetCoins < 1) return upLevelExp / 15;
   const dailyExp = targetCoins * 10 + 15;
   const idealDays = upLevelExp / dailyExp;
-  const coinSupportDays = TaskModule.money / (targetCoins - 1);
+  const coinSupportDays = TaskModule.money.div(targetCoins - 1).toNumber();
   if (idealDays < coinSupportDays) return Math.floor(idealDays);
   const needExp = upLevelExp - coinSupportDays * dailyExp;
   return needExp / 25 + coinSupportDays;
@@ -59,7 +60,7 @@ async function setUserInfo(data: UserNavData) {
     logger.info(`登录成功: ${data.uname}`);
     logger.info(`硬币余额: ${money || 0}`);
     TaskModule.nickname = data.uname;
-    TaskModule.money = money || 0;
+    TaskModule.money = Big(money || 0);
     TaskModule.userLevel = data.level_info.current_level;
     TaskModule.couponBalance = data.wallet?.coupon_balance || 0;
 

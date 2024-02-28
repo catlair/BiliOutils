@@ -53,7 +53,7 @@ export default async function addCoins() {
   }
   if (state.eCount >= 5) logger.info(`出现异常/错误5次，自动退出投币`);
   logger.info(`一共成功投币${state.num}颗`);
-  logger.info(`硬币还剩${TaskModule.money.toFixed(2)}颗`);
+  logger.info(`硬币还剩${TaskModule.money.toString()}颗`);
 }
 
 /**
@@ -62,7 +62,7 @@ export default async function addCoins() {
 async function coinHandle(state: State) {
   state.refresh && (await setCoinsTask(state.num));
   state.refresh = false;
-  if (TaskModule.coinsTask < 1 || TaskModule.money < 1) {
+  if (TaskModule.coinsTask < 1 || TaskModule.money.lt(1)) {
     return true;
   }
   // 这个函数不会报错的
@@ -177,7 +177,7 @@ function coinFilledHandle(id: number, state: State) {
  * 投币成功处理
  */
 function coinSuccessHandle(state: State, { author, id, coinType }: IdInfo, coin: number) {
-  TaskModule.money -= coin;
+  TaskModule.money = TaskModule.money.minus(coin);
   state.num += coin;
   logger.info(`给${aidFuncName.value}【${author}】的${coinType}：${id} 投币${coin}颗`);
   return false;

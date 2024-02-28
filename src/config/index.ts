@@ -4,6 +4,7 @@ import { mergeConfig, setCookieValue } from './config';
 import { getAndroidUA } from '@/constant/biliUri';
 import getCookie, { encodeCookie, getCookieItem } from '@/utils/cookie';
 import { createBuvid } from '@/utils/pure';
+import Big from 'big.js';
 
 export type TaskConfigType = Config & {
   mobileUA: string;
@@ -35,7 +36,7 @@ export const TaskConfig = new Proxy({} as TaskConfigType, {
 /** 任务完成情况统计 */
 abstract class TaskModuleTemplate {
   /**拥有硬币数量 */
-  static money = 0;
+  static money = new Big(0);
   /**还需要投币数量,初值BILI_TARGET_COINS */
   static coinsTask = 5;
   /** B币券余额 */

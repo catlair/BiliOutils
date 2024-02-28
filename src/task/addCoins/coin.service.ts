@@ -517,7 +517,7 @@ export async function getContributionCoin(coinType: ValueOf<typeof TypeEnum>, id
 export async function checkCoin() {
   const coinNum = await getTodayCoinNum();
   /** 剩余可用硬币数量 */
-  const targetCoinsDiff = Math.floor(TaskModule.money - TaskConfig.coin.stayCoins);
+  const targetCoinsDiff = TaskModule.money.minus(TaskConfig.coin.stayCoins).toNumber();
   let coins = 0;
   if (TaskModule.coinsTask === 0) {
     // 根据经验设置的目标
