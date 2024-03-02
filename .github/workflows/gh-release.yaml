@@ -77,3 +77,6 @@ jobs:
           prerelease: ${{ env.IS_TAG == 'true' && env.IS_RC == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: changelogen
+        run: |
+          npx -y changelogen gh release
