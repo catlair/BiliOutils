@@ -6,6 +6,6 @@ export default async function liveDm() {
   try {
     await liveDmService();
   } catch (error) {
-    logger.exception(`直播挂机`, error);
+    logger.exception(`直播弹幕`, error);
   }
 }

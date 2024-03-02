@@ -15,7 +15,7 @@ type LiveHeartRunOptions = {
   options: Record<string, string>;
   countRef: Ref<number>;
   needTime: number;
-  timerRef?: Ref<NodeJS.Timer>;
+  timerRef?: Ref<TimerType>;
 };
 
 export async function watchLinkService() {
@@ -81,7 +81,7 @@ async function liveHeartPromise(resolve: (value: unknown) => void) {
   } else {
     ids.push(...uids);
   }
-  if (ids.length === 0 || area.length === 0) return;
+  if (ids.length === 0 || area.length === 0) return resolve('跳过直播间心跳');
   area.forEach(async areaItem => {
     for (const uid of ids) {
       const user = await getUserInfo(uid);
@@ -96,7 +96,7 @@ function bindWatchEvent(user: LiveHeartRunOptions['user'], [parentId, areaId]: n
   const { time, wss, heart } = TaskConfig.watchLink;
 
   if (heart) {
-    const timerRef: Ref<NodeJS.Timer> = { value: undefined as unknown as NodeJS.Timer };
+    const timerRef: Ref<TimerType> = { value: undefined };
     const runOptions = {
       user,
       options: getRandomOptions(),

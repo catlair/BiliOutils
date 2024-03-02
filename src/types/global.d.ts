@@ -21,6 +21,9 @@ declare global {
     value: T;
   };
 
+  // 获取 clearInterval 的参数
+  type TimerType = NodeJS.Timeout | string | number | undefined;
+
   type UnPromisify<T> = T extends Promise<infer U> ? U : T;
 
   // 一定已经定义了
