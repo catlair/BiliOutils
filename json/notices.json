@@ -1,0 +1,70 @@
+{
+  "common": [
+    {
+      "content": "本项目开源且免费，文档地址 https://bo.js.cool 使用请自觉 star，by --- catlair。",
+      "config": []
+    },
+    {
+      "rule": [
+        {
+          "key": ["function", "mangaTask"],
+          "value": true
+        },
+        {
+          "key": ["manga", "summer"],
+          "value": true
+        }
+      ],
+      "config": [
+        {
+          "key": ["function", "mangaTask"],
+          "value": true
+        },
+        {
+          "key": ["manga", "summer"],
+          "value": true
+        }
+      ],
+      "content": "漫画夏季活动即将结束，没有兑换的请尽快手动兑换。",
+      "time": {
+        "start": "2023-08-01 00:00:00",
+        "end": "2023-08-31 23:59:59"
+      }
+    },
+    {
+      "rule": [
+        {
+          "key": ["activityLottery", "proxyPrefix"],
+          "value": "https://ghproxy.com/"
+        }
+      ],
+      "config": [
+        {
+          "key": ["activityLottery", "proxyPrefix"],
+          "value": "https://ghproxy.com/"
+        }
+      ],
+      "content": "ghproxy 似乎已经失效，如果转盘出现 All promises were rejected 错误请删除 ghproxy 否则无法更新"
+    },
+    {
+      "rule": [
+        {
+          "key": ["manga", "summer"],
+          "value": true
+        }
+      ],
+      "config": [
+        {
+          "key": ["manga", "summer"],
+          "value": true
+        }
+      ],
+      "content": "漫画夏季活动已经结束，请删除无用的配置。"
+    }
+  ],
+  "scf": [],
+  "fc": [],
+  "agc": [],
+  "cfc": [],
+  "fg": []
+}
