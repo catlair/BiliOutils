@@ -1,6 +1,6 @@
 {
   "name": "bilioutils",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "this is BiliOutils",
   "main": "main.js",
   "types": "main.d.ts",
