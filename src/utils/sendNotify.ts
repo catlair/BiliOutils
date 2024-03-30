@@ -12,7 +12,7 @@
 import type { Method } from '@catlair/node-got';
 import { TaskConfig, TaskModule } from '@/config';
 import { conciseNickname } from './bili';
-import { defHttp } from './http';
+import { createAgent, defHttp } from './http';
 import { logger, notPush } from './log';
 import { stringify } from './pure';
 
@@ -213,7 +213,7 @@ async function customApi(title: string, text: string) {
   try {
     const apiTemplate = TaskConfig.message.api;
     if (!apiTemplate || !apiTemplate.url) return;
-    const { data, proxy, timeout, headers } = apiTemplate;
+    const { data, proxy: _proxy, timeout, headers } = apiTemplate;
     const method: Method = (apiTemplate.method.toUpperCase() || 'POST') as Method;
     const options = {
       method: method,
@@ -225,17 +225,11 @@ async function customApi(title: string, text: string) {
     options.url = apiTemplate.url
       .replace('{title}', encodeURIComponent(title))
       .replace('{text}', encodeURIComponent(text));
-    if (proxy.host) {
-      const tunnel = await import('tunnel');
-      const httpsAgent = tunnel.httpsOverHttp({
-        proxy: {
-          host: proxy.host,
-          port: +proxy.port,
-          proxyAuth: proxy.auth,
-        },
-        maxSockets: 1, // 单个代理最大连接数
-      });
-      Object.assign(options, { httpsAgent });
+    if (_proxy.host) {
+      const agent = await createAgent(
+        `http://${_proxy.auth ? _proxy.auth + '@' : ''}${_proxy.host}:${_proxy.port}`,
+      );
+      Object.assign(options, { agent });
     }
     // 处理data
     if (Object.keys(data).length) {
@@ -417,16 +411,10 @@ function tgBotNotify(text, desp) {
         timeout,
       };
       if (TG_PROXY_HOST && TG_PROXY_PORT) {
-        const tunnel = await import('tunnel');
-        const httpsAgent = tunnel.httpsOverHttp({
-          proxy: {
-            host: TG_PROXY_HOST,
-            port: +TG_PROXY_PORT,
-            proxyAuth: TG_PROXY_AUTH,
-          },
-          maxSockets: 1, // 单个代理最大连接数
-        });
-        Object.assign(options, { httpsAgent });
+        const agent = await createAgent(
+          `http://${TG_PROXY_AUTH ? TG_PROXY_AUTH + '@' : ''}${TG_PROXY_HOST}:${TG_PROXY_PORT}`,
+        );
+        Object.assign(options, { agent });
       }
       defHttp
         .post(options)
