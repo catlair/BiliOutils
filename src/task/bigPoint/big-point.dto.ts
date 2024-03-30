@@ -30,7 +30,7 @@ export interface CommonTaskItem {
     | 'animatetab' // 浏览追番页面 10 秒
     | 'filmtab' //
     | 'vipmallview' // 浏览会员购页面 10 秒
-    | 'ogvwatch' // 观看任意正片
+    | 'ogvwatchnew' // 观看任意正片
     | 'tvodbuy' // 购买付费点播影片
     | 'dressbuyamount' // 购买指定装扮
     | 'vipmallbuy'; // 购买指定大会员商品

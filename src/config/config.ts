@@ -395,7 +395,7 @@ export const defaultConfig = {
   },
   app: {
     http: {
-      build: 7650400,
+      build: 7720200,
     },
   },
   dailyBattery: {

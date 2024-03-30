@@ -1,5 +1,6 @@
 export const TaskCode = {
-  ogvwatch: '观看正片',
+  // ogvwatch: '观看正片',
+  ogvwatchnew: '观看正片',
   tvodbuy: '购买视频',
   vipmallbuy: '购买商品',
   bonus: '大会员福利',

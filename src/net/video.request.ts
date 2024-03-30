@@ -65,11 +65,11 @@ export function donatedCoinsForVideo(aid: number): Promise<DonatedCoinsForVideoD
  * @param id av号/bv号
  * @param playedTime 观看时间
  */
-export function uploadVideoHeartbeat(id: number | string, playedTime: number) {
+export function uploadVideoHeartbeat(id: number | string, playedTime: number, type: 3 | 4 = 3) {
   const options: HeartbeatParams = {
     start_ts: Math.floor(Date.now() / 1000) - playedTime,
     played_time: playedTime,
-    type: 3,
+    type,
     sub_type: 0,
   };
   if (isString(id) && id.toLowerCase().startsWith('bv')) {

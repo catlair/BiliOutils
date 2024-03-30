@@ -6,6 +6,7 @@ import type { TaskCodeType } from './big-point.emum';
 import { appSignString } from '@/utils/bili';
 import { RefererURLs } from '@/constant/biliUri';
 import { getUnixTime } from '@/utils/pure';
+import type { IdType } from '@/types';
 
 const baseHeader = {
   'app-key': 'android64',
@@ -31,18 +32,17 @@ export function signIn() {
 /**
  * 大积分领取任务
  */
-export function receiveTask(taskCode: TaskCodeType = 'ogvwatch') {
+export function receiveTask(taskCode: TaskCodeType = 'ogvwatchnew') {
   return biliApi.post<PureDataProp>(
-    'pgc/activity/score/task/receive',
-    {
+    'pgc/activity/score/task/receive/v2',
+    appSignString({
       csrf: TaskConfig.BILIJCT,
       ts: getUnixTime(),
       taskCode,
-    },
+    }),
     {
       http2: true,
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
         Referer: RefererURLs.bigPointTask,
         ...baseHeader,
         navtive_api_from: 'h5',
@@ -66,12 +66,41 @@ export function susWin() {
 /**
  * 完成大积分每日任务
  */
-export function complete(position: string) {
+export function complete(options: Record<string, string>) {
   return biliApi.post<PureDataProp>(
     'pgc/activity/deliver/task/complete',
     appSignString({
       csrf: TaskConfig.BILIJCT,
-      position,
+      ...options,
+    }),
+    {
+      headers: {
+        ...baseHeader,
+        referer: RefererURLs.bigPoint,
+      },
+    },
+  );
+}
+
+export function materialReceive({ season_id, ep_id }: { season_id: IdType; ep_id: IdType }) {
+  return biliApi.post<
+    PureDataProp<{
+      container: any[];
+      watch_count_down_cfg: {
+        milliseconds: number;
+        task_id: string;
+        token: string;
+      };
+    }>
+  >(
+    'pgc/activity/deliver/material/receive',
+    appSignString({
+      csrf: TaskConfig.BILIJCT,
+      spmid: 'united.player-video-detail.0.0',
+      season_id,
+      activity_code: '',
+      ep_id,
+      from_spmid: 'search.search-result.0.0',
     }),
     {
       headers: {

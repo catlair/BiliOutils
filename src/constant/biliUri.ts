@@ -27,7 +27,7 @@ export const baseURLs = {
 
 export const defaultHeaders = {
   'user-agent':
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Edg/119.0.0.0',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Edg/122.0.0.0',
   'content-type': ContentTypeEnum.FORM_URLENCODED,
   'accept-language': 'zh-CN,zh;q=0.9',
   'accept-encoding': 'gzip, deflate, br',
@@ -44,9 +44,9 @@ interface UAOption {
 }
 
 export function getAndroidUA({
-  version = '6.79.0',
+  version = '7.72.0',
   phone = 'MI 10 Pro',
-  build = '6790300',
+  build = '7720210',
   channel = 'xiaomi',
   osVer = '10',
   os = 'android',

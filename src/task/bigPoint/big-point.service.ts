@@ -5,16 +5,17 @@ import {
   completeV2,
   getPointList,
   getTaskCombine,
+  materialReceive,
   receiveTask,
   showDispatch,
   signIn,
   susWin,
 } from './big-point.request';
 import { TaskCode } from './big-point.emum';
-import { apiDelay, isBoolean, isDef, isToday, Logger, logger, random } from '@/utils';
+import { apiDelay, isBoolean, isDef, isToday, Logger, logger, md5, sleep } from '@/utils';
 import { TaskConfig, TaskModule } from '@/config';
 import { FREE_POINT } from './constant';
-import { getRandomEp, watchVideo } from '@/service/video.service';
+import { getRandomEp } from '@/service/video.service';
 
 const bigLogger = new Logger({ console: 'debug', file: 'debug', push: 'warn' }, 'big-point');
 
@@ -29,16 +30,13 @@ async function getTaskStatus() {
 
   if (data) return data;
 
-  const { defStatus } = await import('./data');
-
-  return defStatus;
-
   async function getTaskStatusByWhile(times = 5) {
     for (let count = 0; count < times; count++) {
       const data = await getTaskStatus();
       if (!data) return;
       if (!data.task_info?.modules?.length) {
         logger.error('获取任务列表失败，列表为空');
+        await sleep(1000);
         continue;
       }
       return data;
@@ -115,6 +113,10 @@ async function bigPointTask(taskStatus: TaskStatus) {
   return await doDailyTask(taskStatus);
 }
 
+function getTaskSign(timestamp: string, token: string) {
+  return md5(`${timestamp}#df2a46fd53&${token}`);
+}
+
 /**
  * 完成每日任务
  */
@@ -132,24 +134,22 @@ async function doDailyTask(taskStatus: TaskStatus | undefined) {
       );
     }) || [];
 
-  if (waitTaskItems.every(taskItem => taskItem.state !== 1)) {
+  if (!waitTaskItems.some(taskItem => taskItem.state === 1)) {
     logger.info('没有需要完成的每日任务');
     return true;
   }
 
   const taskFunctions = {
-    ogvwatch: TaskConfig.bigPoint.isWatch
-      ? async (n: number) => (await apiDelay(TaskConfig.bigPoint.watchDelay * 1000)) && watchTask(n)
-      : () => void 0,
+    ogvwatchnew: () => TaskConfig.bigPoint.isWatch && watchTask(),
     filmtab: () => completeTask('tv_channel', '浏览影视频道'),
     animatetab: () => completeTask('jp_channel', '浏览追番频道'),
     vipmallview: vipMallView,
     'dress-view': () => completeTask('dress-view', '浏览装扮中心', true),
   };
 
-  await waitTaskItems.reduce(async (previousPromise, { task_code, complete_times }) => {
+  await waitTaskItems.reduce(async (previousPromise, { task_code }) => {
     await previousPromise;
-    return taskFunctions[task_code]?.(complete_times);
+    return taskFunctions[task_code]?.();
   }, Promise.resolve());
 
   await apiDelay(1000, 3000);
@@ -158,16 +158,41 @@ async function doDailyTask(taskStatus: TaskStatus | undefined) {
 /**
  * 观看视频任务
  */
-async function watchTask(completeTimes = 1) {
+async function watchTask() {
+  try {
+    const { task_id, token } = (await watchRandomEp()) || {};
+    if (!task_id || !token) {
+      logger.warn('没有获取到观看视频任务');
+      return;
+    }
+    // 等待十分钟
+    await sleep(10 * 60 * 1000);
+    const timestamp = new Date().getTime().toString();
+    const task_sign = getTaskSign(timestamp, token);
+    const { code, message } = await complete({ task_id, token, task_sign, timestamp });
+    if (code !== 0) {
+      logger.fatal('观看视频', code, message);
+      return;
+    }
+    await sleep(5000);
+    bigLogger.debug(`观看视频每日任务 ✓`);
+  } catch (error) {
+    logger.exception(`观看视频任务`, error);
+  }
+}
+
+async function watchRandomEp() {
   try {
     const ep = await getRandomEp();
     bigLogger.debug(`观看《${ep.name}·${ep.title}》`);
-    return await watchVideo({
-      ...ep,
-      time: completeTimes === 1 ? random(905, 1800) : random(1805, 2000),
-    });
+    const { code, message, data } = await materialReceive({ ep_id: ep.id, season_id: ep.season });
+    if (code !== 0) {
+      logger.fatal(`观看随机视频`, code, message);
+      return;
+    }
+    return data.watch_count_down_cfg;
   } catch (error) {
-    logger.error(`观看视频任务出现异常：`, error);
+    logger.exception(`观看随机视频`, error);
   }
 }
 
@@ -181,7 +206,7 @@ async function completeTask(taskCode: string | TaskCodeType, name: string, v2?: 
     if (v2) {
       completeFn = completeV2;
     } else {
-      completeFn = complete;
+      completeFn = (position: string) => complete({ position });
       await susWin();
       await apiDelay(1000, 2000);
     }
@@ -284,7 +309,7 @@ async function getOneTask(taskCode: TaskCodeType) {
     if (code === 0) {
       return true;
     }
-    logger.error(`领取任务${TaskCode[taskCode]}失败: ${code} ${message}`);
+    logger.error(`领取任务${TaskCode[taskCode]}-${taskCode}失败: ${code} ${message}`);
   } catch (error) {
     logger.error(error);
   }
