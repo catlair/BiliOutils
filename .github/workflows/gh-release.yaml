@@ -15,6 +15,7 @@ jobs:
       IS_RC: ${{ contains(github.ref, '-rc') }}
       IS_PROD: ${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-rc') }}
       COMMIT_GH: ${{ secrets.COMMIT_GH }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -75,8 +76,6 @@ jobs:
             aliyun_fc.zip
           draft: ${{ env.IS_TAG == 'false' }}
           prerelease: ${{ env.IS_TAG == 'true' && env.IS_RC == 'true' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: changelogen
         run: |
           npx -y changelogen gh release

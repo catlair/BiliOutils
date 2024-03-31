@@ -86,8 +86,8 @@ export function createBaseConfig(
   const external = Array.isArray(config.external)
     ? config.external
     : config.external === false
-    ? optionalDependencies
-    : EXTERNAL;
+      ? optionalDependencies
+      : EXTERNAL;
   const rOptions: RollupOptions = {
     plugins: plugins(config),
     input: `src/${config.input}`,
