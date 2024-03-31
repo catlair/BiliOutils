@@ -69,6 +69,7 @@
     "@types/node": "^20.0.0",
     "@types/node-schedule": "^2.1.0",
     "@types/nodemailer": "^6.4.8",
+    "@types/tunnel": "^0.0.7",
     "@types/ws": "^8.5.5",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
@@ -97,6 +98,7 @@
     "json5": "^2.2.3",
     "node-schedule": "^2.1.1",
     "nodemailer": "^6.9.8",
+    "tunnel": "^0.0.6",
     "winston": "^3.11.0",
     "ws": "^8.16.0"
   },

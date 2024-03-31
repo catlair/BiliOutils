@@ -1,14 +1,16 @@
-import { HttpsProxyAgent } from 'hpagent';
 export { defHttp, defHttpWithoutProxy } from '../got';
 
 export * from '../got/bili';
 
 export function createAgent(proxy: string) {
+  const { hostname, port, username, password } = new URL(proxy);
   return {
-    https: new HttpsProxyAgent({
-      maxSockets: 256,
-      scheduling: 'lifo',
-      proxy,
+    https: require('tunnel').httpsOverHttp({
+      proxy: {
+        host: hostname,
+        port: Number(port),
+        proxyAuth: username + ':' + password,
+      },
     }),
   };
 }
