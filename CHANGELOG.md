@@ -1,6 +1,26 @@
 # Changelog
 
 
+## v1.3.0
+
+[compare changes](https://github.com/catlair/BiliOutils/compare/v1.2.1...v1.3.0)
+
+### 🚀 Enhancements
+
+- Add proxy ([ecbc66b](https://github.com/catlair/BiliOutils/commit/ecbc66b))
+
+### 🩹 Fixes
+
+- **bigPoint:** 优化完成判断 ([ee742a0](https://github.com/catlair/BiliOutils/commit/ee742a0))
+
+### 🏡 Chore
+
+- Update ci （无影响更新） ([6a3fc59](https://github.com/catlair/BiliOutils/commit/6a3fc59))
+
+### ❤️ Contributors
+
+- Catlair ([@catlair](http://github.com/catlair))
+
 ## v1.2.1
 
 [compare changes](https://github.com/catlair/BiliOutils/compare/v1.2.0...v1.2.1)
