@@ -7,10 +7,14 @@ type HooksOptions = NormalizedOptions & VGotOptions;
 
 const wbiArrays = ['/x/click-interface/web/heartbeat'];
 
-export function getOptions(): VGotOptions {
+type Options = {
+  proxy?: boolean;
+};
+
+export function getOptions({ proxy }: Options = { proxy: true }): VGotOptions {
   let agent: Agents | undefined;
 
-  if (TaskConfig.proxy) {
+  if (TaskConfig.proxy && proxy) {
     agent = createAgent(TaskConfig.proxy);
   }
   return {

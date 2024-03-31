@@ -21,7 +21,9 @@ export async function accessKey2Cookie(access_key: string) {
 
 export async function cookie2AccessKey(cookie: string) {
   try {
-    const { code, data, message } = await cookieToToken(cookie);
+    const { TaskConfig } = await import('@/config');
+    // @ts-ignore
+    const { code, data, message } = await cookieToToken(cookie, TaskConfig.app.http.build);
     if (code !== 0) {
       defLogger.error(`[${code}]${message}`);
       return '';
@@ -35,7 +37,9 @@ export async function cookie2AccessKey(cookie: string) {
 
 export async function getNewCookie(cookie: string) {
   try {
-    const { code, data, message } = await cookieToToken(cookie);
+    const { TaskConfig } = await import('@/config');
+    // @ts-ignore
+    const { code, data, message } = await cookieToToken(cookie, TaskConfig.app.http.build);
     if (code !== 0) {
       defLogger.error(`[${code}]${message}`);
       return '';

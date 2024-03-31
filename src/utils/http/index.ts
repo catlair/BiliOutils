@@ -1,6 +1,5 @@
 import { HttpsProxyAgent } from 'hpagent';
-import { defHttp } from '../got';
-export { defHttp };
+export { defHttp, defHttpWithoutProxy } from '../got';
 
 export * from '../got/bili';
 

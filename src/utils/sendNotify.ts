@@ -12,7 +12,7 @@
 import type { Method } from '@catlair/node-got';
 import { TaskConfig, TaskModule } from '@/config';
 import { conciseNickname } from './bili';
-import { createAgent, defHttp } from './http';
+import { createAgent, defHttpWithoutProxy as defHttp } from './http';
 import { logger, notPush } from './log';
 import { stringify } from './pure';
 
