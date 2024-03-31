@@ -11,9 +11,9 @@ import { onExit } from './utils/node';
 /**
  * 获取配置
  */
-export async function config() {
+export async function config(path?: string) {
   const { getConfigPathFile } = await import('./config/utils');
-  const configPath = getArg('config')?.trim() as string;
+  const configPath = path || (getArg('config')?.trim() as string);
   try {
     // 判断 configPath 是否有空格
     if (/\s/.test(configPath)) {
