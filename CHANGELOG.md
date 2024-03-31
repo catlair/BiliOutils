@@ -1,6 +1,19 @@
 # Changelog
 
 
+## v1.4.0
+
+[compare changes](https://github.com/catlair/BiliOutils/compare/v1.3.0...v1.4.0)
+
+### 🚀 Enhancements
+
+- **bigPoint:** 新增异步观看视频（默认开启） ([7539c1f](https://github.com/catlair/BiliOutils/commit/7539c1f))
+- 为推送取消 proxy ([e220df2](https://github.com/catlair/BiliOutils/commit/e220df2))
+
+### ❤️ Contributors
+
+- Catlair ([@catlair](http://github.com/catlair))
+
 ## v1.3.0
 
 [compare changes](https://github.com/catlair/BiliOutils/compare/v1.2.1...v1.3.0)
