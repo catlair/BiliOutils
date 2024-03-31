@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.5.0
+
+[compare changes](https://github.com/catlair/BiliOutils/compare/v1.4.0...v1.5.0)
+
+### 🚀 Enhancements
+
+- Config paths 使用 fast-glob 加载多文件 ([ae8ce51](https://github.com/catlair/BiliOutils/commit/ae8ce51))
+
+### ❤️ Contributors
+
+- Catlair ([@catlair](http://github.com/catlair))
+
 ## v1.4.0
 
 [compare changes](https://github.com/catlair/BiliOutils/compare/v1.3.0...v1.4.0)
