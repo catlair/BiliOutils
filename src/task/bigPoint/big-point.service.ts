@@ -14,7 +14,7 @@ import {
 import { TaskCode } from './big-point.emum';
 import { apiDelay, isBoolean, isDef, isToday, Logger, logger, md5, sleep } from '@/utils';
 import { TaskConfig, TaskModule } from '@/config';
-import { FREE_POINT } from './constant';
+import { FREE_POINT, NO_NEED_TASK } from './constant';
 import { getRandomEp } from '@/service/video.service';
 
 const bigLogger = new Logger({ console: 'debug', file: 'debug', push: 'warn' }, 'big-point');
@@ -32,7 +32,7 @@ async function getTaskStatus() {
 
   async function getTaskStatusByWhile(times = 5) {
     for (let count = 0; count < times; count++) {
-      const data = await getTaskStatus();
+      const data = await _getTaskStatus();
       if (!data) return;
       if (!data.task_info?.modules?.length) {
         logger.error('获取任务列表失败，列表为空');
@@ -43,11 +43,11 @@ async function getTaskStatus() {
     }
   }
 
-  async function getTaskStatus() {
+  async function _getTaskStatus() {
     try {
       const { code, data, message } = await getTaskCombine();
       if (code !== 0) {
-        logger.error(`查看当前状态失败: ${code} ${message}`);
+        logger.fatal(`查看当前状态`, code, message);
         return;
       }
       return data;
@@ -325,6 +325,34 @@ async function getManyTask(taskCodes: TaskCodeType[]) {
   }
 }
 
+async function getDailyTask() {
+  try {
+    const taskStatus = await getTaskStatus();
+    if (taskStatus)
+      return (
+        taskStatus.task_info?.modules?.find(task => task.module_title === '日常任务')
+          ?.common_task_item || []
+      );
+  } catch (error) {
+    logger.error(error);
+  }
+  return [];
+}
+
+/**
+ * 今日任务完成情况
+ */
+async function checkTodayStatus() {
+  const dailyTask = await getDailyTask();
+  if (dailyTask.length === 0) return false;
+  // 除了 NO_NEED_TASK 中的, 其它全部需要 state === 3
+  return dailyTask.every(task =>
+    NO_NEED_TASK.includes(task.task_code as unknown as (typeof NO_NEED_TASK)[number])
+      ? true
+      : task.state === 3,
+  );
+}
+
 /**
  * 获取今日积分
  */
@@ -350,6 +378,12 @@ async function getTodayPonit() {
   if (todayPoint >= FREE_POINT) {
     logger.info(`今日获取积分【${todayPoint}】√`);
     return true;
+  }
+  if (todayPoint === 35 || todayPoint === 40) {
+    if (await checkTodayStatus()) {
+      logger.info(`今日获取积分【${todayPoint}】，但并未检测到未完成的任务。`);
+      return true;
+    }
   }
   if (todayPoint === 0 && !isError && isRetry) {
     logger.error(`今日获取积分【${todayPoint}】, 部分任务未成功 ×`);
