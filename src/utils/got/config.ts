@@ -1,11 +1,18 @@
-import type { VGotOptions, NormalizedOptions } from '@catlair/node-got';
+import type { VGotOptions, NormalizedOptions, Agents } from '@catlair/node-got';
 import { defaultHeaders } from '@/constant/biliUri';
+import { TaskConfig } from '@/config';
+import { createAgent } from '../http';
 
 type HooksOptions = NormalizedOptions & VGotOptions;
 
 const wbiArrays = ['/x/click-interface/web/heartbeat'];
 
 export function getOptions(): VGotOptions {
+  let agent: Agents | undefined;
+
+  if (TaskConfig.proxy) {
+    agent = createAgent(TaskConfig.proxy);
+  }
   return {
     timeout: 10000,
     headers: {
@@ -56,5 +63,6 @@ export function getOptions(): VGotOptions {
         },
       ],
     },
+    agent,
   };
 }

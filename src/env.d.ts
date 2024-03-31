@@ -23,6 +23,7 @@ declare global {
       BILIOUTILS_LOG_DIR?: string;
       BILIOUTILS_DETACHED?: string;
       BILIOUTILS_ASYNC?: string;
+      BO_CONFIG?: string;
       /** 私有变量 */
       __BT_CONFIG__: string;
       __BT_TASKS_STRING__: string;

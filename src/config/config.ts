@@ -409,6 +409,7 @@ export const defaultConfig = {
     needVip: true,
     watchVideo: true,
   },
+  proxy: undefined as string | undefined,
   BILIJCT: '',
   USERID: 0,
 };

@@ -1,11 +1,10 @@
+import { HttpsProxyAgent } from 'hpagent';
 import { defHttp } from '../got';
 export { defHttp };
 
 export * from '../got/bili';
 
-export async function createAgent(proxy: string) {
-  const { HttpsProxyAgent } = await import('hpagent');
-
+export function createAgent(proxy: string) {
   return {
     https: new HttpsProxyAgent({
       maxSockets: 256,
