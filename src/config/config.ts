@@ -336,6 +336,8 @@ export const defaultConfig = {
     isWatch: true,
     // 领取任务后的观看延时（秒）
     watchDelay: 40,
+    // 是否启用异步模式观看视频
+    isAsyncWatch: true,
   },
   activityLottery: {
     // 活动列表

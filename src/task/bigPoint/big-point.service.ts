@@ -140,7 +140,17 @@ async function doDailyTask(taskStatus: TaskStatus | undefined) {
   }
 
   const taskFunctions = {
-    ogvwatchnew: () => TaskConfig.bigPoint.isWatch && watchTask(),
+    ogvwatchnew: () => {
+      if (TaskConfig.bigPoint.isAsyncWatch) {
+        watchTask()
+          .then(() => {
+            getTodayPonit();
+          })
+          .catch(logger.error);
+        return Promise.resolve('等待 10 分钟');
+      }
+      return TaskConfig.bigPoint.isWatch && watchTask();
+    },
     filmtab: () => completeTask('tv_channel', '浏览影视频道'),
     animatetab: () => completeTask('jp_channel', '浏览追番频道'),
     vipmallview: vipMallView,
@@ -165,7 +175,7 @@ async function watchTask() {
       logger.warn('没有获取到观看视频任务');
       return;
     }
-    // 等待十分钟
+    logger.debug('等待十分钟');
     await sleep(10 * 60 * 1000);
     const timestamp = new Date().getTime().toString();
     const task_sign = getTaskSign(timestamp, token);
@@ -382,6 +392,10 @@ async function getTodayPonit() {
   if (todayPoint === 35 || todayPoint === 40) {
     if (await checkTodayStatus()) {
       logger.info(`今日获取积分【${todayPoint}】，但并未检测到未完成的任务。`);
+      return true;
+    }
+    if (TaskConfig.bigPoint.isAsyncWatch) {
+      logger.info(`今日获取积分【${todayPoint}】，由于您开启了异步观看，所以跳过检测观看结果`);
       return true;
     }
   }
