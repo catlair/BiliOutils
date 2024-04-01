@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.5.2
+
+[compare changes](https://github.com/catlair/BiliOutils/compare/v1.5.1...v1.5.2)
+
+### 🔥 Performance
+
+- 输出 proxy 地址 ([7dae999](https://github.com/catlair/BiliOutils/commit/7dae999))
+
+### ❤️ Contributors
+
+- Catlair ([@catlair](http://github.com/catlair))
+
 ## v1.5.1
 
 [compare changes](https://github.com/catlair/BiliOutils/compare/v1.5.0...v1.5.1)
