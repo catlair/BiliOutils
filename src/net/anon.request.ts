@@ -10,6 +10,7 @@ export async function getIp(): Promise<
     country: string;
     province: string;
     isp: string;
+    city: string;
     latitude: number;
     longitude: number;
     zone_id: number;

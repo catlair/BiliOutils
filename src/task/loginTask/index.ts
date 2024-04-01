@@ -5,6 +5,7 @@ import type { UserInfoNavDto } from '@/dto/user-info.dto';
 import { logger } from '@/utils/log';
 import { request } from '@/utils/request';
 import Big from 'big.js';
+import { getIp } from '@/net/anon.request';
 
 type UserNavData = UserInfoNavDto['data'];
 
@@ -74,6 +75,10 @@ async function setUserInfo(data: UserNavData) {
 
 export default async function loginTask() {
   logger.info('----【登录】----');
+  if (TaskConfig.proxy) {
+    logger.debug('检测到使用代理');
+    await showProxy();
+  }
   const { data, message, code } = await getNav();
   if (code !== 0) {
     logger.error(`[${TaskConfig.USERID}]登录错误 ${code} ${message}`);
@@ -84,4 +89,15 @@ export default async function loginTask() {
   }
   await apiDelay();
   await setUserInfo(data);
+}
+
+async function showProxy() {
+  try {
+    const {
+      data: { city, province, isp },
+    } = await getIp();
+    logger.debug(`当前IP: ${province}${city || '未知'} ${isp}`);
+  } catch (error) {
+    logger.debug(error);
+  }
 }
