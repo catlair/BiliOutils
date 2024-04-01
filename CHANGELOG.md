@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.5.1
+
+[compare changes](https://github.com/catlair/BiliOutils/compare/v1.5.0...v1.5.1)
+
+### 🩹 Fixes
+
+- Proxy 407 error ([7281ccf](https://github.com/catlair/BiliOutils/commit/7281ccf))
+
+### ❤️ Contributors
+
+- Catlair ([@catlair](http://github.com/catlair))
+
 ## v1.5.0
 
 [compare changes](https://github.com/catlair/BiliOutils/compare/v1.4.0...v1.5.0)
