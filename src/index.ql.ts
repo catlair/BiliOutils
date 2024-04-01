@@ -1,8 +1,6 @@
-import { resolve } from 'path';
 import type { ConfigArray } from './types';
 import { config, getConfigByItem, runTask, waitForArgs } from './util';
 import { getArg, isArg } from './utils/args';
-import fg from 'fast-glob';
 
 process.env.IS_QING_LONG = 'true';
 
@@ -10,10 +8,7 @@ process.env.IS_QING_LONG = 'true';
   let configs: ConfigArray | undefined;
   await waitForArgs();
   if (isArg('config')) {
-    const configPaths = fg.sync(resolve(process.cwd(), getArg('config') as string));
-    configs = (await Promise.all(configPaths.map(async file => await config(file))))
-      .flat()
-      .filter(Boolean);
+    configs = await config();
     if (!configs) {
       return;
     }

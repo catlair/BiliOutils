@@ -8,7 +8,6 @@ import * as schedule from 'node-schedule';
 import { isBiliCookie } from './utils/cookie';
 import { scanLogin } from './utils/login';
 import { program } from 'commander';
-import fg from 'fast-glob';
 
 process.env.IS_LOCAL = 'true';
 
@@ -123,10 +122,7 @@ async function isTodayRun(jobsPath: string) {
 async function run(configPath: string) {
   const configDir = dirname(resolve(process.cwd(), configPath));
   const jobsPath = resolve(configDir, 'bt_jobs.json');
-  const configPaths = fg.sync(resolve(process.cwd(), configPath));
-  const configs = (await Promise.all(configPaths.map(async file => await config(file))))
-    .flat()
-    .filter(Boolean);
+  const configs = await config();
   if (!configs) {
     return;
   }
