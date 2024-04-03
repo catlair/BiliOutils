@@ -71,7 +71,7 @@ export async function bigPointService() {
   if (expire_point > 0) {
     logger.warn(`${expire_point}积分即将过期，剩余${expire_days}天`);
   }
-  if (!baseInfo(status, type, point)) return;
+  if (!(await baseInfo(status, type, point))) return;
   // if (score_limit !== 0 && score_month >= score_limit) {
   //   logger.info('本月积分已领取完');
   //   return;
