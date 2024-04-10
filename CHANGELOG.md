@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.5.4
+
+[compare changes](https://github.com/catlair/BiliOutils/compare/v1.5.3...v1.5.4)
+
+### 🩹 Fixes
+
+- **bigPoint:** _bigPoint 导包错误 ([bef2829](https://github.com/catlair/BiliOutils/commit/bef2829))
+
+### ❤️ Contributors
+
+- Catlair ([@catlair](http://github.com/catlair))
+
 ## v1.5.3
 
 [compare changes](https://github.com/catlair/BiliOutils/compare/v1.5.2...v1.5.3)
