@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.5.3
+
+[compare changes](https://github.com/catlair/BiliOutils/compare/v1.5.2...v1.5.3)
+
+### 🩹 Fixes
+
+- **bigPoint:** 会员状态判读错误 ([d393586](https://github.com/catlair/BiliOutils/commit/d393586))
+
+### ❤️ Contributors
+
+- Catlair ([@catlair](http://github.com/catlair))
+
 ## v1.5.2
 
 [compare changes](https://github.com/catlair/BiliOutils/compare/v1.5.1...v1.5.2)
