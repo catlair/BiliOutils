@@ -12,7 +12,19 @@ import {
   susWin,
 } from './big-point.request';
 import { TaskCode } from './big-point.emum';
-import { apiDelay, isBoolean, isDef, isToday, Logger, logger, md5, sleep } from '@/utils';
+import {
+  apiDelay,
+  ENV,
+  formatCron,
+  getPRCDate,
+  isBoolean,
+  isDef,
+  isToday,
+  Logger,
+  logger,
+  md5,
+  sleep,
+} from '@/utils';
 import { TaskConfig, TaskModule } from '@/config';
 import { FREE_POINT, NO_NEED_TASK } from './constant';
 import { getRandomEp } from '@/service/video.service';
@@ -141,7 +153,10 @@ async function doDailyTask(taskStatus: TaskStatus | undefined) {
 
   const taskFunctions = {
     ogvwatchnew: () => {
-      if (TaskConfig.bigPoint.isAsyncWatch) {
+      if (!TaskConfig.bigPoint.isWatch) return;
+      // serverless 禁用异步
+      if (TaskConfig.bigPoint.isAsyncWatch && !ENV.serverless) {
+        logger.debug(`使用异步运行，不阻塞后续任务`);
         watchTask()
           .then(() => {
             getTodayPonit();
@@ -149,7 +164,7 @@ async function doDailyTask(taskStatus: TaskStatus | undefined) {
           .catch(logger.error);
         return Promise.resolve('等待 10 分钟');
       }
-      return TaskConfig.bigPoint.isWatch && watchTask();
+      return watchTask();
     },
     filmtab: () => completeTask('tv_channel', '浏览影视频道'),
     animatetab: () => completeTask('jp_channel', '浏览追番频道'),
@@ -175,20 +190,29 @@ async function watchTask() {
       logger.warn('没有获取到观看视频任务');
       return;
     }
-    logger.debug('等待十分钟');
-    await sleep(10 * 60 * 1000);
-    const timestamp = new Date().getTime().toString();
-    const task_sign = getTaskSign(timestamp, token);
-    const { code, message } = await complete({ task_id, token, task_sign, timestamp });
-    if (code !== 0) {
-      logger.fatal('观看视频', code, message);
+    if ((ENV.fc || ENV.scf) && TaskConfig.bigPoint.newTriggerWatch) {
+      logger.info('使用新的触发器完成视频任务，十分钟后执行');
+      await waitForServerless(task_id, token);
       return;
     }
-    await sleep(5000);
-    bigLogger.debug(`观看视频每日任务 ✓`);
+    logger.debug('等待十分钟');
+    await sleep(10 * 60 * 1000);
+    await completeWatch(task_id, token);
   } catch (error) {
     logger.exception(`观看视频任务`, error);
   }
+}
+
+export async function completeWatch(task_id: string, token: string) {
+  const timestamp = new Date().getTime().toString();
+  const task_sign = getTaskSign(timestamp, token);
+  const { code, message } = await complete({ task_id, token, task_sign, timestamp });
+  if (code !== 0) {
+    logger.fatal('观看视频', code, message);
+    return;
+  }
+  await sleep(5000);
+  bigLogger.debug(`观看视频每日任务 ✓`);
 }
 
 async function watchRandomEp() {
@@ -405,5 +429,49 @@ async function getTodayPonit() {
     return false;
   }
   logger.error(`今日获取积分【${todayPoint}】, 未达到预期 ×`);
+  return false;
+}
+
+async function waitForServerless(task_id: string, token: string) {
+  if (!TaskConfig.bigPoint.newTriggerWatch) {
+    return false;
+  }
+  const { dailyHandler, getClinet } = await import('@/utils/serverless');
+  const client = await getClinet(dailyHandler.slsType);
+  if (!client.client) return false;
+
+  const now = getPRCDate(),
+    nowMinutes = now.getMinutes() + 10,
+    minutes = nowMinutes % 60,
+    hours = now.getHours() + (nowMinutes >= 60 ? 1 : 0);
+
+  const triggerTime = formatCron({ hours, minutes }, dailyHandler.slsType);
+  bigLogger.info(`更新云函数定时器为：${triggerTime.string}`);
+  try {
+    return await client?.createTrigger(
+      {
+        TriggerDesc: triggerTime.value,
+        TriggerName: 'big_point_wait',
+      },
+      { task: 'bigPoint,noPush', task_id, token },
+    );
+  } catch (error) {
+    bigLogger.debug(error.message);
+  }
+  return false;
+}
+
+export async function deleteServerless() {
+  if (!(ENV.fc || ENV.scf)) return false;
+  if (!TaskConfig.jury.newTrigger) return false;
+  try {
+    const { dailyHandler, getClinet } = await import('@/utils/serverless');
+    const client = await getClinet(dailyHandler.slsType);
+    if (!client.client) return false;
+
+    return await client?.deleteTrigger('big_point_wait');
+  } catch (error) {
+    bigLogger.debug(error.message);
+  }
   return false;
 }

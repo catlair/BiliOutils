@@ -7,6 +7,7 @@ export const biliTaskArray = [
   ['liveSignTask', () => import('./liveSignTask')],
   ['addCoins', () => import('./addCoins')],
   ['bigPoint', () => import('./bigPoint')],
+  ['_bigPoint', () => import('./bigPoint')],
   ['shareAndWatch', () => import('./shareAndWatch')],
   ['silver2Coin', () => import('./silver2Coin')],
   ['mangaTask', () => import('./mangaTask')],

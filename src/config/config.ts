@@ -335,9 +335,11 @@ export const defaultConfig = {
     // 是否观看视频
     isWatch: true,
     // 领取任务后的观看延时（秒）
-    watchDelay: 40,
+    watchDelay: 5,
     // 是否启用异步模式观看视频
     isAsyncWatch: true,
+    // 在scf/fc中是否开启新的触发器来观看视频
+    newTriggerWatch: true,
   },
   activityLottery: {
     // 活动列表
