@@ -1,6 +1,6 @@
 # BiliOutils
 
-[tg](https://t.me/+peq0ioHz3PcwNTc1)
+[tg 已删除，累了，删库了还要折磨我](https://t.me/+peq0ioHz3PcwNTc1)
 
 [企鹅](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=M6EqCB56RFne22PqN2EfppbbMmELC1zi&authKey=d98Vo3%2FAflqfDRjEV7jdbupmxm4ffVOtSyOZdUq1lm39oc8tjFWvI%2Fb1a3t7zKO0&noverify=0&group_code=318327803)
 
@@ -14,3 +14,5 @@
 - Q：这个怎么回事。A：提供下详细的日志。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。（issue close）
 - 这文档不行啊（啊对对的）
 - 啥？文档又不是我的，我还能修改不成.（能不能改文档我不知道，文档首页那些置顶被你吃了是真的）。
+- （求爷爷告奶奶也不愿意给个 star ，fork 倒是很快，现在清空了又开始 star 了？？？）
+- （一直不推荐 Github Action 运行，并且一再强调要用就自己新建，运行并不依赖本项目，反手 fork 然后说不能运行？？？？）
